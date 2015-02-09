@@ -100,7 +100,7 @@ ALTER TABLE `ospos_sales_suspended`
    
 -- add invoice_number column to receivings table
 ALTER TABLE `ospos_items` 
-   ADD COLUMN `receiving_quantity` int(11) DEFAULT '1',
+   ADD COLUMN `receiving_quantity` int(10) DEFAULT '1',
    DROP COLUMN `quantity`;
 
 -- add foreign key to giftcards table
