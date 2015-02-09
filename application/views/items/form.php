@@ -29,13 +29,16 @@ echo form_open('items/save/'.$item_info->item_id,array('id'=>'item_form', 'encty
 </div>
 
 <div class="field_row clearfix">
-<?php echo form_label($this->lang->line('items_category').':', 'category',array('class'=>'required wide')); ?>
+<?php echo form_label($this->lang->line('items_category').':', 'item_category',array('class'=>'required wide')); ?>
 	<div class='form_field'>
-	<?php echo form_input(array(
-		'name'=>'category',
-		'id'=>'category',
-		'value'=>$item_info->category)
-	);?>
+	<?php echo form_dropdown('item_category_id',$item_categories,$selected_item_category_id, 'id="item_category_id"');?>
+	</div>
+</div>
+
+<div class="field_row clearfix">
+<?php echo form_label($this->lang->line('items_size') . ':', 'size',array('class'=>'wide')); ?>
+	<div class='form_field'>
+	<?php echo form_dropdown('item_size_id', $item_sizes, $selected_item_size, 'id="item_size_id"');?>
 	</div>
 </div>
 
@@ -388,8 +391,17 @@ echo form_close();
 $(document).ready(function()
 {
 	var no_op = function(event, data, formatted){};
-	$("#category").autocomplete("<?php echo site_url('items/suggest_category');?>",{max:100,minChars:0,delay:10}).result(no_op).search();
-
+	$("#item_category_id").change(function() 
+	{
+	    $.post("<?php echo site_url('items/get_sizes_by_category');?>", { "id": $(this).val() },
+		    function(data) {
+		        $("select#item_size_id").empty();
+				 for(var item in data) {
+				     $(new Option(data[item], item)).appendTo('select#item_size_id');
+				 }
+			 }
+		, "json");
+	});
 	<?php for ($i = 0; $i < 11; $i++) 
 	{ 
 	?>
@@ -398,7 +410,6 @@ $(document).ready(function()
 	}
 	?>
 
-	
 	$('#item_form').validate({
 		submitHandler:function(form)
 		{
@@ -417,7 +428,11 @@ $(document).ready(function()
 		rules:
 		{
 			name:"required",
-			category:"required",
+			item_category_id:"required",
+			item_size_id: function() 
+			{
+		        return $("#item_category_id").val(); 				
+			},
 			cost_price:
 			{
 				required:true,

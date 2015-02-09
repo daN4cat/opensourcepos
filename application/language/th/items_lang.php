@@ -81,3 +81,4 @@ $lang["items_upc_database"] = "UPC ฐานข้อมูล";
 $lang["items_update"] = "ปรับแต่งสินค้า";
 $lang["items_use_inventory_menu"] = "ใช้เมนูสินค้าคงเหลือ";
 $lang["items_image"] = "";
+$lang["items_size"] = "";

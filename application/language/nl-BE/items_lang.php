@@ -81,3 +81,4 @@ $lang["items_upc_database"] = "UPC Database";
 $lang["items_update"] = "Bewerk Product";
 $lang["items_use_inventory_menu"] = "Use Inv. Menu";
 $lang["items_image"] = "Afbeelding";
+$lang["items_size"] = "Maat";

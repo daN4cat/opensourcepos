@@ -217,7 +217,7 @@ function get_item_data_row($item,$controller)
 	$table_data_row.="<td width='3%'><input type='checkbox' id='item_$item->item_id' value='".$item->item_id."'/></td>";
 	$table_data_row.='<td width="15%">'.$item->item_number.'</td>';
 	$table_data_row.='<td width="20%">'.$item->name.'</td>';
-	$table_data_row.='<td width="14%">'.$item->category.'</td>';
+	$table_data_row.='<td width="14%">'.$item->description.'</td>';
 	$table_data_row.='<td width="14%">'.to_currency($item->cost_price).'</td>';
 	$table_data_row.='<td width="14%">'.to_currency($item->unit_price).'</td>';
     $table_data_row.='<td width="14%">'.$item->quantity.'</td>';

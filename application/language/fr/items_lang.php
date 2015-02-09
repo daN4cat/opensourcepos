@@ -81,3 +81,4 @@ $lang["items_upc_database"] = "Base de Données UPC";
 $lang["items_update"] = "Éditer Item";
 $lang["items_use_inventory_menu"] = "Utiliser Menu Inv.";
 $lang["items_image"] = "";
+$lang["items_size"] = "";

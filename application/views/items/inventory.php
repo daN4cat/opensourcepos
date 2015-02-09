@@ -51,7 +51,7 @@ echo form_open('items/save_inventory/'.$item_info->item_id,array('id'=>'item_for
 		
 		'name'=>'category',
 		'id'=>'category',
-		'value'=>$item_info->category,
+		'value'=>$item_info->description,
 		'style'       => 'border:none',
 		'readonly' => 'readonly'
 		);

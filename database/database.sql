@@ -104,7 +104,7 @@ INSERT INTO `ospos_employees` (`username`, `password`, `person_id`, `deleted`) V
 
 CREATE TABLE `ospos_giftcards` (
   `record_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `giftcard_id` int(11) NOT NULL AUTO_INCREMENT,
+  `giftcard_id` int(10) NOT NULL AUTO_INCREMENT,
   `giftcard_number` varchar(25) COLLATE utf8_unicode_ci NOT NULL,
   `value` decimal(15,2) NOT NULL,
   `deleted` int(1) NOT NULL DEFAULT '0',
@@ -125,13 +125,13 @@ CREATE TABLE `ospos_giftcards` (
 --
 
 CREATE TABLE `ospos_inventory` (
-  `trans_id` int(11) NOT NULL AUTO_INCREMENT,
-  `trans_items` int(11) NOT NULL DEFAULT '0',
-  `trans_user` int(11) NOT NULL DEFAULT '0',
+  `trans_id` int(10) NOT NULL AUTO_INCREMENT,
+  `trans_items` int(10) NOT NULL DEFAULT '0',
+  `trans_user` int(10) NOT NULL DEFAULT '0',
   `trans_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `trans_comment` text NOT NULL,
-  `trans_location` int(11) NOT NULL,
-  `trans_inventory` int(11) NOT NULL DEFAULT '0',
+  `trans_location` int(10) NOT NULL,
+  `trans_inventory` int(10) NOT NULL DEFAULT '0',
   PRIMARY KEY (`trans_id`),
   KEY `trans_items` (`trans_items`),
   KEY `trans_user` (`trans_user`),
@@ -151,16 +151,17 @@ CREATE TABLE `ospos_inventory` (
 
 CREATE TABLE `ospos_items` (
   `name` varchar(255) NOT NULL,
-  `category` varchar(255) NOT NULL,
-  `supplier_id` int(11) DEFAULT NULL,
+  `supplier_id` int(10) DEFAULT NULL,
   `item_number` varchar(255) DEFAULT NULL,
   `description` varchar(255) NOT NULL,
   `cost_price` decimal(15,2) NOT NULL,
   `unit_price` decimal(15,2) NOT NULL,
   `reorder_level` decimal(15,2) NOT NULL DEFAULT '0',
-  `receiving_quantity` int(11) NOT NULL DEFAULT '1',
+  `receiving_quantity` int(10) NOT NULL DEFAULT '1',
   `item_id` int(10) NOT NULL AUTO_INCREMENT,
   `pic_id` int(10) DEFAULT NULL,
+  `item_category_id` int(10) DEFAULT NULL,
+  `item_size_id` int(10) DEFAULT NULL,
   `allow_alt_description` tinyint(1) NOT NULL,
   `is_serialized` tinyint(1) NOT NULL,
   `deleted` int(1) NOT NULL DEFAULT '0',
@@ -209,7 +210,7 @@ CREATE TABLE `ospos_items_taxes` (
 --
 
 CREATE TABLE `ospos_item_kits` (
-  `item_kit_id` int(11) NOT NULL AUTO_INCREMENT,
+  `item_kit_id` int(10) NOT NULL AUTO_INCREMENT,
   `name` varchar(255) NOT NULL,
   `description` varchar(255) NOT NULL,
   PRIMARY KEY (`item_kit_id`)
@@ -227,8 +228,8 @@ CREATE TABLE `ospos_item_kits` (
 --
 
 CREATE TABLE `ospos_item_kit_items` (
-  `item_kit_id` int(11) NOT NULL,
-  `item_id` int(11) NOT NULL,
+  `item_kit_id` int(10) NOT NULL,
+  `item_id` int(10) NOT NULL,
   `quantity` decimal(15,2) NOT NULL,
   PRIMARY KEY (`item_kit_id`,`item_id`,`quantity`),
   KEY `ospos_item_kit_items_ibfk_2` (`item_id`)
@@ -245,9 +246,9 @@ CREATE TABLE `ospos_item_kit_items` (
 --
 
 CREATE TABLE IF NOT EXISTS `ospos_item_quantities` (
-  `item_id` int(11) NOT NULL,
-  `location_id` int(11) NOT NULL,
-  `quantity` int(11) NOT NULL DEFAULT '0',
+  `item_id` int(10) NOT NULL,
+  `location_id` int(10) NOT NULL,
+  `quantity` int(10) NOT NULL DEFAULT '0',
   PRIMARY KEY (`item_id`,`location_id`),
   KEY `item_id` (`item_id`),
   KEY `location_id` (`location_id`)
@@ -442,7 +443,7 @@ CREATE TABLE `ospos_receivings_items` (
   `item_cost_price` decimal(15,2) NOT NULL,
   `item_unit_price` decimal(15,2) NOT NULL,
   `discount_percent` decimal(15,2) NOT NULL DEFAULT '0',
-  `item_location` int(11) NOT NULL,
+  `item_location` int(10) NOT NULL,
   PRIMARY KEY (`receiving_id`,`item_id`,`line`),
   KEY `item_id` (`item_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -493,7 +494,7 @@ CREATE TABLE `ospos_sales_items` (
   `item_cost_price` decimal(15,2) NOT NULL,
   `item_unit_price` decimal(15,2) NOT NULL,
   `discount_percent` decimal(15,2) NOT NULL DEFAULT '0',
-  `item_location` int(11) NOT NULL,
+  `item_location` int(10) NOT NULL,
   PRIMARY KEY (`sale_id`,`item_id`,`line`),
   KEY `sale_id` (`sale_id`),
   KEY `item_id` (`item_id`),
@@ -587,7 +588,7 @@ CREATE TABLE `ospos_sales_suspended_items` (
   `item_cost_price` decimal(15,2) NOT NULL,
   `item_unit_price` decimal(15,2) NOT NULL,
   `discount_percent` decimal(15,2) NOT NULL DEFAULT '0',
-  `item_location` int(11) NOT NULL,
+  `item_location` int(10) NOT NULL,
   PRIMARY KEY (`sale_id`,`item_id`,`line`),
   KEY `sale_id` (`sale_id`),
   KEY `item_id` (`item_id`)
@@ -663,7 +664,7 @@ CREATE TABLE `ospos_sessions` (
 --
 
 CREATE TABLE `ospos_stock_locations` (
-  `location_id` int(11) NOT NULL AUTO_INCREMENT,
+  `location_id` int(10) NOT NULL AUTO_INCREMENT,
   `location_name` varchar(255) CHARACTER SET utf8 DEFAULT NULL,
   `deleted` int(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`location_id`)
@@ -694,6 +695,58 @@ CREATE TABLE `ospos_suppliers` (
 -- Dumping data for table `ospos_suppliers`
 --
 
+--
+-- Table structure for table `ospos_items_categories`
+--
+
+CREATE TABLE `ospos_items_categories` (
+  `id` int(10) NOT NULL AUTO_INCREMENT,
+  `description` text NOT NULL,
+  `abbreviation` varchar(32) DEFAULT NULL,
+  `item_size_category_id` int(10) DEFAULT NULL,
+  `supplier_id` int(10) DEFAULT NULL,
+  `deleted` int(1) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`),
+  KEY `fk_items_sizes_categories` (`item_size_category_id`),
+  KEY `fk_suppliers` (`supplier_id`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;
+
+
+--
+-- Dumping data for table `ospos_items_categories`
+--
+
+--
+-- Table structure for table `ospos_items_sizes`
+--
+
+CREATE TABLE `ospos_items_sizes` (
+  `id` int(10) NOT NULL AUTO_INCREMENT,
+  `size` varchar(255) DEFAULT NULL,
+  `item_size_category_id` int(10) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `fk_items_sizes_categories` (`item_size_category_id`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+
+--
+-- Dumping data for table `ospos_items_sizes`
+--
+
+--
+-- Table structure for table `ospos_items_sizes_categories`
+--
+
+CREATE TABLE `ospos_items_sizes_categories` (
+  `id` int(10) NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) NOT NULL,
+  `description` text,
+  `abbreviation` text,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;
+
+--
+-- Dumping data for table `ospos_items_sizes_categories`
+--
 
 --
 -- Constraints for dumped tables
@@ -722,7 +775,9 @@ ALTER TABLE `ospos_inventory`
 -- Constraints for table `ospos_items`
 --
 ALTER TABLE `ospos_items`
-  ADD CONSTRAINT `ospos_items_ibfk_1` FOREIGN KEY (`supplier_id`) REFERENCES `ospos_suppliers` (`person_id`);
+  ADD CONSTRAINT `ospos_items_ibfk_1` FOREIGN KEY (`supplier_id`) REFERENCES `ospos_suppliers` (`person_id`),
+  ADD CONSTRAINT `ospos_items_ibfk_2` FOREIGN KEY (`item_size_id`) REFERENCES `ospos_items_sizes` (`id`),
+  ADD CONSTRAINT `ospos_items_ibfk_3` FOREIGN KEY (`item_category_id`) REFERENCES `ospos_items_categories` (`id`);
 
 --
 -- Constraints for table `ospos_items_taxes`
@@ -779,7 +834,6 @@ ALTER TABLE `ospos_sales_items`
   ADD CONSTRAINT `ospos_sales_items_ibfk_1` FOREIGN KEY (`item_id`) REFERENCES `ospos_items` (`item_id`),
   ADD CONSTRAINT `ospos_sales_items_ibfk_2` FOREIGN KEY (`sale_id`) REFERENCES `ospos_sales` (`sale_id`),
   ADD CONSTRAINT `ospos_sales_items_ibfk_3` FOREIGN KEY (`item_location`) REFERENCES `ospos_stock_locations` (`location_id`);
-
 --
 -- Constraints for table `ospos_sales_items_taxes`
 --
@@ -839,3 +893,13 @@ ALTER TABLE `ospos_suppliers`
 --
 ALTER TABLE `ospos_giftcards`
   ADD CONSTRAINT `ospos_giftcards_ibfk_1` FOREIGN KEY (`person_id`) REFERENCES `ospos_people` (`person_id`);
+
+--
+-- Constraints for table `ospos_categories`
+--
+ALTER TABLE `ospos_items_categories`
+  ADD CONSTRAINT `ospos_items_categories_ibfk_1` FOREIGN KEY (`item_size_category_id`) REFERENCES `ospos_items_sizes_categories` (`id`),
+  ADD CONSTRAINT `ospos_items_categories_ibfk_2` FOREIGN KEY (`supplier_id`) REFERENCES `ospos_suppliers` (`person_id`);
+  
+ALTER TABLE `ospos_items_sizes`
+  ADD CONSTRAINT `ospos_items_sizes_ibfk_1` FOREIGN KEY (`item_size_category_id`) REFERENCES `ospos_items_sizes_categories` (`id`);

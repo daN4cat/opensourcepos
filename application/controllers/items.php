@@ -58,6 +58,14 @@ class Items extends Secure_area implements iData_controller
 		$item_number=$this->input->post('scan_item_number');
 		echo json_encode($this->Item->find_item_info($item_number));
 	}
+	
+	function get_sizes_by_category() {
+		$item_sizes[""] = $this->lang->line('items_none');
+		foreach($this->Item_sizes->get_sizes_by_category_id($this->input->post('id')) as $row) {
+			$item_sizes[$row['id']] = $row['size'];
+		}
+		echo json_encode($item_sizes);
+	}
 
 	function search()
 	{
@@ -116,19 +124,11 @@ class Items extends Secure_area implements iData_controller
 	*/
 	function suggest_category()
 	{
-		$suggestions = $this->Item->get_category_suggestions($this->input->post('q'));
+		$suggestions = $this->Category->get_category_suggestions($this->input->post('q'));
 		echo implode("\n",$suggestions);
 	}
 
 /**GARRISON ADDED 5/18/2013**/	
-	/*
-	 Gives search suggestions based on what is being searched for
-	*/
-	function suggest_location()
-	{
-		$suggestions = $this->Item->get_location_suggestions($this->input->post('q'));
-		echo implode("\n",$suggestions);
-	}
 	
 	/*
 	 Gives search suggestions based on what is being searched for
@@ -249,6 +249,21 @@ class Items extends Secure_area implements iData_controller
 		$data['selected_supplier'] = $this->Item->get_info($item_id)->supplier_id;
 		$data['default_tax_1_rate']=($item_id==-1) ? $this->Appconfig->get('default_tax_1_rate') : '';
 		$data['default_tax_2_rate']=($item_id==-1) ? $this->Appconfig->get('default_tax_2_rate') : '';
+		
+		$item_categories = array('' => $this->lang->line('items_none'));
+		foreach($this->Item_category->get_all()->result_array() as $row) {
+			$item_categories[$row['id']] = $row['description'];
+		}
+		
+		$data['item_categories']=$item_categories; 
+		$data['selected_item_category_id']=$data['item_info']->item_category_id;
+		
+		$item_sizes = array('' => $this->lang->line('items_none'));
+		foreach($this->Item_sizes->get_sizes_by_category_id($data['selected_item_category_id']) as $row) {
+			$item_sizes[$row['id']] = $row['size'];
+		}
+		$data['item_sizes']=$item_sizes;
+		$data['selected_item_size']=$data['item_info']->item_size_id;
         
         $locations_data = $this->Stock_locations->get_undeleted_all()->result_array();
         foreach($locations_data as $location)
@@ -336,7 +351,6 @@ class Items extends Secure_area implements iData_controller
 		$item_data = array(
 		'name'=>$this->input->post('name'),
 		'description'=>$this->input->post('description'),
-		'category'=>$this->input->post('category'),
 		'supplier_id'=>$this->input->post('supplier_id')=='' ? null:$this->input->post('supplier_id'),
 		'item_number'=>$this->input->post('item_number')=='' ? null:$this->input->post('item_number'),
 		'cost_price'=>$this->input->post('cost_price'),
@@ -346,6 +360,8 @@ class Items extends Secure_area implements iData_controller
 		'allow_alt_description'=>$this->input->post('allow_alt_description'),
 		'is_serialized'=>$this->input->post('is_serialized'),
 		'deleted'=>$this->input->post('is_deleted'),  /** Parq 131215 **/
+		'item_category_id'=>$this->input->post('item_category_id'),
+		'item_size_id'=>$this->input->post('item_size_id'),
 		'custom1'=>$this->input->post('custom1'),	/**GARRISON ADDED 4/21/2013**/			
 		'custom2'=>$this->input->post('custom2'),/**GARRISON ADDED 4/21/2013**/
 		'custom3'=>$this->input->post('custom3'),/**GARRISON ADDED 4/21/2013**/

@@ -24,7 +24,8 @@ class Item extends CI_Model
 			$this->db->join('item_quantities','item_quantities.item_id=items.item_id');
 			$this->db->where('location_id',$stock_location_id);
 		}
-		$this->db->where('deleted',0);
+		$this->db->join('items_categories','items_categories.id=items.item_category_id', 'left');
+		$this->db->where('items.deleted',0);
 		$this->db->order_by("name","asc");
 		$this->db->limit($limit);
 		$this->db->offset($offset);
@@ -81,6 +82,7 @@ class Item extends CI_Model
 	{
 		$this->db->from('items');
 		$this->db->where('item_id',$item_id);
+		$this->db->join('items_categories','items_categories.id=items.item_category_id');
 		
 		$query = $this->db->get();
 
@@ -347,25 +349,6 @@ class Item extends CI_Model
 		return $suggestions;
 	}
 
-/** GARRISON ADDED 5/18/2013 **/	
-	function get_location_suggestions($search)
-	{
-		$suggestions = array();
-		$this->db->distinct();
-		$this->db->select('location');
-		$this->db->from('items');
-		$this->db->like('location', $search);
-		$this->db->where('deleted', 0);
-		$this->db->order_by("location", "asc");
-		$by_category = $this->db->get();
-		foreach($by_category->result() as $row)
-		{
-			$suggestions[]=$row->location;
-		}
-	
-		return $suggestions;
-	}
-
 	function get_custom1_suggestions($search)
 	{
 		$suggestions = array();
@@ -575,17 +558,6 @@ class Item extends CI_Model
 		return $this->db->get();	
 	}
 
-	function get_categories()
-	{
-		$this->db->select('category');
-		$this->db->from('items');
-		$this->db->where('deleted',0);
-		$this->db->distinct();
-		$this->db->order_by("category", "asc");
-
-		return $this->db->get();
-	}
-	
 	/*
 	 * changes the cost price of a given item
 	 * calculates the average price between received items and items on stock
