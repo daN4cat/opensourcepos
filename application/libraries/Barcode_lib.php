@@ -1,8 +1,14 @@
 <?php
+
+use emberlabs\Barcode\BarcodeBase;
+require APPPATH.'/views/barcodes/BarcodeBase.php';
+require APPPATH.'/views/barcodes/Code39.php';
+require APPPATH.'/views/barcodes/Code128.php';
+
 class Barcode_lib
 {
     var $CI;
-    var $supported_barcodes = array(1 => 'Code 39');
+    var $supported_barcodes = array(1 => 'Code 39', 2 => 'Code 128');
     
     function __construct()
     {
@@ -16,6 +22,7 @@ class Barcode_lib
     
     function get_barcode_config()
     {
+    	$data['barcode_type'] = $this->CI->Appconfig->get('barcode_type');
     	$data['barcode_font'] = $this->CI->Appconfig->get('barcode_font');
     	$data['barcode_font_size'] = $this->CI->Appconfig->get('barcode_font_size');
     	$data['barcode_height'] = $this->CI->Appconfig->get('barcode_height');
@@ -30,10 +37,31 @@ class Barcode_lib
         return $data;
     }
     
+    function generate_barcode($barcode_content, $barcode_config)
+    {
+    	if ($barcode_config['barcode_type'] == '1')
+    	{
+    		$barcode = new emberlabs\Barcode\Code39();
+    	}
+    	else
+    	{
+    		$barcode = new emberlabs\Barcode\Code128();
+    	}
+    	$barcode->setData($barcode_content);
+    	$barcode->setQuality($barcode_config['barcode_quality']);
+    	$barcode->setDimensions($barcode_config['barcode_width'], $barcode_config['barcode_height']);
+    	$barcode->draw();
+    	return $barcode->base64();
+    }
+    
     function create_display_barcode($item, $barcode_config)
     {
+    	
         $display_table = "<table>";
         $display_table .= "<tr><td align='center'>". $this->manage_display_layout($barcode_config['barcode_first_row'], $item, $barcode_config)."</td></tr>";
+        $barcode_content=$this->CI->Appconfig->get('barcode_content') === "id" ? $item['item_id'] : $item['item_number'];
+        $barcode = $this->generate_barcode($barcode_content,$barcode_config);
+        $display_table .= "<tr><td align='center'><img src='data:image/png;base64,$barcode' /></td></tr>";
         $display_table .= "<tr><td align='center'>". $this->manage_display_layout($barcode_config['barcode_second_row'], $item, $barcode_config)."</td></tr>";
         $display_table .= "<tr><td align='center'>". $this->manage_display_layout($barcode_config['barcode_third_row'], $item, $barcode_config)."</td></tr>";
         $display_table .= "</table>";
@@ -44,17 +72,7 @@ class Barcode_lib
     {
         $result = '';
         
-        if($layout_type == 'item_code')
-        {
-            $result = "<img src='".site_url()."/barcode?".
-                                   "&width=".$barcode_config['barcode_width'].
-                                   "&height=".$barcode_config['barcode_height'].
-                                   "&barcode=".($this->CI->Appconfig->get('barcode_content') === "id" ? $item['item_id'] : $item['item_number']).
-                                   "&quality=".$barcode_config['barcode_quality'].
-                                   "&type=".$this->CI->Appconfig->get('barcode_type').
-                                   "' onerror=\"(function(pThis){pThis.onerror = null;  pThis.src = pThis.src;})(this)\" />";
-        }
-        else if($layout_type == 'name')
+        if($layout_type == 'name')
         {
             $result = $this->CI->lang->line('items_name') . " " . $item['name'];
         }
@@ -73,6 +91,10 @@ class Barcode_lib
         else if($layout_type == 'company_name')
         {
         	$result = $this->CI->Appconfig->get('company');
+        }
+        else if($layout_type == 'item_code')
+        {
+        	$result = $this->CI->Appconfig->get('barcode_content') === "id" ? $item['item_id'] : $item['item_number'];
         }
         return $result;
     }
