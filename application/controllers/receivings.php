@@ -6,6 +6,7 @@ class Receivings extends Secure_area
 	{
 		parent::__construct('receivings');
 		$this->load->library('receiving_lib');
+		$this->load->library('barcode_lib');
 	}
 
 	function index()
@@ -177,7 +178,7 @@ class Receivings extends Secure_area
 		$data['receipt_title']=$this->lang->line('recvs_receipt');
 		$data['transaction_time']= date('m/d/Y h:i:s a');
 		$data['mode']=$this->receiving_lib->get_mode();
-		$stock_locations = $this->Stock_locations->get_undeleted_all()->result_array();
+		$stock_locations = $this->Stock_locations->get_undeleted_all('receivings')->result_array();
 		$data['show_stock_locations'] = count($stock_locations) > 1;
 		$supplier_id=$this->receiving_lib->get_supplier();
 		$employee_id=$this->Employee->get_logged_in_employee_info()->person_id;
@@ -215,7 +216,8 @@ class Receivings extends Secure_area
 			{
 				$data['error_message'] = $this->lang->line('receivings_transaction_failed');
 			}
-	
+			$barcode_config=array('barcode_type'=>1,'barcode_width'=>180, 'barcode_height'=>30, 'barcode_quality'=>100);
+			$data['barcode']=$this->barcode_lib->generate_barcode($data['receiving_id'],$barcode_config);
 			$this->load->view("receivings/receipt",$data);
 			$this->receiving_lib->clear_all();
 		}
@@ -270,7 +272,6 @@ class Receivings extends Secure_area
     
 	function receipt($receiving_id)
 	{
-		$this->load->library('barcode_lib');
 		$receiving_info = $this->Receiving->get_info($receiving_id)->row_array();
 		$this->receiving_lib->copy_entire_receiving($receiving_id);
 		$data['cart']=$this->receiving_lib->get_cart();
@@ -278,7 +279,7 @@ class Receivings extends Secure_area
 		$data['mode']=$this->receiving_lib->get_mode();
 		$data['receipt_title']=$this->lang->line('recvs_receipt');
 		$data['transaction_time']= date('m/d/Y h:i:s a', strtotime($receiving_info['receiving_time']));
-		$stock_locations = $this->Stock_locations->get_undeleted_all()->result_array();
+		$stock_locations = $this->Stock_locations->get_undeleted_all('receivings')->result_array();
 		$data['show_stock_locations'] = count($stock_locations) > 1;
 		$supplier_id=$this->receiving_lib->get_supplier();
 		$emp_info=$this->Employee->get_info($receiving_info['employee_id']);
@@ -306,7 +307,7 @@ class Receivings extends Secure_area
 		$data['modes']=array('receive'=>$this->lang->line('recvs_receiving'),'return'=>$this->lang->line('recvs_return'));
 		$data['mode']=$this->receiving_lib->get_mode();
 		
-		$data['stock_locations']=$this->Stock_locations->get_allowed_locations();
+		$data['stock_locations']=$this->Stock_locations->get_allowed_locations('receivings');
 		$show_stock_locations = count($data['stock_locations']) > 1;
         if ($show_stock_locations) 
         {
