@@ -331,24 +331,6 @@ class Item extends CI_Model
 		return $suggestions;
 	}
 
-	function get_category_suggestions($search)
-	{
-		$suggestions = array();
-		$this->db->distinct();
-		$this->db->select('category');
-		$this->db->from('items');
-		$this->db->like('category', $search);
-		$this->db->where('deleted', 0);
-		$this->db->order_by("category", "asc");
-		$by_category = $this->db->get();
-		foreach($by_category->result() as $row)
-		{
-			$suggestions[]=$row->category;
-		}
-
-		return $suggestions;
-	}
-
 	function get_custom1_suggestions($search)
 	{
 		$suggestions = array();

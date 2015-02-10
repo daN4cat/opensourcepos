@@ -475,6 +475,14 @@ class Items extends Secure_area implements iData_controller
 		return TRUE;
 	}
 	
+	function category_check($category)
+	{
+		if ($this->Category->exists($category))
+		{
+			
+		}
+	}
+	
 	function _handle_image_upload()
 	{
 		$this->load->helper('directory');
@@ -543,7 +551,7 @@ class Items extends Secure_area implements iData_controller
 			{
 				$item_data["$key"]=$value == '' ? null : $value;
 			}
-			elseif($value!='' and !(in_array($key, array('item_ids', 'tax_names', 'tax_percents', 'category'))))
+			elseif($value!='' and !(in_array($key, array('item_ids', 'tax_names', 'tax_percents', 'item_category_id'))))
 			{
 				$item_data["$key"]=$value;
 			}
@@ -623,7 +631,6 @@ class Items extends Secure_area implements iData_controller
                     $item_data = array(
                         'name'			=>	$data[1],
                         'description'	=>	$data[11],
-                        'category'		=>	$data[2],
                         'cost_price'	=>	$data[4],
                         'unit_price'	=>	$data[5],
                         'reorder_level'	=>	$data[10],
@@ -646,6 +653,22 @@ class Items extends Secure_area implements iData_controller
                     if ($item_number != "")
                     {
                         $item_data['item_number'] = $item_number;
+                    }
+                    
+                    $category = $data[2];
+                    if ($category != "")
+                    {
+                    	$result = $this->Item_category->get_category_by_description($category);
+                    	if ($result->num_rows() > 0)
+                    	{
+	                    	$item_data['item_category_id'] = $result->row()->id;
+                    	}
+                    	else 
+                    	{
+                    		$item_category_data = array('description' => $category);
+							$this->Item_category->save($item_category_data);
+							$item_data['item_category_id'] = $item_category_data['id'];
+                    	}
                     }
 					$validated = $this->item_number_check($item_number);
 					
