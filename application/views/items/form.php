@@ -11,6 +11,7 @@ echo form_open('items/save/'.$item_info->item_id,array('id'=>'item_form', 'encty
 	<div class='form_field'>
 	<?php echo form_input(array(
 		'name'=>'item_number',
+		'class'=>'item_number',
 		'id'=>'item_number',
 		'value'=>$item_info->item_number)
 	);?>
@@ -410,17 +411,30 @@ $(document).ready(function()
 	}
 	?>
 
+	$.validator.addMethod("item_number", function(value, element) 
+	{
+		return JSON.parse($.ajax(
+		{
+			  type: 'POST',
+			  url: '<?php echo site_url($controller_name . "/check_item_number")?>',
+			  data: {'item_id' : '<?php echo $item_info->item_id; ?>', 'item_number' : $(element).val() },
+			  success: function(response) 
+			  {
+				  success=response.success;
+			  },
+			  async:false,
+			  dataType: 'json'
+        }).responseText).success;
+        
+    }, '<?php echo $this->lang->line("items_item_number_duplicate"); ?>');
 	$('#item_form').validate({
 		submitHandler:function(form)
 		{
 			$(form).ajaxSubmit({
 				success:function(response)
 				{
-					if (handle_validation(response))
-					{
-						tb_remove();
-						post_item_form_submit(response);	
-					}
+					tb_remove();
+					post_item_form_submit(response);
 				},
 				dataType:'json'
 			});
@@ -436,6 +450,7 @@ $(document).ready(function()
 			{
 		        return $("#item_category_id").val(); 				
 			},
+			item_number: { item_number: true },
 			cost_price:
 			{
 				required:true,
