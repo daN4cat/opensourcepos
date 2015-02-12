@@ -13,11 +13,14 @@ class Item extends CI_Model
 		return ($query->num_rows()==1);
 	}
 	
-	function item_number_exists($item_number, $item_id)
+	function item_number_exists($item_number,$item_id='')
 	{
 		$this->db->from('items');
 		$this->db->where('item_number', $item_number);
-		$this->db->where('item_id !=', $item_id);
+		if (!empty($item_id))
+		{
+			$this->db->where('item_id !=', $item_id);
+		}
 		$query=$this->db->get();
 		return ($query->num_rows()==1);
 	}	
@@ -209,16 +212,17 @@ class Item extends CI_Model
 			$suggestions[]=$row->name;
 		}
 
-		$this->db->select('category');
+		$this->db->select('items_categories.description');
 		$this->db->from('items');
-		$this->db->where('deleted',0);
+		$this->db->join('items_categories','items_categories.id=items.item_category_id', 'left');
+		$this->db->where('items.deleted',0);
 		$this->db->distinct();
-		$this->db->like('category', $search);
-		$this->db->order_by("category", "asc");
+		$this->db->like('items_categories.description', $search);
+		$this->db->order_by("items_categories.description", "asc");
 		$by_category = $this->db->get();
 		foreach($by_category->result() as $row)
 		{
-			$suggestions[]=$row->category;
+			$suggestions[]=$row->description;
 		}
 
 		$this->db->from('items');
@@ -527,12 +531,13 @@ class Item extends CI_Model
 	{
 		$this->db->from('items');
 		$this->db->join('item_quantities','item_quantities.item_id=items.item_id');
+		$this->db->join('items_categories','items_categories.id=items.item_category_id', 'left');
 		$this->db->where('location_id',$stock_location_id);
 		
 		$this->db->where("(
 				name LIKE '%".$this->db->escape_like_str($search)."%' or 
-				item_number LIKE '%".$this->db->escape_like_str($search)."%' or 
-				description LIKE '%".$this->db->escape_like_str($search)."%' or/**GARRISON ADDED 4/21/2013**/
+				item_number LIKE '%".$this->db->escape_like_str($search)."%' or ". 
+				$this->db->dbprefix('items_categories'). ".description LIKE '%".$this->db->escape_like_str($search)."%' or/**GARRISON ADDED 4/21/2013**/
 				custom1 LIKE '%".$this->db->escape_like_str($search)."%' or/**GARRISON ADDED 4/22/2013**/
 				custom2 LIKE '%".$this->db->escape_like_str($search)."%' or/**GARRISON ADDED 4/22/2013**/
 				custom3 LIKE '%".$this->db->escape_like_str($search)."%' or/**GARRISON ADDED 4/22/2013**/
@@ -542,9 +547,9 @@ class Item extends CI_Model
 				custom7 LIKE '%".$this->db->escape_like_str($search)."%' or/**GARRISON ADDED 4/22/2013**/
 				custom8 LIKE '%".$this->db->escape_like_str($search)."%' or/**GARRISON ADDED 4/22/2013**/
 				custom9 LIKE '%".$this->db->escape_like_str($search)."%' or/**GARRISON ADDED 4/22/2013**/
-				custom10 LIKE '%".$this->db->escape_like_str($search)."%' or/**GARRISON ADDED 4/22/2013**/
-				category LIKE '%".$this->db->escape_like_str($search)."%') and 
-				deleted=0");
+				custom10 LIKE '%".$this->db->escape_like_str($search)."%' or ". /**GARRISON ADDED 4/22/2013**/
+				$this->db->dbprefix('items_categories'). ".description LIKE '%".$this->db->escape_like_str($search)."%') and ". 
+				$this->db->dbprefix('items').".deleted=0");
 		$this->db->order_by("name", "asc");
 		return $this->db->get();	
 	}
