@@ -78,6 +78,17 @@ class Sale_lib
 		return $this->CI->session->set_userdata('sales_invoice_number_enabled', $invoice_number_enabled);
 	}
 	
+	function is_print_after_sale() 
+	{
+		return $this->CI->session->userdata('sales_print_after_sale') == 'true' ||
+			$this->CI->session->userdata('sales_print_after_sale') == '1';
+	}
+	
+	function set_print_after_sale($print_after_sale)
+	{
+		return $this->CI->session->set_userdata('sales_print_after_sale', $print_after_sale);
+	}
+	
 	function get_email_receipt() 
 	{
 		return $this->CI->session->userdata('email_receipt');
@@ -99,7 +110,7 @@ class Sale_lib
 		if( isset( $payments[$payment_id] ) )
 		{
 			//payment_method already exists, add to payment_amount
-			$payments[$payment_id]['payment_amount'] += $payment_amount;
+			$payments[$payment_id]['payment_amount'] = bcadd($payments[$payment_id]['payment_amount'], $payment_amount, PRECISION);
 		}
 		else
 		{
@@ -153,7 +164,7 @@ class Sale_lib
 		$subtotal = 0;
 		foreach($this->get_payments() as $payments)
 		{
-		    $subtotal+=$payments['payment_amount'];
+		    $subtotal = bcadd($payments['payment_amount'], $subtotal, PRECISION);
 		}
 		return to_currency_no_money($subtotal);
 	}
@@ -214,6 +225,21 @@ class Sale_lib
     	$this->CI->session->unset_userdata('sale_location');
     }
     
+    function set_giftcard_remainder($value)
+    {
+    	$this->CI->session->set_userdata('giftcard_remainder',$value);
+    }
+    
+    function get_giftcard_remainder()
+    {
+    	return $this->CI->session->userdata('giftcard_remainder');
+    }
+    
+    function clear_giftcard_remainder()
+    {
+    	$this->CI->session->unset_userdata('giftcard_remainder');
+    }
+    
 	function add_item($item_id,$quantity=1,$item_location,$discount=0,$price=null,$description=null,$serialnumber=null)
 	{
 		//make sure item exists	     
@@ -257,6 +283,7 @@ class Sale_lib
 		$insertkey=$maxkey+1;
 		$item_info=$this->CI->Item->get_info($item_id,$item_location);
 		//array/cart records are identified by $insertkey and item_id is just another field.
+		$price = $price!=null ? $price: $item_info->unit_price;
 		$item = array(($insertkey)=>
 		array(
 			'item_id'=>$item_id,
@@ -272,7 +299,9 @@ class Sale_lib
 			'quantity'=>$quantity,
             'discount'=>$discount,
 			'in_stock'=>$this->CI->Item_quantities->get_item_quantity($item_id, $item_location)->quantity,
-			'price'=>$price!=null ? $price: $item_info->unit_price
+			'price'=>$price,
+			'total_tax_exclusive'=>$this->get_item_total_tax_exclusive($item_id, $quantity, $price, $discount),
+			'total'=>$this->get_item_total($quantity, $price, $discount)
 			)
 		);
 
@@ -481,6 +510,7 @@ class Sale_lib
 		$this->clear_comment();
 		$this->clear_email_receipt();
 		$this->clear_invoice_number();
+		$this->clear_giftcard_remainder();
 		$this->empty_payments();
 		$this->remove_customer();
 	}
@@ -510,7 +540,7 @@ class Sale_lib
 			foreach($tax_info as $tax)
 			{
 				$name = $tax['percent'].'% ' . $tax['name'];
-				$tax_percentage = $tax_info[0]['percent'];
+				$tax_percentage = $tax['percent'];
 				$tax_amount = $this->get_item_tax($item['quantity'], $item['price'], $item['discount'], $tax_percentage);
 
 				if (!isset($taxes[$name]))
@@ -537,8 +567,8 @@ class Sale_lib
 		// only additive tax here
 		foreach($tax_info as $tax)
 		{
-			$tax_percentage = $tax_info[0]['percent'];
-			$item_price -= $this->get_item_tax($quantity, $price, $discount_percentage, $tax_percentage);
+			$tax_percentage = $tax['percent'];
+			$item_price = bcsub($item_price, $this->get_item_tax($quantity, $price, $discount_percentage, $tax_percentage), PRECISION);
 		}
 		
 		return $item_price;
@@ -574,11 +604,11 @@ class Sale_lib
 		{
 			if ($this->CI->config->config['tax_included'])
 			{
-				$subtotal += $this->get_item_total_tax_exclusive($item['item_id'], $item['quantity'], $item['price'], $item['discount']);
+				$subtotal = bcadd($subtotal, $this->get_item_total_tax_exclusive($item['item_id'], $item['quantity'], $item['price'], $item['discount']), PRECISION);
 			}
 			else 
 			{
-				$subtotal += $this->get_item_total($item['quantity'], $item['price'], $item['discount']);
+				$subtotal = bcadd($subtotal, $this->get_item_total($item['quantity'], $item['price'], $item['discount']), PRECISION);
 			}
 		}
 		return $subtotal;
@@ -590,7 +620,7 @@ class Sale_lib
 		
 		foreach($this->get_taxes() as $tax)
 		{
-			$total = bcadd($total, $tax, 4);
+			$total = bcadd($total, $tax, PRECISION);
 		}
 
 		return to_currency_no_money($total);

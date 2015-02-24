@@ -43,3 +43,7 @@ $lang["common_zip"] = "Postcode";
 $lang["common_gender"] = "Geslacht";
 $lang["common_gender_male"] = "M";
 $lang["common_gender_female"] = "V";
+$lang["common_date"] = "Datum";
+$lang["common_search_options"] = "Zoek criteria";
+$lang["common_first_page"] = "Eerste";
+$lang["common_last_page"] = "Laatste";

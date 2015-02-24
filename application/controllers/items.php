@@ -8,47 +8,21 @@ class Items extends Secure_area implements iData_controller
 		parent::__construct('items');
 		$this->load->library('item_lib');
 	}
-
-	function index()
+	
+	function index($limit_from=0)
 	{
-		$config['base_url'] = site_url('/items/index');
-		$config['total_rows'] = $this->Item->count_all();
-		$config['per_page'] = '20';
-		$config['uri_segment'] = 3;
-		$this->pagination->initialize($config);
-		
 		$stock_location=$this->item_lib->get_item_location();
 		$stock_locations=$this->Stock_locations->get_allowed_locations();
+		
+		$data['controller_name']=$this->get_controller_name();
+		$data['form_width']=$this->get_form_width();
+		$lines_per_page = $this->Appconfig->get('lines_per_page');
+		$items = $this->Item->get_all($stock_location,$lines_per_page,$limit_from);
+		$data['links'] = $this->_initialize_pagination($this->Item,$lines_per_page,$limit_from);
+		
 		$data['stock_location']=$stock_location;
 		$data['stock_locations']=$stock_locations;
-		$data['controller_name']=strtolower(get_class());
-		$data['form_width']=$this->get_form_width();
-		$data['manage_table']=get_items_manage_table( $this->Item->get_all( $stock_location, $config['per_page'], $this->uri->segment( $config['uri_segment'] ) ), $this );
-		$this->load->view('items/manage',$data);
-		$this->_remove_duplicate_cookies();
-	}
-
-	function refresh()
-	{
-		$is_serialized=$this->input->post('is_serialized');
-		$no_description=$this->input->post('no_description');
-		$search_custom=$this->input->post('search_custom');//GARRISON ADDED 4/13/2013    
-        $is_deleted=$this->input->post('is_deleted'); // Parq 131215
-        $this->item_lib->set_item_location($this->input->post('stock_location'));
-        
-       	$stock_location=$this->input->post('stock_location');
-		$stock_locations=$this->Stock_locations->get_allowed_locations();
-		$data['stock_location']=$this->item_lib->get_item_location();
-		$data['stock_locations']=$stock_locations;
-        
-		$data['search_section_state']=$this->input->post('search_section_state');
-		$data['is_serialized']=$this->input->post('is_serialized');
-		$data['no_description']=$this->input->post('no_description');
-		$data['search_custom']=$this->input->post('search_custom');//GARRISON ADDED 4/13/2013
-		$data['is_deleted']=$this->input->post('is_deleted'); // Parq 131215
-		$data['controller_name']=strtolower(get_class());
-		$data['form_width']=$this->get_form_width(); 
-		$data['manage_table']=get_items_manage_table($this->Item->get_all_filtered($stock_location,$is_serialized,$no_description,$search_custom,$is_deleted),$this);//GARRISON MODIFIED 4/13/2013, Parq 131215
+		$data['manage_table']=get_items_manage_table( $this->Item->get_all( $stock_location, $lines_per_page, $limit_from), $this );
 		$this->load->view('items/manage',$data);
 		$this->_remove_duplicate_cookies();
 	}
@@ -69,10 +43,21 @@ class Items extends Secure_area implements iData_controller
 
 	function search()
 	{
-		$search=$this->input->post('search');
+		$search = $this->input->post('search');
 		$stock_location=$this->item_lib->get_item_location();
-		$data_rows=get_items_manage_table_data_rows($this->Item->search($search,$stock_location),$this);
-		echo $data_rows;
+		$data['search_section_state'] = $this->input->post('search_section_state');
+		$low_inventory=$this->input->post('low_inventory');
+		$is_serialized=$this->input->post('is_serialized');
+		$no_description=$this->input->post('no_description');
+		$is_deleted=$this->input->post('is_deleted'); // Parq 131215
+		$limit_from = $this->input->post('limit_from');
+		$lines_per_page = $this->Appconfig->get('lines_per_page');
+		$items = $this->Item->search($search,$stock_location,$low_inventory,$is_serialized,$no_description,$is_deleted,$lines_per_page,$limit_from);
+		$data_rows=get_items_manage_table_data_rows($items,$this);
+		$total_rows = $this->Item->get_found_rows($search,$stock_location,$low_inventory,$is_serialized,$no_description,$is_deleted);
+		$links = $this->_initialize_pagination($this->Item, $lines_per_page, $limit_from, $total_rows);
+		$data_rows=get_items_manage_table_data_rows($items,$this);
+		echo json_encode(array('total_rows' => $total_rows, 'rows' => $data_rows, 'pagination' => $links));
 		$this->_remove_duplicate_cookies();
 	}
 	
@@ -636,11 +621,12 @@ class Items extends Secure_area implements iData_controller
 	                        'custom10'		=>	$data[23]	/** GARRISON ADDED 5/6/2013 **/
 	                    );
 	                    $item_number = $data[0];
+	                    $invalidated = false;
 	                    if ($item_number != "")
 	                    {
 	                    	$item_data['item_number'] = $item_number;
+		                    $invalidated = $this->Item->item_number_exists($item_number);
 	                    }
-	                    $invalidated = $this->Item->item_number_exists($item_number);
 					}
 					else 
 					{
@@ -702,7 +688,7 @@ class Items extends Secure_area implements iData_controller
                                     'location_id' => $location_id,
                                     'quantity' => $data[$col + 1],
                                 );
-                                $this->Item_quantities->save($item_quantity_data, $item_data['item_id'], $data[$col]);
+                                $this->Item_quantities->save($item_quantity_data, $item_data['item_id'], $location_id);
 
                                 $excel_data = array (
                                     'trans_items'=>$item_data['item_id'],

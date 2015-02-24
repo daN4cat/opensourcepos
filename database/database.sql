@@ -40,6 +40,8 @@ INSERT INTO `ospos_app_config` (`key`, `value`) VALUES
 ('recv_invoice_format', '$CO'),
 ('sales_invoice_format', '$CO'),
 ('tax_included', '0'),
+('invoice_default_comments', 'This is a default comment'),
+('company_logo', ''),
 ('barcode_content', 'id'),
 ('barcode_type', 'id'),
 ('barcode_width', '250'),
@@ -52,7 +54,19 @@ INSERT INTO `ospos_app_config` (`key`, `value`) VALUES
 ('barcode_third_row', 'cost_price'),
 ('barcode_num_in_row', '2'),
 ('barcode_page_width', '100'),      
-('barcode_page_cellspacing', '20');
+('barcode_page_cellspacing', '20'),
+('receipt_show_taxes', '0'),
+('use_invoice_template', '1'),
+('invoice_email_message', 'Dear $CU, In attachment the receipt for sale $CO'),
+('print_silently', '1'),
+('print_header', '0'),
+('print_footer', '0'),
+('print_top_margin', '0'),
+('print_left_margin', '0'),
+('print_bottom_margin', '0'),
+('print_right_margin', '0'),
+('default_sales_discount', '0'),
+('lines_per_page', '25');
 
 -- --------------------------------------------------------
 
@@ -467,10 +481,10 @@ CREATE TABLE `ospos_sales` (
   `comment` text NOT NULL,
   `invoice_number` varchar(32) DEFAULT NULL,
   `sale_id` int(10) NOT NULL AUTO_INCREMENT,
-  `payment_type` varchar(512) DEFAULT NULL,
   PRIMARY KEY (`sale_id`),
   KEY `customer_id` (`customer_id`),
   KEY `employee_id` (`employee_id`),
+  KEY `sale_time` (`sale_time`),
   UNIQUE KEY `invoice_number` (`invoice_number`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
@@ -561,7 +575,6 @@ CREATE TABLE `ospos_sales_suspended` (
   `comment` text NOT NULL,
   `invoice_number` varchar(32) DEFAULT NULL,
   `sale_id` int(10) NOT NULL AUTO_INCREMENT,
-  `payment_type` varchar(512) DEFAULT NULL,
   PRIMARY KEY (`sale_id`),
   KEY `customer_id` (`customer_id`),
   KEY `employee_id` (`employee_id`),

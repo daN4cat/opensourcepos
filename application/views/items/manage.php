@@ -22,9 +22,11 @@ $(document).ready(function()
     	$(this).attr('href','index.php/items/generate_barcodes/'+selected.join(':'));
     });
 
-    $('#is_serialized, #no_description, #search_custom, #is_deleted').click(function()
+    $("#search_filter_section input").click(function() 
     {
-    	$('#items_filter_form').submit();
+        // reset page number when selecting a specific page number
+        $('#limit_from').val("0");
+    	do_search(true);
     });
 
     resize_thumbs();
@@ -132,15 +134,17 @@ function show_hide_search_filter(search_filter_section, switchImgTag) {
 	</div>
 </div>
 
+<div id="pagination"><?= $links ?></div>
 <div id="titleTextImg" style="background-color:#EEEEEE;height:30px;position:relative;">
-	<div style="float:left;vertical-align:text-top;">Search Options :</div>
+	<div style="float:left;vertical-align:text-top;"><?php echo $this->lang->line('common_search_options'); ?> :</div>
 	<a id="imageDivLink" href="javascript:show_hide_search_filter('search_filter_section', 'imageDivLink');" style="outline:none;">
 	<img src="
 	<?php echo isset($search_section_state)?  ( ($search_section_state)? base_url().'images/minus.png' : base_url().'images/plus.png') : base_url().'images/plus.png';?>" style="border:0;outline:none;padding:0px;margin:0px;position:relative;top:-5px;"></a>
 </div>
-
+<?php echo form_open("$controller_name/search",array('id'=>'search_form')); ?>
 <div id="search_filter_section" style="display: <?php echo isset($search_section_state)?  ( ($search_section_state)? 'block' : 'none') : 'none';?>;background-color:#EEEEEE;">
-	<?php echo form_open("$controller_name/refresh",array('id'=>'items_filter_form')); ?>
+	<?php echo form_label($this->lang->line('items_low_inventory_items').' '.':', 'low_inventory');?>
+	<?php echo form_checkbox(array('name'=>'low_inventory','id'=>'low_inventory','value'=>1,'checked'=> isset($low_inventory)?  ( ($low_inventory)? 1 : 0) : 0)).' | ';?>
 	<?php echo form_label($this->lang->line('items_serialized_items').' '.':', 'is_serialized');?>
 	<?php echo form_checkbox(array('name'=>'is_serialized','id'=>'is_serialized','value'=>1,'checked'=> isset($is_serialized)?  ( ($is_serialized)? 1 : 0) : 0)).' | ';?>
 	<?php echo form_label($this->lang->line('items_no_description_items').' '.':', 'no_description');?>
@@ -150,9 +154,7 @@ function show_hide_search_filter(search_filter_section, switchImgTag) {
 	<?php echo form_label($this->lang->line('items_is_deleted').' '.':', 'is_deleted');// Parq 131215?> 
 	<?php echo form_checkbox(array('name'=>'is_deleted','id'=>'is_deleted','value'=>1,'checked'=> isset($is_deleted)?  ( ($is_deleted)? 1 : 0) : 0));// Parq 131215?>  
 	<input type="hidden" name="search_section_state" id="search_section_state" value="<?php echo isset($search_section_state)?  ( ($search_section_state)? 'block' : 'none') : 'none';?>" />
-	</form>
 </div>
-<?php echo $this->pagination->create_links();?>
 <div id="table_action_header">
 	<ul>
 		<li class="float_left"><span><?php echo anchor("$controller_name/delete",$this->lang->line("common_delete"),array('id'=>'delete')); ?></span></li>
@@ -166,14 +168,14 @@ function show_hide_search_filter(search_filter_section, switchImgTag) {
 		<?php endif; ?>
 		<li class="float_right">
 		<img src='<?php echo base_url()?>images/spinner_small.gif' alt='spinner' id='spinner' />
-		<?php echo form_open("$controller_name/search",array('id'=>'search_form')); ?>
 		<input type="text" name ='search' id='search'/>
-		</form>
+		<input type="hidden" name ='limit_from' id='limit_from'/>
 		</li>
 	</ul>
 </div>
+<?php echo form_close(); ?>
 
-<div id="table_holder" style="font-size:14px">
+<div id="table_holder">
 <?php echo $manage_table; ?>
 </div>
 <div id="feedback_bar"></div>

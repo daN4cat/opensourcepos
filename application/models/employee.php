@@ -14,6 +14,12 @@ class Employee extends Person
 		return ($query->num_rows()==1);
 	}	
 	
+	function get_total_rows()
+	{
+		$this->db->from('employees');
+		$this->db->where('deleted',0);
+		return $this->db->count_all_results();
+	}
 	/*
 	Returns all the employees
 	*/
@@ -26,13 +32,6 @@ class Employee extends Person
 		$this->db->limit($limit);
 		$this->db->offset($offset);
 		return $this->db->get();		
-	}
-	
-	function count_all()
-	{
-		$this->db->from('employees');
-		$this->db->where('deleted',0);
-		return $this->db->count_all_results();
 	}
 	
 	/*
@@ -240,10 +239,23 @@ class Employee extends Person
 	
 	}
 	
+	function get_found_rows($search)
+	{
+		$this->db->from('employees');
+		$this->db->join('people','employees.person_id=people.person_id');
+		$this->db->where("(first_name LIKE '%".$this->db->escape_like_str($search)."%' or
+		last_name LIKE '%".$this->db->escape_like_str($search)."%' or
+		email LIKE '%".$this->db->escape_like_str($search)."%' or
+		phone_number LIKE '%".$this->db->escape_like_str($search)."%' or
+		username LIKE '%".$this->db->escape_like_str($search)."%' or
+		CONCAT(`first_name`,' ',`last_name`) LIKE '%".$this->db->escape_like_str($search)."%') and deleted=0");
+		return $this->db->get()->num_rows();
+	}
+	
 	/*
 	Preform a search on employees
 	*/
-	function search($search)
+	function search($search, $rows = 0, $limit_from = 0)
 	{
 		$this->db->from('employees');
 		$this->db->join('people','employees.person_id=people.person_id');		
@@ -254,7 +266,9 @@ class Employee extends Person
 		username LIKE '%".$this->db->escape_like_str($search)."%' or 
 		CONCAT(`first_name`,' ',`last_name`) LIKE '%".$this->db->escape_like_str($search)."%') and deleted=0");		
 		$this->db->order_by("last_name", "asc");
-		
+		if ($rows > 0) {
+			$this->db->limit($rows, $limit_from);
+		}
 		return $this->db->get();	
 	}
 	

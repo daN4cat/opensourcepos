@@ -1,6 +1,9 @@
 <?php
 class Secure_area extends CI_Controller 
 {
+	
+	private $controller_name;
+	
 	/*
 	Controllers that are considered secure extend Secure_area, optionally a $module_id can
 	be set to also check if a user can access a particular module in the system.
@@ -30,8 +33,31 @@ class Secure_area extends CI_Controller
 		}
 		$data['user_info']=$logged_in_employee_info;
 		$data['controller_name']=$module_id;
+		$this->controller_name=$module_id;
 		$this->load->vars($data);
 	}
+	
+	function get_controller_name() {
+		return strtolower($this->controller_name);
+	}
+	
+	function _initialize_pagination($object, $lines_per_page, $limit_from = 0, $total_rows = -1)
+	{
+		$this->load->library('pagination');
+		$config['base_url'] = site_url($this->get_controller_name() . '/index/');
+		$config['total_rows'] = $total_rows > -1 ? $total_rows : call_user_func(array($object, 'get_total_rows'));
+		$config['per_page'] = $lines_per_page;
+		$config['num_links'] = 2;
+		$config['last_link'] = $this->lang->line('common_last_page');
+		$config['first_link'] = $this->lang->line('common_first_page');
+		// page is calculated here instead of in pagination lib
+		$config['cur_page'] = $limit_from > 0  ? $limit_from : 0;
+		$config['page_query_string'] = FALSE;
+		$config['uri_segment'] = 0;
+		$this->pagination->initialize($config);
+		return $this->pagination->create_links();
+	}
+	
 	
 	function _remove_duplicate_cookies ()
 	{

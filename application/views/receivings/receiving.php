@@ -48,7 +48,7 @@ if(isset($error))
 	</label>
 <?php echo form_input(array('name'=>'item','id'=>'item','size'=>'40'));?>
 <div id="new_item_button_register" >
-		<?php echo anchor("items/view/-1/width:360",
+		<?php echo anchor("items/view/-1/width:400",
 		"<div class='small_button'><span>".$this->lang->line('sales_new_item')."</span></div>",
 		array('class'=>'thickbox none','title'=>$this->lang->line('sales_new_item')));
 		?>
@@ -175,7 +175,7 @@ else
 	        	}
 			?>
 			</td>
-			<td colspan="5"></td>
+			<td colspan="6"></td>
 		</tr>
 		</form>
 	<?php
@@ -261,6 +261,22 @@ else
 		<?php echo form_textarea(array('name'=>'comment','id'=>'comment','value'=>$comment,'rows'=>'4','cols'=>'23'));?>
 		<br /><br />
 		<table width="100%">
+		<tr>
+			<td>
+				<?php echo $this->lang->line('recvs_print_after_sale'); ?>
+			</td>
+			<td>
+				<?php if ($print_after_sale)
+				{
+					echo form_checkbox(array('name'=>'recv_print_after_sale','id'=>'recv_print_after_sale','checked'=>'checked'));
+				}
+				else
+				{
+					echo form_checkbox(array('name'=>'recv_print_after_sale','id'=>'recv_print_after_sale'));
+				}
+				?>
+			</td>
+		</tr>
 		<?php if ($mode == "receive") 
 		{
 		?>
@@ -368,17 +384,15 @@ $(document).ready(function()
 		$.post('<?php echo site_url("receivings/set_invoice_number");?>', {recv_invoice_number: $('#recv_invoice_number').val()});
 	});
 
+	$("#recv_print_after_sale").change(function()
+	{
+		$.post('<?php echo site_url("receivings/set_print_after_sale");?>', {recv_print_after_sale: $(this).is(":checked")});
+	});
+
 	var enable_invoice_number = function() 
 	{
 		var enabled = $("#recv_invoice_enable").is(":checked");
-		if (enabled)
-		{
-			$("#recv_invoice_number").removeAttr("disabled").parents('tr').show();
-		}
-		else
-		{
-			$("#recv_invoice_number").attr("disabled", "disabled").parents('tr').hide();
-		}
+		$("#recv_invoice_number").prop("disabled", !enabled).parents('tr').show();
 		return enabled;
 	}
 

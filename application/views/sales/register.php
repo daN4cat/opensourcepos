@@ -1,3 +1,4 @@
+
 <?php $this->load->view("partial/header"); ?>
 <div id="page_title" style="margin-bottom: 8px;"><?php echo $this->lang->line('sales_register'); ?></div>
 <?php
@@ -24,6 +25,9 @@ if (isset($success))
 <span><?php echo $this->lang->line('sales_stock_location') ?></span>
 <?php echo form_dropdown('stock_location',$stock_locations,$stock_location,'onchange="$(\'#mode_form\').submit();"'); ?>
 <?php endif; ?>
+<div id="sales_overview" class="small_button"><a href="<?=site_url($controller_name . '/manage')?>">
+	<span><?php echo $this->lang->line('sales_overview'); ?><span></a>
+</div>
 <div id="show_suspended_sales_button">
 	<?php echo anchor("sales/suspended/width:425",
 	"<div class='small_button'><span style='font-size:73%;'>".$this->lang->line('sales_suspended_sales')."</span></div>",
@@ -299,6 +303,22 @@ else
 
 			<?php echo form_open("sales/add_payment",array('id'=>'add_payment_form')); ?>
 			<table width="100%">
+				<tr>
+					<td>
+						<?php echo $this->lang->line('sales_print_after_sale'); ?>
+					</td>
+					<td>
+						<?php if ($print_after_sale)
+						{
+							echo form_checkbox(array('name'=>'sales_print_after_sale','id'=>'sales_print_after_sale','checked'=>'checked'));
+						}
+						else
+						{
+							echo form_checkbox(array('name'=>'sales_print_after_sale','id'=>'sales_print_after_sale'));
+						}
+						?>
+					</td>
+				</tr>
 				<?php if ($mode == "sale") 
 				{
 				?>
@@ -309,11 +329,11 @@ else
 					<td>
 						<?php if ($invoice_number_enabled)
 						{
-							echo form_checkbox(array('name'=>'sales_invoice_enable','id'=>'sales_invoice_enable','size'=>10,'checked'=>'checked'));
+							echo form_checkbox(array('name'=>'sales_invoice_enable','id'=>'sales_invoice_enable','checked'=>'checked'));
 						}
 						else
 						{
-							echo form_checkbox(array('name'=>'sales_invoice_enable','id'=>'sales_invoice_enable','size'=>10));
+							echo form_checkbox(array('name'=>'sales_invoice_enable','id'=>'sales_invoice_enable'));
 						}
 						?>
 					</td>
@@ -472,18 +492,15 @@ $(document).ready(function()
 	var enable_invoice_number = function() 
 	{
 		var enabled = $("#sales_invoice_enable").is(":checked");
-		if (enabled)
-		{
-			$("#sales_invoice_number").removeAttr("disabled").parents('tr').show();
-		}
-		else
-		{
-			$("#sales_invoice_number").attr("disabled", "disabled").parents('tr').hide();
-		}
+		$("#sales_invoice_number").prop("disabled", !enabled).parents('tr').show();
 		return enabled;
 	}
 
 	enable_invoice_number();
+
+	$("#sales_print_after_sale").change(function() {
+		$.post('<?php echo site_url("sales/set_print_after_sale");?>', {sales_print_after_sale: $(this).is(":checked")});
+	});
 	
 	$("#sales_invoice_enable").change(function() {
 		var enabled = enable_invoice_number();
@@ -564,7 +581,8 @@ function check_payment_type_gifcard()
 	}
 	else
 	{
-		$("#amount_tendered_label").html("<?php echo $this->lang->line('sales_amount_tendered'); ?>");		
+		$("#amount_tendered_label").html("<?php echo $this->lang->line('sales_amount_tendered'); ?>");
+		$("#amount_tendered").val('<?php echo $amount_due; ?>');
 	}
 }
 

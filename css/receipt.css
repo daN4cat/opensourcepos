@@ -14,6 +14,12 @@
 	font-weight:bold;
 }
 
+#company_name img
+{
+	max-width: 150px;
+	max-height: 150px;
+}
+
 #company_phone
 {
 	margin-bottom:15px;
@@ -37,7 +43,8 @@
 #receipt_items td
 {
 	position:relative;
-	padding:3px;	
+	padding:3px;
+	margin-bottom:5px;	
 }
 
 .short_name
@@ -56,4 +63,9 @@
 {
 	margin-top:10px;
 	text-align:center;
+}
+
+.total-value 
+{
+	text-align: right;		
 }

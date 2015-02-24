@@ -7,28 +7,30 @@ class Customers extends Person_controller
 		parent::__construct('customers');
 	}
 	
-	function index()
+	function index($limit_from=0)
 	{
-		$config['base_url'] = site_url('/customers/index');
-		$config['total_rows'] = $this->Customer->count_all();
-		$config['per_page'] = '20';
-		$config['uri_segment'] = 3;
-		$this->pagination->initialize($config);
-		
-		$data['controller_name']=strtolower(get_class());
+		$data['controller_name']=$this->get_controller_name();
 		$data['form_width']=$this->get_form_width();
-		$data['manage_table']=get_people_manage_table( $this->Customer->get_all( $config['per_page'], $this->uri->segment( $config['uri_segment'] ) ), $this );
+		$lines_per_page = $this->Appconfig->get('lines_per_page');
+		$customers = $this->Customer->get_all($lines_per_page,$limit_from);
+		$data['links'] = $this->_initialize_pagination($this->Customer,$lines_per_page,$limit_from);
+		$data['manage_table']=get_people_manage_table($customers,$this);
 		$this->load->view('people/manage',$data);
 	}
 	
 	/*
-	Returns customer table data rows. This will be called with AJAX.
+	 Returns customer table data rows. This will be called with AJAX.
 	*/
 	function search()
 	{
-		$search=$this->input->post('search');
-		$data_rows=get_people_manage_table_data_rows($this->Customer->search($search),$this);
-		echo $data_rows;
+		$search = $this->input->post('search');
+		$limit_from = $this->input->post('limit_from');
+		$lines_per_page = $this->Appconfig->get('lines_per_page');
+		$customers = $this->Customer->search($search, $lines_per_page, $limit_from);
+		$total_rows = $this->Customer->get_found_rows($search);
+		$links = $this->_initialize_pagination($this->Customer,$lines_per_page, $limit_from, $total_rows);
+		$data_rows=get_people_manage_table_data_rows($customers,$this);
+		echo json_encode(array('total_rows' => $total_rows, 'rows' => $data_rows, 'pagination' => $links));
 	}
 	
 	/*
@@ -91,6 +93,12 @@ class Customers extends Person_controller
 			echo json_encode(array('success'=>false,'message'=>$this->lang->line('customers_error_adding_updating').' '.
 			$person_data['first_name'].' '.$person_data['last_name'],'person_id'=>-1));
 		}
+	}
+	
+	function check_account_number()
+	{
+		$exists = $this->Customer->account_number_exists($this->input->post('account_number'),$this->input->post('person_id'));
+		echo json_encode(array('success'=>!$exists,'message'=>$this->lang->line('customers_account_number_duplicate')));
 	}
 	
 	/*
@@ -159,11 +167,18 @@ class Customers extends Person_controller
 					);
 					
 					$customer_data=array(
-					'account_number'=>$data[12]=='' ? null:$data[12],
-					'taxable'=>$data[13]=='' ? 0:1,
+					'taxable'=>$data[13]=='' ? 0:1
 					);
 					
-					if(!$this->Customer->save($person_data,$customer_data))
+					$account_number = $data[12];
+					$invalidated = false;
+					if ($account_number != "") 
+					{
+						$customer_data['account_number'] = $account_number;
+						$invalidated = $this->Customer->account_number_exists($account_number);
+					}
+					
+					if($invalidated || !$this->Customer->save($person_data,$customer_data))
 					{	
 						$failCodes[] = $i;
 					}
@@ -179,7 +194,7 @@ class Customers extends Person_controller
 		}
 
 		$success = true;
-		if(count($failCodes) > 1)
+		if(count($failCodes) > 0)
 		{
 			$msg = "Most customers imported. But some were not, here is list of their CODE (" .count($failCodes) ."): ".implode(", ", $failCodes);
 			$success = false;

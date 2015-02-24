@@ -1,6 +1,6 @@
 <div id="page_title"><?php echo $this->lang->line('config_general_configuration'); ?></div>
 <?php
-echo form_open('config/save/',array('id'=>'config_form'));
+echo form_open('config/save/',array('id'=>'config_form','enctype'=>'multipart/form-data'));
 ?>
 <div id="config_wrapper">
 <fieldset id="config_info">
@@ -11,10 +11,18 @@ echo form_open('config/save/',array('id'=>'config_form'));
 <div class="field_row clearfix">	
 <?php echo form_label($this->lang->line('config_company').':', 'company',array('class'=>'wide required')); ?>
 	<div class='form_field'>
-	<?php echo form_input(array(
-		'name'=>'company',
-		'id'=>'company',
-		'value'=>$this->config->item('company')));?>
+		<?php echo form_input(array(
+			'name'=>'company',
+			'id'=>'company',
+			'value'=>$this->config->item('company')));?>
+		
+	</div>
+</div>
+
+<div class="field_row clearfix">	
+<?php echo form_label($this->lang->line('config_company_logo').':', 'company_logo',array('class'=>'wide')); ?>
+	<div class='form_field'>
+	    <?php echo form_upload('company_logo');?>
 	</div>
 </div>
 
@@ -301,17 +309,6 @@ echo form_open('config/save/',array('id'=>'config_form'));
 </div>
 
 <div class="field_row clearfix">	
-<?php echo form_label($this->lang->line('config_print_after_sale').':', 'print_after_sale',array('class'=>'wide')); ?>
-	<div class='form_field'>
-	<?php echo form_checkbox(array(
-		'name'=>'print_after_sale',
-		'id'=>'print_after_sale',
-		'value'=>'print_after_sale',
-		'checked'=>$this->config->item('print_after_sale')));?>
-	</div>
-</div>
-
-<div class="field_row clearfix">	
 <?php echo form_label($this->lang->line('config_receiving_calculate_average_price').':', 'receiving_calculate_average_price',array('class'=>'wide')); ?>
 	<div class='form_field'>
 	<?php echo form_checkbox(array(
@@ -319,6 +316,43 @@ echo form_open('config/save/',array('id'=>'config_form'));
 		'id'=>'receiving_calculate_average_price',
 		'value'=>'receiving_calculate_average_price',
 		'checked'=>$this->config->item('receiving_calculate_average_price')));?>
+	</div>
+</div>
+
+<div class="field_row clearfix">	
+<?php echo form_label($this->lang->line('config_tax_included').':', 'tax_included',array('class'=>'wide')); ?>
+	<div class='form_field'>
+	<?php echo form_checkbox(array(
+		'name'=>'tax_included',
+		'id'=>'tax_included',
+		'value'=>'tax_included',
+		'checked'=>$this->config->item('tax_included')));?>
+	</div>
+</div>
+
+<div class="field_row clearfix">	
+<?php echo form_label($this->lang->line('config_lines_per_page').':', 'lines_per_page',array('class'=>'wide required')); ?>
+	<div class='form_field'>
+	<?php echo form_input(array(
+		'name'=>'lines_per_page',
+		'id'=>'lines_per_page',
+		'type'=>'number',
+		'min'=>10,
+		'max'=>50,
+		'value'=>$this->config->item('lines_per_page')));?>
+	</div>
+</div>
+
+<div class="field_row clearfix">	
+<?php echo form_label($this->lang->line('config_default_sales_discount').':', 'default_sales_discount',array('class'=>'wide required')); ?>
+	<div class='form_field'>
+	<?php echo form_input(array(
+		'name'=>'default_sales_discount',
+		'id'=>'default_sales_discount',
+		'type'=>'number',
+		'min'=>0,
+		'max'=>100,
+		'value'=>$this->config->item('default_sales_discount')));?>
 	</div>
 </div>
 
@@ -432,8 +466,8 @@ echo form_open('config/save/',array('id'=>'config_form'));
 
 <?php 
 echo form_submit(array(
-	'name'=>'submit',
-	'id'=>'submit',
+	'name'=>'submit_form',
+	'id'=>'submit_form',
 	'value'=>$this->lang->line('common_submit'),
 	'class'=>'submit_button float_right')
 );
@@ -485,7 +519,17 @@ $(document).ready(function()
     			number:true
     		},
     		email:"email",
-    		return_policy: "required"    		
+    		return_policy: "required",
+    		lines_per_page:
+    		{
+        		required: true,
+        		number: true
+    		},
+    		default_sales_discount: 
+        	{
+        		required: true,
+        		number: true
+    		}  		
    		},
 		messages: 
 		{
@@ -498,8 +542,17 @@ $(document).ready(function()
     			number:"<?php echo $this->lang->line('config_default_tax_rate_number'); ?>"
     		},
      		email: "<?php echo $this->lang->line('common_email_invalid_format'); ?>",
-     		return_policy:"<?php echo $this->lang->line('config_return_policy_required'); ?>"
-	
+     		return_policy:"<?php echo $this->lang->line('config_return_policy_required'); ?>",
+     		default_sales_discount:
+         	{
+             	required: "<?php echo $this->lang->line('config_default_sales_discount_required'); ?>",
+             	number :"<?php echo $this->lang->line('config_default_sales_discount_number'); ?>"
+         	},
+     		lines_per_page: 
+         	{
+            	required: "<?php echo $this->lang->line('config_lines_per_page_required'); ?>",
+                number: "<?php echo $this->lang->line('config_lines_per_page_number'); ?>"
+            }
 		}
 	});
 });
