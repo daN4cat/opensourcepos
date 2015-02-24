@@ -59,7 +59,7 @@ $this->db->where('deleted',0);
 		}
 		if ($no_description!=0 )
 		{
-			$this->db->where('description','');
+			$this->db->where('items.description','');
 		}
 		return $this->db->get()->num_rows();
 	}
@@ -554,7 +554,7 @@ $this->db->where('deleted',0);
 		}
 		if ($no_description!=0 )
 		{
-			$this->db->where('description','');
+			$this->db->where('items.description','');
 		}
 		$this->db->order_by('items.name', "asc");
 		if ($rows > 0) {
