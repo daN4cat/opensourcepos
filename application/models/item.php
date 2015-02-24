@@ -28,14 +28,14 @@ class Item extends CI_Model
 	function get_total_rows()
 	{
 		$this->db->from('items');
-$this->db->where('deleted',0);
-
+		$this->db->where('deleted',0);
 		return $this->db->count_all_results();
 	}
 	
 	function get_found_rows($search,$stock_location_id=-1,$low_inventory=0,$is_serialized=0,$no_description,$is_deleted=0)
 	{
 		$this->db->from("items");
+		$this->db->join('items_sizes', 'item_size_id = id', 'left');
 		$this->db->join('items_categories','items_categories.id=items.item_category_id', 'left');
 		if ($stock_location_id > -1)
 		{
@@ -70,6 +70,7 @@ $this->db->where('deleted',0);
 	function get_all($stock_location_id=-1, $rows = 0, $limit_from = 0)
 	{
 		$this->db->from('items');
+		$this->db->join('items_sizes', 'item_size_id = id', 'left');
 		$this->db->join('items_categories','items_categories.id=items.item_category_id');
 		if ($stock_location_id > -1)
 		{
@@ -91,6 +92,7 @@ $this->db->where('deleted',0);
 	{
 		$this->db->from('items');
 		$this->db->where('item_id',$item_id);
+		$this->db->join('items_sizes', 'item_size_id = id', 'left');
 		$this->db->join('items_categories','items_categories.id=items.item_category_id');
 		
 		$query = $this->db->get();
@@ -528,10 +530,11 @@ $this->db->where('deleted',0);
 	function search($search,$stock_location_id=-1,$low_inventory=0,$is_serialized=0,$no_description=0,$deleted=0,$rows = 0,$limit_from = 0)
 	{
 		$this->db->from("items");
+		$this->db->join('items_sizes', 'item_size_id = id', 'left');
+		$this->db->join('items_categories','items_categories.id=items.item_category_id', 'left');
 		if ($stock_location_id > -1)
 		{
 			$this->db->join('item_quantities','item_quantities.item_id=items.item_id');
-			$this->db->join('items_categories','items_categories.id=items.item_category_id', 'left');
 			$this->db->where('location_id',$stock_location_id);
 		}
 		if (!empty($search))
