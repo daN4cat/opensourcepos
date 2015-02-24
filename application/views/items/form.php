@@ -30,7 +30,7 @@ echo form_open('items/save/'.$item_info->item_id,array('id'=>'item_form', 'encty
 </div>
 
 <div class="field_row clearfix">
-<?php echo form_label($this->lang->line('items_category').':', 'item_category',array('class'=>'required wide')); ?>
+<?php echo form_label($this->lang->line('items_category').':', 'item_category_id',array('class'=>'required wide')); ?>
 	<div class='form_field'>
 	<?php echo form_dropdown('item_category_id',$item_categories,$selected_item_category_id, 'id="item_category_id"');?>
 	</div>

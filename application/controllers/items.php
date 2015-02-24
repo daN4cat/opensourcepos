@@ -316,6 +316,15 @@ class Items extends Secure_area implements iData_controller
 			$suppliers[$row['person_id']] = $row['first_name'] .' '. $row['last_name'];
 		}
 		$data['suppliers'] = $suppliers;
+		// fetch item categories
+		$item_categories = array('' => $this->lang->line('items_none'));
+		foreach($this->Item_category->get_all()->result_array() as $row) {
+			$item_categories[$row['id']] = $row['description'];
+		}
+		$data['item_categories']=$item_categories;
+		// fetch item sizes
+		$data['item_sizes']=array('' => $this->lang->line('items_none'));
+		
 		$data['allow_alt_description_choices'] = array(
 			''=>$this->lang->line('items_do_nothing'), 
 			1 =>$this->lang->line('items_change_all_to_allow_alt_desc'),
@@ -345,8 +354,8 @@ class Items extends Secure_area implements iData_controller
 		'allow_alt_description'=>$this->input->post('allow_alt_description'),
 		'is_serialized'=>$this->input->post('is_serialized'),
 		'deleted'=>$this->input->post('is_deleted'),  /** Parq 131215 **/
-		'item_category_id'=>$this->input->post('item_category_id'),
-		'item_size_id'=>$this->input->post('item_size_id'),
+		'item_category_id'=>$this->input->post('item_category_id')=='' ? null:$this->input->post('item_category_id'),
+		'item_size_id'=>$this->input->post('item_size_id')=='' ? null:$this->input->post('item_size_id'),
 		'custom1'=>$this->input->post('custom1'),	/**GARRISON ADDED 4/21/2013**/			
 		'custom2'=>$this->input->post('custom2'),/**GARRISON ADDED 4/21/2013**/
 		'custom3'=>$this->input->post('custom3'),/**GARRISON ADDED 4/21/2013**/
@@ -445,14 +454,6 @@ class Items extends Secure_area implements iData_controller
 	{
 		$exists = $this->Item->item_number_exists($this->input->post('item_number'),$this->input->post('item_id'));
 		echo json_encode(array('success'=>!$exists,'message'=>$this->lang->line('items_item_number_duplicate')));
-	}
-	
-	function category_check($category)
-	{
-		if ($this->Category->exists($category))
-		{
-			
-		}
 	}
 	
 	function _handle_image_upload()
