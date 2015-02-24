@@ -70,12 +70,13 @@ $this->db->where('deleted',0);
 	function get_all($stock_location_id=-1, $rows = 0, $limit_from = 0)
 	{
 		$this->db->from('items');
+		$this->db->join('items_categories','items_categories.id=items.item_category_id');
 		if ($stock_location_id > -1)
 		{
 			$this->db->join('item_quantities','item_quantities.item_id=items.item_id');
 			$this->db->where('location_id',$stock_location_id);
 		}
-		$this->db->where('deleted',0);
+		$this->db->where('items.deleted',0);
 		$this->db->order_by("name","asc");
 		if ($rows > 0) {
 			$this->db->limit($rows, $limit_from);
