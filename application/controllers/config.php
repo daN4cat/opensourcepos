@@ -10,8 +10,8 @@ class Config extends Secure_area
 	
 	function index()
 	{
-		$location_names = array();
 		$data['stock_locations'] = $this->Stock_locations->get_all()->result_array();
+		$data['item_units'] = $this->Item_units->get_all()->result_array();
 		$data['support_barcode'] = $this->barcode_lib->get_list_barcodes();
 		$this->load->view("configs/manage", $data);
 		$this->_remove_duplicate_cookies();
@@ -77,6 +77,12 @@ class Config extends Secure_area
 		$this->load->view('partial/stock_locations', array('stock_locations' => $stock_locations));
 	} 
 	
+	function item_units()
+	{
+		$item_units = $this->Item_units->get_undeleted_all()->result_array();
+		$this->load->view('partial/item_units', array('item_units' => $item_units));
+	}
+	
 	function _clear_session_state()
 	{
 		$this->load->library('sale_lib');
@@ -86,6 +92,41 @@ class Config extends Secure_area
 		$this->receiving_lib->clear_stock_source();
 		$this->receiving_lib->clear_stock_destination();
 		$this->receiving_lib->clear_all();
+	}
+	
+	function save_units()
+	{
+		$this->db->trans_start();
+	
+		$deleted_units = $this->Item_units->get_undeleted_all()->result_array();
+		foreach($this->input->post() as $key => $value)
+		{
+			if (strstr($key, 'item_unit'))
+			{
+				$unit_id = preg_replace("/.*?_(\d+)$/", "$1", $key);
+				foreach($deleted_units as $unit => $unit_data) 
+				{
+					if ($unit_id == $unit_data['unit_id'])
+					{
+						unset($deleted_units[$unit]);
+					}
+				}
+				// save or update
+				$unit_data = array('unit_name' => $value, 'deleted' => 0);
+				if ($this->Item_units->save($unit_data, $unit_id))
+				{
+					$this->_clear_session_state();
+				}
+			}
+		}
+		// all locations not available in post will be deleted now
+		foreach ($deleted_units as $unit => $unit_data)
+		{
+			$this->Item_units->delete($unit_data['unit_id']);
+		}
+		$success = $this->db->trans_complete();
+		echo json_encode(array('success'=>$success,'message'=>$this->lang->line('config_saved_' . ($success ? '' : 'un') . 'successfully')));
+		$this->_remove_duplicate_cookies();
 	}
 	
 	function save_locations() 

@@ -10,11 +10,9 @@ class Stock_locations extends CI_Model
         return ($query->num_rows()>=1);
     }
     
-    function get_all($limit=10000, $offset=0)
+    function get_all()
     {
         $this->db->from('stock_locations');
-        $this->db->limit($limit);
-        $this->db->offset($offset);
         return $this->db->get();
     }
     
