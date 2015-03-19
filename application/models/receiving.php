@@ -212,7 +212,8 @@ class Receiving extends CI_Model
 	public function create_receivings_items_temp_table()
 	{
 		$this->db->query("CREATE TEMPORARY TABLE ".$this->db->dbprefix('receivings_items_temp')."
-		(SELECT date(receiving_time) as receiving_date, ".$this->db->dbprefix('receivings_items').".receiving_id, comment, invoice_number, payment_type, employee_id, 
+		(SELECT date(receiving_time) as receiving_date, ".$this->db->dbprefix('receivings_items').".receiving_id, comment, invoice_number, payment_type, employee_id,
+		".$this->db->dbprefix('items_categories').".description AS category, 
 		".$this->db->dbprefix('items').".item_id, ".$this->db->dbprefix('receivings').".supplier_id, quantity_purchased, item_cost_price, item_unit_price,
 		discount_percent, (item_unit_price*quantity_purchased-item_unit_price*quantity_purchased*discount_percent/100) as subtotal,
 		".$this->db->dbprefix('receivings_items').".line as line, serialnumber, ".$this->db->dbprefix('receivings_items').".description as description,
@@ -221,6 +222,7 @@ class Receiving extends CI_Model
 		FROM ".$this->db->dbprefix('receivings_items')."
 		INNER JOIN ".$this->db->dbprefix('receivings')." ON  ".$this->db->dbprefix('receivings_items').'.receiving_id='.$this->db->dbprefix('receivings').'.receiving_id'."
 		INNER JOIN ".$this->db->dbprefix('items')." ON  ".$this->db->dbprefix('receivings_items').'.item_id='.$this->db->dbprefix('items').'.item_id'."
+		LEFT OUTER JOIN ".$this->db->dbprefix('items_categories')." ON ". $this->db->dbprefix('items_categories').'.id='.$this->db->dbprefix('items').'.item_category_id'."
 		GROUP BY receiving_id, item_id, line)");
 	}
    

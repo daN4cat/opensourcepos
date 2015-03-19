@@ -14,7 +14,12 @@ class Item_units extends CI_Model
     {
     	$this->db->from('item_units');
     	$this->db->where('deleted', 0);
-    	return $this->db->get();
+    	$item_units = array();
+    	foreach($this->db->get()->result_array() as $unit => $unit_data)
+    	{
+    		$item_units[$unit_data['unit_id']] = $unit_data;
+    	}
+    	return $item_units;
     }
     
     function get_all()

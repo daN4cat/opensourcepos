@@ -1,6 +1,5 @@
 <?php $i = 0; ?>
-<?php foreach($item_units as $unit => $unit_data ) { ?>
-<?php $unit_id = $unit_data['unit_id']; ?>
+<?php foreach($item_units as $unit_id => $unit_data ) { ?>
 <?php $unit_name = $unit_data['unit_name']; ?>
 <div class="field_row clearfix" style="<?php echo $unit_data['deleted'] ? 'display:none;' : 'display:block;' ?>">    
 <?php echo form_label($this->lang->line('config_item_unit').' ' .++$i. ':', 'item_unit_'.$i ,array('class'=>'required wide')); ?>

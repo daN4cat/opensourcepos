@@ -5,7 +5,7 @@ function get_sales_manage_table($sales,$controller)
 	$CI =& get_instance();
 	$table='<table class="tablesorter" id="sortable_table">';
 
-	$headers = array('&nbsp;',
+	$headers = array('&nbsp;',	
 	$CI->lang->line('sales_sale_time'),
 	$CI->lang->line('customers_customer'),
 	$CI->lang->line('sales_amount_tendered'),
@@ -229,11 +229,12 @@ function get_items_manage_table($items,$controller)
 	$headers = array('<input type="checkbox" id="select_all" />', 
 	$CI->lang->line('items_item_number'),
 	$CI->lang->line('items_name'),
+	$CI->lang->line('items_size'),
 	$CI->lang->line('items_category'),
 	$CI->lang->line('items_cost_price'),
 	$CI->lang->line('items_unit_price'),
 	$CI->lang->line('items_quantity'),
-	$CI->lang->line('items_tax_percents'),
+	//$CI->lang->line('items_tax_percents'),
 	'&nbsp;',
 	'&nbsp;',
 	'&nbsp;'	
@@ -274,13 +275,13 @@ function get_items_manage_table_data_rows($items,$controller)
 function get_item_data_row($item,$controller)
 {
 	$CI =& get_instance();
-	$item_tax_info=$CI->Item_taxes->get_info($item->item_id);
+	/*$item_tax_info=$CI->Item_taxes->get_info($item->item_id);
 	$tax_percents = '';
 	foreach($item_tax_info as $tax_info)
 	{
 		$tax_percents.=$tax_info['percent']. '%, ';
 	}
-	$tax_percents=substr($tax_percents, 0, -2);
+	$tax_percents=substr($tax_percents, 0, -2);*/
 	$controller_name=strtolower(get_class($CI));
 	$width = $controller->get_form_width();
 
@@ -290,11 +291,12 @@ function get_item_data_row($item,$controller)
 	$table_data_row.="<td width='3%'><input type='checkbox' id='item_$item->item_id' value='".$item->item_id."'/></td>";
 	$table_data_row.='<td width="15%">'.$item->item_number.'</td>';
 	$table_data_row.='<td width="20%">'.$item->name.'</td>';
-	$table_data_row.='<td width="14%">'.$item->category.'</td>';
+	$table_data_row.='<td width="14%">'.$item->size.'</td>';
+	$table_data_row.='<td width="14%">'.$item->description.'</td>';
 	$table_data_row.='<td width="14%">'.to_currency($item->cost_price).'</td>';
 	$table_data_row.='<td width="14%">'.to_currency($item->unit_price).'</td>';
     $table_data_row.='<td width="14%">'.$item->quantity.'</td>';
-	$table_data_row.='<td width="14%">'.$tax_percents.'</td>';
+	//$table_data_row.='<td width="14%">'.$tax_percents.'</td>';
 	$image = '';
 	if (!empty($item->pic_id))
 	{

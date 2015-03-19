@@ -79,7 +79,7 @@ class Config extends Secure_area
 	
 	function item_units()
 	{
-		$item_units = $this->Item_units->get_undeleted_all()->result_array();
+		$item_units = $this->Item_units->get_undeleted_all();
 		$this->load->view('partial/item_units', array('item_units' => $item_units));
 	}
 	
@@ -98,19 +98,13 @@ class Config extends Secure_area
 	{
 		$this->db->trans_start();
 	
-		$deleted_units = $this->Item_units->get_undeleted_all()->result_array();
+		$deleted_units = $this->Item_units->get_undeleted_all();
 		foreach($this->input->post() as $key => $value)
 		{
 			if (strstr($key, 'item_unit'))
 			{
 				$unit_id = preg_replace("/.*?_(\d+)$/", "$1", $key);
-				foreach($deleted_units as $unit => $unit_data) 
-				{
-					if ($unit_id == $unit_data['unit_id'])
-					{
-						unset($deleted_units[$unit]);
-					}
-				}
+				unset($deleted_units[$unit_id]);
 				// save or update
 				$unit_data = array('unit_name' => $value, 'deleted' => 0);
 				if ($this->Item_units->save($unit_data, $unit_id))
@@ -120,9 +114,9 @@ class Config extends Secure_area
 			}
 		}
 		// all locations not available in post will be deleted now
-		foreach ($deleted_units as $unit => $unit_data)
+		foreach ($deleted_units as $unit_id => $unit_data)
 		{
-			$this->Item_units->delete($unit_data['unit_id']);
+			$this->Item_units->delete($unit_id);
 		}
 		$success = $this->db->trans_complete();
 		echo json_encode(array('success'=>$success,'message'=>$this->lang->line('config_saved_' . ($success ? '' : 'un') . 'successfully')));

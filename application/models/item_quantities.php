@@ -1,19 +1,20 @@
 <?php
 class Item_quantities extends CI_Model
 {
-    function exists($item_id,$location_id)
+    function exists($item_id,$location_id,$unit_id)
     {
         $this->db->from('item_quantities');
         $this->db->where('item_id',$item_id);
         $this->db->where('location_id',$location_id);
+        $this->db->where('unit_id',$unit_id);
         $query = $this->db->get();
 
         return ($query->num_rows()==1);
     }
     
-    function save($location_detail, $item_id, $location_id)
+    function save($location_detail, $item_id, $location_id, $unit_id)
     {
-        if (!$this->exists($item_id,$location_id))
+        if (!$this->exists($item_id,$location_id, $unit_id))
         {
             if($this->db->insert('item_quantities',$location_detail))
             {
@@ -24,14 +25,24 @@ class Item_quantities extends CI_Model
 
         $this->db->where('item_id', $item_id);
         $this->db->where('location_id', $location_id);
+        $this->db->where('location_id', $unit_id);
         return $this->db->update('item_quantities',$location_detail);
     }
     
-    function get_item_quantity($item_id, $location_id)
+    function get_item_quantities($item_id, $location_id)
+    {
+    	$this->db->from('item_quantities');
+    	$this->db->where('item_id',$item_id);
+    	$this->db->where('location_id',$location_id);
+    	return $this->db->get()->result_array();
+    }
+    
+    function get_item_quantity($item_id, $location_id, $unit_id)
     {     
         $this->db->from('item_quantities');
         $this->db->where('item_id',$item_id);
         $this->db->where('location_id',$location_id);
+	    $this->db->where('unit_id',$unit_id);
         $result = $this->db->get()->row();
         if(empty($result) == true)
         {
@@ -53,14 +64,15 @@ class Item_quantities extends CI_Model
 	 * if $quantity_change is negative, it will be subtracted,
 	 * if it is positive, it will be added to the current quantity
 	 */
-	function change_quantity($item_id, $location_id, $quantity_change)
+	function change_quantity($item_id, $location_id, $unit_id, $quantity_change)
 	{
-		$quantity_old = $this->get_item_quantity($item_id, $location_id);
+		$quantity_old = $this->get_item_quantity($item_id, $location_id, $unit_id);
 		$quantity_new = $quantity_old->quantity + intval($quantity_change);
 		$location_detail = array('item_id'=>$item_id,
 									'location_id'=>$location_id,
+									'unit_id'=>$unit_id,				
 									'quantity'=>$quantity_new);
-		return $this->save($location_detail,$item_id,$location_id);
+		return $this->save($location_detail,$item_id,$location_id,$unit_id);
 	}
 }
 ?>

@@ -26,6 +26,21 @@ echo form_open('items/bulk_update/',array('id'=>'item_form'));
 	</div>
 </div>
 
+<div class="field_row clearfix">
+<?php echo form_label($this->lang->line('items_category').':', 'item_category_id',array('class'=>'wide')); ?>
+	<div class='form_field'>
+	<?php echo form_dropdown('item_category_id', $item_categories, '', 'id="item_category_id"');?>
+	</div>
+</div>
+
+<div class="field_row clearfix">
+<?php echo form_label( $this->lang->line('items_size') . ':', 'size',array('class'=>'wide')); ?>
+	<div class='form_field'>
+	<?php echo form_dropdown('item_size_id', $item_sizes, '', 'id="item_size_id"');?>
+	</div>
+</div>
+
+
 <div class="field_row clearfix">	
 <?php echo form_label($this->lang->line('items_supplier').':', 'supplier',array('class'=>'wide')); ?>
 	<div class='form_field'>
@@ -157,11 +172,17 @@ echo form_close();
 //validation and submit handling
 $(document).ready(function()
 {	
-	$("#category").autocomplete("<?php echo site_url('items/suggest_category');?>",{max:100,minChars:0,delay:10});
-    $("#category").result(function(event, data, formatted)
-    {
-    });
-	$("#category").search();
+	$("#item_category_id").change(function() 
+	{
+	    $.post("<?php echo site_url('items/get_sizes_by_category');?>", { "id": $(this).val() },
+		    function(data) {
+		        $("select#item_size_id").empty();
+				 for(var item in data) {
+				     $(new Option(data[item], item)).appendTo('select#item_size_id');
+				 }
+			 }
+		, "json");
+	});
 	
 	$('#item_form').validate({
 		submitHandler:function(form)
@@ -194,6 +215,10 @@ $(document).ready(function()
 			unit_price:
 			{
 				number:true
+			},
+			item_size_id: function() 
+			{
+		        return $("#item_category_id").val(); 				
 			},
 			tax_percent:
 			{
