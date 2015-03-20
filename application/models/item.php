@@ -35,8 +35,8 @@ class Item extends CI_Model
 	function get_found_rows($search,$stock_location_id=-1,$low_inventory=0,$is_serialized=0,$no_description=0,$search_custom=0,$is_deleted=0)
 	{
 		$this->db->from("items");
-		$this->db->join('items_sizes', 'item_size_id = id', 'left');
-		$this->db->join('items_categories','items_categories.id=items.item_category_id', 'left');
+		$this->db->join('items_sizes', 'items_sizes.size_id = items.size_id', 'left');
+		$this->db->join('items_categories','items_categories.category_id=items.category_id', 'left');
 		if ($stock_location_id > -1)
 		{
 			$this->db->join('item_quantities','item_quantities.item_id=items.item_id');
@@ -49,7 +49,7 @@ class Item extends CI_Model
 				$this->db->where("(name LIKE '%" . $search . "%' OR " .
 					"item_number LIKE '" . $search . "%' OR " .
 					$this->db->dbprefix('items').".item_id LIKE '" . $search . "%' OR " .
-				$this->db->dbprefix('items_categories').".description LIKE '%" . $search . "%')");
+				$this->db->dbprefix('items_categories').".name LIKE '%" . $search . "%')");
 			}
 			else
 			{
@@ -76,7 +76,7 @@ class Item extends CI_Model
 		}
 		if ($no_description!=0 )
 		{
-			$this->db->where('items.description','');
+			$this->db->where('description','');
 		}
 		return $this->db->get()->num_rows();
 	}
@@ -87,15 +87,15 @@ class Item extends CI_Model
 	function get_all($stock_location_id=-1, $rows = 0, $limit_from = 0)
 	{
 		$this->db->from('items');
-		$this->db->join('items_sizes', 'item_size_id = id', 'left');
-		$this->db->join('items_categories','items_categories.id=items.item_category_id');
+		$this->db->join('items_sizes', 'items_sizes.size_id = items.size_id', 'left');
+		$this->db->join('items_categories','items_categories.category_id=items.category_id');
 		if ($stock_location_id > -1)
 		{
 			$this->db->join('item_quantities','item_quantities.item_id=items.item_id');
 			$this->db->where('location_id',$stock_location_id);
 		}
 		$this->db->where('items.deleted',0);
-		$this->db->order_by("name","asc");
+		$this->db->order_by("items.name","asc");
 		if ($rows > 0) {
 			$this->db->limit($rows, $limit_from);
 		}
@@ -109,8 +109,8 @@ class Item extends CI_Model
 	{
 		$this->db->from('items');
 		$this->db->where('item_id',$item_id);
-		$this->db->join('items_sizes', 'item_size_id = id', 'left');
-		$this->db->join('items_categories','items_categories.id=items.item_category_id');
+		$this->db->join('items_sizes', 'items_sizes.size_id = items.size_id', 'left');
+		$this->db->join('items_categories','items_categories.category_id=items.category_id');
 		
 		$query = $this->db->get();
 
@@ -228,13 +228,12 @@ class Item extends CI_Model
 			$suggestions[]=$row->name;
 		}
 
-		$this->db->select('items_categories.description');
 		$this->db->from('items');
-		$this->db->join('items_categories','items_categories.id=items.item_category_id', 'left');
+		$this->db->join('items_categories','items_categoried.category_id=items.category_id', 'left');
 		$this->db->where('items.deleted',0);
 		$this->db->distinct();
-		$this->db->like('items_categories.description', $search);
-		$this->db->order_by("items_categories.description", "asc");
+		$this->db->like('items_categories.name', $search);
+		$this->db->order_by('items_categories.name', 'asc');
 		$by_category = $this->db->get();
 		foreach($by_category->result() as $row)
 		{
@@ -546,8 +545,8 @@ class Item extends CI_Model
 	function search($search,$stock_location_id=-1,$low_inventory=0,$is_serialized=0,$no_description=0,$search_custom=0,$deleted=0,$rows = 0,$limit_from = 0)
 	{
 		$this->db->from("items");
-		$this->db->join('items_sizes', 'item_size_id = id', 'left');
-		$this->db->join('items_categories','items_categories.id=items.item_category_id', 'left');
+		$this->db->join('items_sizes', 'items_sizes.size_id = items.size_id', 'left');
+		$this->db->join('items_categories','items_categories.category_id=items.category_id', 'left');
 		if ($stock_location_id > -1)
 		{
 			$this->db->join('item_quantities','item_quantities.item_id=items.item_id');
@@ -560,7 +559,7 @@ class Item extends CI_Model
 				$this->db->where("(name LIKE '%" . $search . "%' OR " .
 					"item_number LIKE '" . $search . "%' OR " .
 					$this->db->dbprefix('items').".item_id LIKE '" . $search . "%' OR " .
-					$this->db->dbprefix('items_categories').".description LIKE '%" . $search . "%')");
+					$this->db->dbprefix('items_categories').".name LIKE '%" . $search . "%')");
 			}
 			else
 			{
@@ -587,23 +586,12 @@ class Item extends CI_Model
 		}
 		if ($no_description!=0 )
 		{
-			$this->db->where('items.description','');
+			$this->db->where('description','');
 		}
 		$this->db->order_by('items.name', "asc");
 		if ($rows > 0) {
 			$this->db->limit($rows, $limit_from);
 		}
-		return $this->db->get();
-	}
-
-	function get_categories()
-	{
-		$this->db->select('category');
-		$this->db->from('items');
-		$this->db->where('deleted',0);
-		$this->db->distinct();
-		$this->db->order_by("category", "asc");
-
 		return $this->db->get();
 	}
 	

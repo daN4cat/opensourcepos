@@ -35,6 +35,21 @@ class Item_units extends CI_Model
     	return $this->db->get()->row()->unit_name;
     }
     
+    function get_units_by_category_id($category_id)
+    {
+    	$this->db->from('item_units');
+    	if ($category_id == 0)
+    	{
+			$this->db->where('unit_id', 1);
+    	}
+    	else 
+    	{
+	    	$this->db->join('items_units_categories', 'items_units_categories.unit_id=item_units.unit_id');
+	    	$this->db->where('category_id', $category_id);
+    	}
+    	return $this->db->get()->result_array();
+    }
+    
     function save(&$unit_data,$unit_id) 
     {
     	if (!$this->exists($unit_id))

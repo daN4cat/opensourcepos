@@ -25,7 +25,7 @@ class Item_quantities extends CI_Model
 
         $this->db->where('item_id', $item_id);
         $this->db->where('location_id', $location_id);
-        $this->db->where('location_id', $unit_id);
+        $this->db->where('unit_id', $unit_id);
         return $this->db->update('item_quantities',$location_detail);
     }
     

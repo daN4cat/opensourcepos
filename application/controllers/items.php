@@ -35,8 +35,8 @@ class Items extends Secure_area implements iData_controller
 	
 	function get_sizes_by_category() {
 		$item_sizes[""] = $this->lang->line('items_none');
-		foreach($this->Item_sizes->get_sizes_by_category_id($this->input->post('id')) as $row) {
-			$item_sizes[$row['id']] = $row['size'];
+		foreach($this->Item_sizes->get_sizes_by_category_id($this->input->post('category_id')) as $row) {
+			$item_sizes[$row['size_id']] = $row['name'];
 		}
 		echo json_encode($item_sizes);
 	}
@@ -233,48 +233,48 @@ class Items extends Secure_area implements iData_controller
 		}
 
 		$data['suppliers']=$suppliers;
-		$data['selected_supplier'] = $this->Item->get_info($item_id)->supplier_id;
+		$data['selected_supplier_id'] = $this->Item->get_info($item_id)->supplier_id;
 		$data['default_tax_1_rate']=($item_id==-1) ? $this->Appconfig->get('default_tax_1_rate') : '';
 		$data['default_tax_2_rate']=($item_id==-1) ? $this->Appconfig->get('default_tax_2_rate') : '';
 		
 		$item_categories = array('' => $this->lang->line('items_none'));
 		foreach($this->Item_category->get_all()->result_array() as $row) {
-			$item_categories[$row['id']] = $row['description'];
+			$item_categories[$row['category_id']] = $row['category'];
 		}
 		
 		$data['item_categories']=$item_categories; 
-		$data['selected_item_category_id']=$data['item_info']->item_category_id;
+		$data['selected_category_id']=$data['item_info']->category_id;
 		
 		$item_sizes = array('' => $this->lang->line('items_none'));
-		foreach($this->Item_sizes->get_sizes_by_category_id($data['selected_item_category_id']) as $row) {
-			$item_sizes[$row['id']] = $row['size'];
+		foreach($this->Item_sizes->get_sizes_by_category_id($data['selected_category_id']) as $row) {
+			$item_sizes[$row['size_id']] = $row['size'];
 		}
 		$data['item_sizes']=$item_sizes;
-		$data['selected_item_size']=$data['item_info']->item_size_id;
+		$data['selected_size_id']=$data['item_info']->size_id;
         
+		$item_units = array();
+		foreach($this->Item_units->get_units_by_category_id($data['selected_category_id']) as $item_unit)
+		{
+			$item_units['unit_id'] = $item_unit['unit_name'];
+		}
+		$data['item_units'] = $item_units;
+		
         $stock_locations = $this->Stock_locations->get_undeleted_all()->result_array();
         foreach($stock_locations as $stock_location)
         {
         	$location_array[$stock_location['location_id']] =  array('location_name'=>$stock_location['location_name'], 'quantity' => null, 'unit_name' => null);
-        	$item_quantities = $this->Item_quantities->get_item_quantities($item_id,$stock_location['location_id']);
-        	foreach($item_quantities as $item_quantity)
+        	foreach($item_units as $unit_id)
         	{
+	        	$item_quantity = (array) $this->Item_quantities->get_item_quantity($item_id,$stock_location['location_id'],$unit_id);
         		$merged_array = array_replace_recursive($location_array[$stock_location['location_id']], 
         			array('quantity'=>$item_quantity['quantity'],
         				'unit_name'=>$item_unit['unit_name'],
-        				'initial_quantity'=>$item_quantity['initial_quantity'],
         				'margin'=>$item_quantity['margin']));
         		$location_array[$stock_location['location_id']] = $merged_array;
         	}
         	$data['stock_locations']= $location_array;
         }
         
-        $item_units = array();
-        foreach($this->Item_units->get_undeleted_all() as $item_unit)
-        {
-        	$item_units['unit_id'] = $item_unit['unit_name'];
-        }
-        $data['item_units'] = $item_units;
 		$this->load->view("items/form",$data);
 	}
 
@@ -286,11 +286,18 @@ class Items extends Secure_area implements iData_controller
         
         $data['stock_locations'] = array();
         $stock_locations = $this->Stock_locations->get_undeleted_all()->result_array();          
-        foreach($stock_locations as $location_data)
-        {            
-            $data['stock_locations'][$location_data['location_id']] = $location_data['location_name'];
-            $data['item_quantities'][$location_data['location_id']] = $this->Item_quantities->get_item_quantity($item_id,$location_data['location_id'])->quantity;
-        }     
+        $data['item_units'] = array();
+        $item_units = $this->Item_sizes->get_sizes_by_category_id($data['category_id'])->result_array();
+        
+        foreach($item_units as $item_unit)
+        {
+	        foreach($stock_locations as $location_data)
+	        {            
+	            $data['stock_locations'][$location_data['location_id']] = $location_data['location_name'];
+	            $data['item_quantities'][$location_data['location_id']] = $this->Item_quantities->get_item_quantity($item_id,$location_data['location_id'],$unit_id)->quantity;
+	            $data['item_units'][$location_data['location_id']] = $item_unit['unit_name'];
+	        }     
+        }
         
 		$this->load->view("items/inventory",$data);
 	}
@@ -300,11 +307,18 @@ class Items extends Secure_area implements iData_controller
 		$data['item_info']=$this->Item->get_info($item_id);
         
         $data['stock_locations'] = array();
-        $stock_locations = $this->Stock_locations->get_undeleted_all()->result_array();   
-        foreach($stock_locations as $location_data)
-        {            
-            $data['stock_locations'][$location_data['location_id']] = $location_data['location_name'];
-            $data['item_quantities'][$location_data['location_id']] = $this->Item_quantities->get_item_quantity($item_id,$location_data['location_id'])->quantity;
+        $stock_locations = $this->Stock_locations->get_undeleted_all()->result_array();
+        $data['item_units'] = array();
+        $item_units = $this->Item_sizes->get_sizes_by_category_id($data['category_id'])->result_array();
+		
+       	foreach($item_units as $item_unit)
+       	{
+	        foreach($stock_locations as $location_data)
+	        {       
+	        	$data['stock_locations'][$location_data['location_id']] = $location_data['location_name'];
+	        	$data['item_quantities'][$location_data['location_id']] = $this->Item_quantities->get_item_quantity($item_id,$location_data['location_id'],$item_unit)->quantity;
+        		$data['item_units'][$location_data['location_id']] = $item_unit['unit_name'];
+        	}	
         }     
                 
 		$this->load->view("items/count_details",$data);
@@ -370,8 +384,8 @@ class Items extends Secure_area implements iData_controller
 		'allow_alt_description'=>$this->input->post('allow_alt_description'),
 		'is_serialized'=>$this->input->post('is_serialized'),
 		'deleted'=>$this->input->post('is_deleted'),  /** Parq 131215 **/
-		'item_category_id'=>$this->input->post('item_category_id')=='' ? null:$this->input->post('item_category_id'),
-		'item_size_id'=>$this->input->post('item_size_id')=='' ? null:$this->input->post('item_size_id'),
+		'category_id'=>$this->input->post('category_id')=='' ? null:$this->input->post('category_id'),
+		'size_id'=>$this->input->post('size_id')=='' ? null:$this->input->post('size_id'),
 		'custom1'=>$this->input->post('custom1'),	/**GARRISON ADDED 4/21/2013**/			
 		'custom2'=>$this->input->post('custom2'),/**GARRISON ADDED 4/21/2013**/
 		'custom3'=>$this->input->post('custom3'),/**GARRISON ADDED 4/21/2013**/
@@ -415,33 +429,37 @@ class Items extends Secure_area implements iData_controller
 			}
 			$success &= $this->Item_taxes->save($items_taxes_data, $item_id);
 
-            
             //Save item quantity
+            $item_units = $this->Item_units->get_units_by_category_id($this->input->post('category_id'));
             $stock_locations = $this->Stock_locations->get_undeleted_all()->result_array();          
-            foreach($stock_locations as $location_data)
-            {
-                $updated_quantity = $this->input->post($location_data['location_id'].'_quantity');
-                $updated_unit_id = $this->input->post($location_data['location_id'].'_unit_id');
-                $location_detail = array('item_id'=>$item_id,
-                                        'location_id'=>$location_data['location_id'],
-                						'unit_id'=>$updated_unit_id,
-                                        'quantity'=>$updated_quantity);  
-                	$item_quantity = (object) $item_quantity;
-	                if ($item_quantity->quantity != $updated_quantity || $new_item) 
-	                {              
-		                $success &= $this->Item_quantities->save($location_detail, $item_id, $location_data['location_id']);
-		                
-		                $inv_data = array
-		                (
-		                    'trans_date'=>date('Y-m-d H:i:s'),
-		                    'trans_items'=>$item_id,
-		                    'trans_user'=>$employee_id,
-		                    'trans_location'=>$location_data['location_id'],
-		                    'trans_comment'=>$this->lang->line('items_manually_editing_of_quantity'),
-		                    'trans_inventory'=>$updated_quantity - $item_quantity->quantity
-		                );
-		                $success &= $this->Inventory->insert($inv_data);       
-	                }                                            
+           	foreach($item_units as $unit_id)
+           	{
+	            foreach($stock_locations as $location_data)
+    	        {
+            		$updated_quantity = $this->input->post($location_data['location_id'].'_quantity_'.$unit_id['unit_id']);
+            		$location_detail = array('item_id'=>$item_id,
+            				'location_id'=>$location_data['location_id'],
+            				'unit_id'=>$unit_id['unit_id'],
+            				'quantity'=>$updated_quantity);
+            		$item_quantity = (object) $this->Item_quantities->get_item_quantity($item_id, $location_data['location_id'], $unit_id['unit_id']);
+
+            		if ($item_quantity->quantity != $updated_quantity || $new_item)
+            		{
+            			$success &= $this->Item_quantities->save($location_detail, $item_id, $location_data['location_id'], $unit_id['unit_id']);
+            		
+            			$inv_data = array
+            			(
+            					'trans_date'=>date('Y-m-d H:i:s'),
+            					'trans_items'=>$item_id,
+            					'trans_user'=>$employee_id,
+            					'trans_location'=>$location_data['location_id'],
+            					'trans_comment'=>$this->lang->line('items_manually_editing_of_quantity'),
+            					'trans_inventory'=>$updated_quantity - $item_quantity->quantity,
+            					'trans_unit'=>$unit_id['unit_id']
+            			);
+            			$success &= $this->Inventory->insert($inv_data);
+            		}
+            	}
             }        
             
             if ($success && $upload_success) 
@@ -542,7 +560,7 @@ class Items extends Secure_area implements iData_controller
 			{
 				$item_data["$key"]=$value == '' ? null : $value;
 			}
-			elseif($value!='' and !(in_array($key, array('submit', 'item_ids', 'tax_names', 'tax_percents', 'item_category_id'))))
+			elseif($value!='' and !(in_array($key, array('submit', 'item_ids', 'tax_names', 'tax_percents', 'category_id'))))
 			{
 				$item_data["$key"]=$value;
 			}
@@ -654,16 +672,16 @@ class Items extends Secure_area implements iData_controller
                     $category = $data[2];
                     if ($category != "")
                     {
-                    	$result = $this->Item_category->get_category_by_description($category);
+                    	$result = $this->Item_category->get_category_by_name($category);
                     	if ($result->num_rows() > 0)
                     	{
-	                    	$item_data['item_category_id'] = $result->row()->id;
+	                    	$item_data['category_id'] = $result->row()->category_id;
                     	}
                     	else 
                     	{
-                    		$item_category_data = array('description' => $category);
+                    		$item_category_data = array('name' => $category);
 							$this->Item_category->save($item_category_data);
-							$item_data['item_category_id'] = $item_category_data['id'];
+							$item_data['category_id'] = $item_category_data['category_id'];
                     	}
                     }
 	                

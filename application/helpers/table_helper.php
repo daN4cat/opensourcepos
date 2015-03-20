@@ -292,7 +292,7 @@ function get_item_data_row($item,$controller)
 	$table_data_row.='<td width="15%">'.$item->item_number.'</td>';
 	$table_data_row.='<td width="20%">'.$item->name.'</td>';
 	$table_data_row.='<td width="14%">'.$item->size.'</td>';
-	$table_data_row.='<td width="14%">'.$item->description.'</td>';
+	$table_data_row.='<td width="14%">'.$item->short_name.'</td>';
 	$table_data_row.='<td width="14%">'.to_currency($item->cost_price).'</td>';
 	$table_data_row.='<td width="14%">'.to_currency($item->unit_price).'</td>';
     $table_data_row.='<td width="14%">'.$item->quantity.'</td>';

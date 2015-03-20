@@ -30,23 +30,23 @@ echo form_open('items/save/'.$item_info->item_id,array('id'=>'item_form', 'encty
 </div>
 
 <div class="field_row clearfix">
-<?php echo form_label($this->lang->line('items_category').':', 'item_category_id',array('class'=>'required wide')); ?>
+<?php echo form_label($this->lang->line('items_category').':', 'category_id',array('class'=>'required wide')); ?>
 	<div class='form_field'>
-	<?php echo form_dropdown('item_category_id',$item_categories,$selected_item_category_id, 'id="item_category_id"');?>
+	<?php echo form_dropdown('category_id',$item_categories,$selected_category_id, 'id="category_id"');?>
 	</div>
 </div>
 
 <div class="field_row clearfix">
-<?php echo form_label($this->lang->line('items_size') . ':', 'size',array('class'=>'wide')); ?>
+<?php echo form_label($this->lang->line('items_size') . ':', 'size_id',array('class'=>'wide')); ?>
 	<div class='form_field'>
-	<?php echo form_dropdown('item_size_id', $item_sizes, $selected_item_size, 'id="item_size_id"');?>
+	<?php echo form_dropdown('size_id', $item_sizes, $selected_size_id, 'id="size_id"');?>
 	</div>
 </div>
 
 <div class="field_row clearfix">
-<?php echo form_label($this->lang->line('items_supplier').':', 'supplier',array('class'=>'required wide')); ?>
+<?php echo form_label($this->lang->line('items_supplier').':', 'supplier_id',array('class'=>'required wide')); ?>
 	<div class='form_field'>
-	<?php echo form_dropdown('supplier_id', $suppliers, $selected_supplier);?>
+	<?php echo form_dropdown('supplier_id', $suppliers, $selected_supplier_id);?>
 	</div>
 </div>
 
@@ -117,28 +117,27 @@ echo form_open('items/save/'.$item_info->item_id,array('id'=>'item_form', 'encty
 </div>
 
 <?php
-foreach($stock_locations as $key=>$location_detail)
+foreach($stock_locations as $location_id=>$location_detail)
 {
-?>
+	foreach($item_units as $unit_id)
+	{
+	?>
     <div class="field_row clearfix">
     <?php echo form_label($this->lang->line('items_quantity').' '.$location_detail['location_name'] .':', 
-                            $key.'_quantity',
+                            $location_id.'_quantity',
                             array('class'=>'required wide')); ?>
     	<div class='form_field'>
     	<?php echo form_input(array(
-    		'name'=>$key.'_quantity',
-    		'id'=>$key.'_quantity',
+    		'name'=>$location_id.'_quantity_'.$unit_id,
+    		'id'=>$location_id.'_quantity_'.$unit_id,
     		'size'=>'8',
     		'value'=>$location_detail['quantity'])
     	);?>
     	</div>
-    	<?php if (count($item_units) > 1): ?>
-    	<div class='form_field'>
-    		<?php echo form_dropdown($key.'_unit_id', $item_units, $location_detail['unit_id']); ?>
-    	</div>
-    	<?php else: echo $location_detail['unit_name']; endif;?>
+    	<?php echo $location_detail['unit_name'];?>
     </div>
-<?php
+	<?php
+	}
 }
 ?>
 
@@ -397,13 +396,13 @@ echo form_close();
 $(document).ready(function()
 {
 	var no_op = function(event, data, formatted){};
-	$("#item_category_id").change(function() 
+	$("#category_id").change(function() 
 	{
-	    $.post("<?php echo site_url('items/get_sizes_by_category');?>", { "id": $(this).val() },
+	    $.post("<?php echo site_url('items/get_sizes_by_category');?>", { "category_id": $(this).val() },
 		    function(data) {
-		        $("select#item_size_id").empty();
+		        $("select#size_id").empty();
 				 for(var item in data) {
-				     $(new Option(data[item], item)).appendTo('select#item_size_id');
+				     $(new Option(data[item], item)).appendTo('select#size_id');
 				 }
 			 }
 		, "json");
@@ -450,10 +449,10 @@ $(document).ready(function()
 		rules:
 		{
 			name:"required",
-			item_category_id:"required",
-			item_size_id: function() 
+			category_id:"required",
+			size_id: function() 
 			{
-		        return $("#item_category_id").val(); 				
+		        return $("#category_id").val(); 				
 			},
 			item_number: { item_number: true },
 			cost_price:

@@ -9470,527 +9470,6 @@ if ( typeof define === "function" && define.amd && define.amd.jQuery ) {
 }
 
 })( window );
-;/*!
- * jQuery Migrate - v1.2.1 - 2013-05-08
- * https://github.com/jquery/jquery-migrate
- * Copyright 2005, 2013 jQuery Foundation, Inc. and other contributors; Licensed MIT
- */
-(function( jQuery, window, undefined ) {
-// See http://bugs.jquery.com/ticket/13335
-// "use strict";
-
-
-var warnedAbout = {};
-
-// List of warnings already given; public read only
-jQuery.migrateWarnings = [];
-
-// Set to true to prevent console output; migrateWarnings still maintained
-// jQuery.migrateMute = false;
-
-// Show a message on the console so devs know we're active
-if ( !jQuery.migrateMute && window.console && window.console.log ) {
-	window.console.log("JQMIGRATE: Logging is active");
-}
-
-// Set to false to disable traces that appear with warnings
-if ( jQuery.migrateTrace === undefined ) {
-	jQuery.migrateTrace = true;
-}
-
-// Forget any warnings we've already given; public
-jQuery.migrateReset = function() {
-	warnedAbout = {};
-	jQuery.migrateWarnings.length = 0;
-};
-
-function migrateWarn( msg) {
-	var console = window.console;
-	if ( !warnedAbout[ msg ] ) {
-		warnedAbout[ msg ] = true;
-		jQuery.migrateWarnings.push( msg );
-		if ( console && console.warn && !jQuery.migrateMute ) {
-			console.warn( "JQMIGRATE: " + msg );
-			if ( jQuery.migrateTrace && console.trace ) {
-				console.trace();
-			}
-		}
-	}
-}
-
-function migrateWarnProp( obj, prop, value, msg ) {
-	if ( Object.defineProperty ) {
-		// On ES5 browsers (non-oldIE), warn if the code tries to get prop;
-		// allow property to be overwritten in case some other plugin wants it
-		try {
-			Object.defineProperty( obj, prop, {
-				configurable: true,
-				enumerable: true,
-				get: function() {
-					migrateWarn( msg );
-					return value;
-				},
-				set: function( newValue ) {
-					migrateWarn( msg );
-					value = newValue;
-				}
-			});
-			return;
-		} catch( err ) {
-			// IE8 is a dope about Object.defineProperty, can't warn there
-		}
-	}
-
-	// Non-ES5 (or broken) browser; just set the property
-	jQuery._definePropertyBroken = true;
-	obj[ prop ] = value;
-}
-
-if ( document.compatMode === "BackCompat" ) {
-	// jQuery has never supported or tested Quirks Mode
-	migrateWarn( "jQuery is not compatible with Quirks Mode" );
-}
-
-
-var attrFn = jQuery( "<input/>", { size: 1 } ).attr("size") && jQuery.attrFn,
-	oldAttr = jQuery.attr,
-	valueAttrGet = jQuery.attrHooks.value && jQuery.attrHooks.value.get ||
-		function() { return null; },
-	valueAttrSet = jQuery.attrHooks.value && jQuery.attrHooks.value.set ||
-		function() { return undefined; },
-	rnoType = /^(?:input|button)$/i,
-	rnoAttrNodeType = /^[238]$/,
-	rboolean = /^(?:autofocus|autoplay|async|checked|controls|defer|disabled|hidden|loop|multiple|open|readonly|required|scoped|selected)$/i,
-	ruseDefault = /^(?:checked|selected)$/i;
-
-// jQuery.attrFn
-migrateWarnProp( jQuery, "attrFn", attrFn || {}, "jQuery.attrFn is deprecated" );
-
-jQuery.attr = function( elem, name, value, pass ) {
-	var lowerName = name.toLowerCase(),
-		nType = elem && elem.nodeType;
-
-	if ( pass ) {
-		// Since pass is used internally, we only warn for new jQuery
-		// versions where there isn't a pass arg in the formal params
-		if ( oldAttr.length < 4 ) {
-			migrateWarn("jQuery.fn.attr( props, pass ) is deprecated");
-		}
-		if ( elem && !rnoAttrNodeType.test( nType ) &&
-			(attrFn ? name in attrFn : jQuery.isFunction(jQuery.fn[name])) ) {
-			return jQuery( elem )[ name ]( value );
-		}
-	}
-
-	// Warn if user tries to set `type`, since it breaks on IE 6/7/8; by checking
-	// for disconnected elements we don't warn on $( "<button>", { type: "button" } ).
-	if ( name === "type" && value !== undefined && rnoType.test( elem.nodeName ) && elem.parentNode ) {
-		migrateWarn("Can't change the 'type' of an input or button in IE 6/7/8");
-	}
-
-	// Restore boolHook for boolean property/attribute synchronization
-	if ( !jQuery.attrHooks[ lowerName ] && rboolean.test( lowerName ) ) {
-		jQuery.attrHooks[ lowerName ] = {
-			get: function( elem, name ) {
-				// Align boolean attributes with corresponding properties
-				// Fall back to attribute presence where some booleans are not supported
-				var attrNode,
-					property = jQuery.prop( elem, name );
-				return property === true || typeof property !== "boolean" &&
-					( attrNode = elem.getAttributeNode(name) ) && attrNode.nodeValue !== false ?
-
-					name.toLowerCase() :
-					undefined;
-			},
-			set: function( elem, value, name ) {
-				var propName;
-				if ( value === false ) {
-					// Remove boolean attributes when set to false
-					jQuery.removeAttr( elem, name );
-				} else {
-					// value is true since we know at this point it's type boolean and not false
-					// Set boolean attributes to the same name and set the DOM property
-					propName = jQuery.propFix[ name ] || name;
-					if ( propName in elem ) {
-						// Only set the IDL specifically if it already exists on the element
-						elem[ propName ] = true;
-					}
-
-					elem.setAttribute( name, name.toLowerCase() );
-				}
-				return name;
-			}
-		};
-
-		// Warn only for attributes that can remain distinct from their properties post-1.9
-		if ( ruseDefault.test( lowerName ) ) {
-			migrateWarn( "jQuery.fn.attr('" + lowerName + "') may use property instead of attribute" );
-		}
-	}
-
-	return oldAttr.call( jQuery, elem, name, value );
-};
-
-// attrHooks: value
-jQuery.attrHooks.value = {
-	get: function( elem, name ) {
-		var nodeName = ( elem.nodeName || "" ).toLowerCase();
-		if ( nodeName === "button" ) {
-			return valueAttrGet.apply( this, arguments );
-		}
-		if ( nodeName !== "input" && nodeName !== "option" ) {
-			migrateWarn("jQuery.fn.attr('value') no longer gets properties");
-		}
-		return name in elem ?
-			elem.value :
-			null;
-	},
-	set: function( elem, value ) {
-		var nodeName = ( elem.nodeName || "" ).toLowerCase();
-		if ( nodeName === "button" ) {
-			return valueAttrSet.apply( this, arguments );
-		}
-		if ( nodeName !== "input" && nodeName !== "option" ) {
-			migrateWarn("jQuery.fn.attr('value', val) no longer sets properties");
-		}
-		// Does not return so that setAttribute is also used
-		elem.value = value;
-	}
-};
-
-
-var matched, browser,
-	oldInit = jQuery.fn.init,
-	oldParseJSON = jQuery.parseJSON,
-	// Note: XSS check is done below after string is trimmed
-	rquickExpr = /^([^<]*)(<[\w\W]+>)([^>]*)$/;
-
-// $(html) "looks like html" rule change
-jQuery.fn.init = function( selector, context, rootjQuery ) {
-	var match;
-
-	if ( selector && typeof selector === "string" && !jQuery.isPlainObject( context ) &&
-			(match = rquickExpr.exec( jQuery.trim( selector ) )) && match[ 0 ] ) {
-		// This is an HTML string according to the "old" rules; is it still?
-		if ( selector.charAt( 0 ) !== "<" ) {
-			migrateWarn("$(html) HTML strings must start with '<' character");
-		}
-		if ( match[ 3 ] ) {
-			migrateWarn("$(html) HTML text after last tag is ignored");
-		}
-		// Consistently reject any HTML-like string starting with a hash (#9521)
-		// Note that this may break jQuery 1.6.x code that otherwise would work.
-		if ( match[ 0 ].charAt( 0 ) === "#" ) {
-			migrateWarn("HTML string cannot start with a '#' character");
-			jQuery.error("JQMIGRATE: Invalid selector string (XSS)");
-		}
-		// Now process using loose rules; let pre-1.8 play too
-		if ( context && context.context ) {
-			// jQuery object as context; parseHTML expects a DOM object
-			context = context.context;
-		}
-		if ( jQuery.parseHTML ) {
-			return oldInit.call( this, jQuery.parseHTML( match[ 2 ], context, true ),
-					context, rootjQuery );
-		}
-	}
-	return oldInit.apply( this, arguments );
-};
-jQuery.fn.init.prototype = jQuery.fn;
-
-// Let $.parseJSON(falsy_value) return null
-jQuery.parseJSON = function( json ) {
-	if ( !json && json !== null ) {
-		migrateWarn("jQuery.parseJSON requires a valid JSON string");
-		return null;
-	}
-	return oldParseJSON.apply( this, arguments );
-};
-
-jQuery.uaMatch = function( ua ) {
-	ua = ua.toLowerCase();
-
-	var match = /(chrome)[ \/]([\w.]+)/.exec( ua ) ||
-		/(webkit)[ \/]([\w.]+)/.exec( ua ) ||
-		/(opera)(?:.*version|)[ \/]([\w.]+)/.exec( ua ) ||
-		/(msie) ([\w.]+)/.exec( ua ) ||
-		ua.indexOf("compatible") < 0 && /(mozilla)(?:.*? rv:([\w.]+)|)/.exec( ua ) ||
-		[];
-
-	return {
-		browser: match[ 1 ] || "",
-		version: match[ 2 ] || "0"
-	};
-};
-
-// Don't clobber any existing jQuery.browser in case it's different
-if ( !jQuery.browser ) {
-	matched = jQuery.uaMatch( navigator.userAgent );
-	browser = {};
-
-	if ( matched.browser ) {
-		browser[ matched.browser ] = true;
-		browser.version = matched.version;
-	}
-
-	// Chrome is Webkit, but Webkit is also Safari.
-	if ( browser.chrome ) {
-		browser.webkit = true;
-	} else if ( browser.webkit ) {
-		browser.safari = true;
-	}
-
-	jQuery.browser = browser;
-}
-
-// Warn if the code tries to get jQuery.browser
-migrateWarnProp( jQuery, "browser", jQuery.browser, "jQuery.browser is deprecated" );
-
-jQuery.sub = function() {
-	function jQuerySub( selector, context ) {
-		return new jQuerySub.fn.init( selector, context );
-	}
-	jQuery.extend( true, jQuerySub, this );
-	jQuerySub.superclass = this;
-	jQuerySub.fn = jQuerySub.prototype = this();
-	jQuerySub.fn.constructor = jQuerySub;
-	jQuerySub.sub = this.sub;
-	jQuerySub.fn.init = function init( selector, context ) {
-		if ( context && context instanceof jQuery && !(context instanceof jQuerySub) ) {
-			context = jQuerySub( context );
-		}
-
-		return jQuery.fn.init.call( this, selector, context, rootjQuerySub );
-	};
-	jQuerySub.fn.init.prototype = jQuerySub.fn;
-	var rootjQuerySub = jQuerySub(document);
-	migrateWarn( "jQuery.sub() is deprecated" );
-	return jQuerySub;
-};
-
-
-// Ensure that $.ajax gets the new parseJSON defined in core.js
-jQuery.ajaxSetup({
-	converters: {
-		"text json": jQuery.parseJSON
-	}
-});
-
-
-var oldFnData = jQuery.fn.data;
-
-jQuery.fn.data = function( name ) {
-	var ret, evt,
-		elem = this[0];
-
-	// Handles 1.7 which has this behavior and 1.8 which doesn't
-	if ( elem && name === "events" && arguments.length === 1 ) {
-		ret = jQuery.data( elem, name );
-		evt = jQuery._data( elem, name );
-		if ( ( ret === undefined || ret === evt ) && evt !== undefined ) {
-			migrateWarn("Use of jQuery.fn.data('events') is deprecated");
-			return evt;
-		}
-	}
-	return oldFnData.apply( this, arguments );
-};
-
-
-var rscriptType = /\/(java|ecma)script/i,
-	oldSelf = jQuery.fn.andSelf || jQuery.fn.addBack;
-
-jQuery.fn.andSelf = function() {
-	migrateWarn("jQuery.fn.andSelf() replaced by jQuery.fn.addBack()");
-	return oldSelf.apply( this, arguments );
-};
-
-// Since jQuery.clean is used internally on older versions, we only shim if it's missing
-if ( !jQuery.clean ) {
-	jQuery.clean = function( elems, context, fragment, scripts ) {
-		// Set context per 1.8 logic
-		context = context || document;
-		context = !context.nodeType && context[0] || context;
-		context = context.ownerDocument || context;
-
-		migrateWarn("jQuery.clean() is deprecated");
-
-		var i, elem, handleScript, jsTags,
-			ret = [];
-
-		jQuery.merge( ret, jQuery.buildFragment( elems, context ).childNodes );
-
-		// Complex logic lifted directly from jQuery 1.8
-		if ( fragment ) {
-			// Special handling of each script element
-			handleScript = function( elem ) {
-				// Check if we consider it executable
-				if ( !elem.type || rscriptType.test( elem.type ) ) {
-					// Detach the script and store it in the scripts array (if provided) or the fragment
-					// Return truthy to indicate that it has been handled
-					return scripts ?
-						scripts.push( elem.parentNode ? elem.parentNode.removeChild( elem ) : elem ) :
-						fragment.appendChild( elem );
-				}
-			};
-
-			for ( i = 0; (elem = ret[i]) != null; i++ ) {
-				// Check if we're done after handling an executable script
-				if ( !( jQuery.nodeName( elem, "script" ) && handleScript( elem ) ) ) {
-					// Append to fragment and handle embedded scripts
-					fragment.appendChild( elem );
-					if ( typeof elem.getElementsByTagName !== "undefined" ) {
-						// handleScript alters the DOM, so use jQuery.merge to ensure snapshot iteration
-						jsTags = jQuery.grep( jQuery.merge( [], elem.getElementsByTagName("script") ), handleScript );
-
-						// Splice the scripts into ret after their former ancestor and advance our index beyond them
-						ret.splice.apply( ret, [i + 1, 0].concat( jsTags ) );
-						i += jsTags.length;
-					}
-				}
-			}
-		}
-
-		return ret;
-	};
-}
-
-var eventAdd = jQuery.event.add,
-	eventRemove = jQuery.event.remove,
-	eventTrigger = jQuery.event.trigger,
-	oldToggle = jQuery.fn.toggle,
-	oldLive = jQuery.fn.live,
-	oldDie = jQuery.fn.die,
-	ajaxEvents = "ajaxStart|ajaxStop|ajaxSend|ajaxComplete|ajaxError|ajaxSuccess",
-	rajaxEvent = new RegExp( "\\b(?:" + ajaxEvents + ")\\b" ),
-	rhoverHack = /(?:^|\s)hover(\.\S+|)\b/,
-	hoverHack = function( events ) {
-		if ( typeof( events ) !== "string" || jQuery.event.special.hover ) {
-			return events;
-		}
-		if ( rhoverHack.test( events ) ) {
-			migrateWarn("'hover' pseudo-event is deprecated, use 'mouseenter mouseleave'");
-		}
-		return events && events.replace( rhoverHack, "mouseenter$1 mouseleave$1" );
-	};
-
-// Event props removed in 1.9, put them back if needed; no practical way to warn them
-if ( jQuery.event.props && jQuery.event.props[ 0 ] !== "attrChange" ) {
-	jQuery.event.props.unshift( "attrChange", "attrName", "relatedNode", "srcElement" );
-}
-
-// Undocumented jQuery.event.handle was "deprecated" in jQuery 1.7
-if ( jQuery.event.dispatch ) {
-	migrateWarnProp( jQuery.event, "handle", jQuery.event.dispatch, "jQuery.event.handle is undocumented and deprecated" );
-}
-
-// Support for 'hover' pseudo-event and ajax event warnings
-jQuery.event.add = function( elem, types, handler, data, selector ){
-	if ( elem !== document && rajaxEvent.test( types ) ) {
-		migrateWarn( "AJAX events should be attached to document: " + types );
-	}
-	eventAdd.call( this, elem, hoverHack( types || "" ), handler, data, selector );
-};
-jQuery.event.remove = function( elem, types, handler, selector, mappedTypes ){
-	eventRemove.call( this, elem, hoverHack( types ) || "", handler, selector, mappedTypes );
-};
-
-jQuery.fn.error = function() {
-	var args = Array.prototype.slice.call( arguments, 0);
-	migrateWarn("jQuery.fn.error() is deprecated");
-	args.splice( 0, 0, "error" );
-	if ( arguments.length ) {
-		return this.bind.apply( this, args );
-	}
-	// error event should not bubble to window, although it does pre-1.7
-	this.triggerHandler.apply( this, args );
-	return this;
-};
-
-jQuery.fn.toggle = function( fn, fn2 ) {
-
-	// Don't mess with animation or css toggles
-	if ( !jQuery.isFunction( fn ) || !jQuery.isFunction( fn2 ) ) {
-		return oldToggle.apply( this, arguments );
-	}
-	migrateWarn("jQuery.fn.toggle(handler, handler...) is deprecated");
-
-	// Save reference to arguments for access in closure
-	var args = arguments,
-		guid = fn.guid || jQuery.guid++,
-		i = 0,
-		toggler = function( event ) {
-			// Figure out which function to execute
-			var lastToggle = ( jQuery._data( this, "lastToggle" + fn.guid ) || 0 ) % i;
-			jQuery._data( this, "lastToggle" + fn.guid, lastToggle + 1 );
-
-			// Make sure that clicks stop
-			event.preventDefault();
-
-			// and execute the function
-			return args[ lastToggle ].apply( this, arguments ) || false;
-		};
-
-	// link all the functions, so any of them can unbind this click handler
-	toggler.guid = guid;
-	while ( i < args.length ) {
-		args[ i++ ].guid = guid;
-	}
-
-	return this.click( toggler );
-};
-
-jQuery.fn.live = function( types, data, fn ) {
-	migrateWarn("jQuery.fn.live() is deprecated");
-	if ( oldLive ) {
-		return oldLive.apply( this, arguments );
-	}
-	jQuery( this.context ).on( types, this.selector, data, fn );
-	return this;
-};
-
-jQuery.fn.die = function( types, fn ) {
-	migrateWarn("jQuery.fn.die() is deprecated");
-	if ( oldDie ) {
-		return oldDie.apply( this, arguments );
-	}
-	jQuery( this.context ).off( types, this.selector || "**", fn );
-	return this;
-};
-
-// Turn global events into document-triggered events
-jQuery.event.trigger = function( event, data, elem, onlyHandlers  ){
-	if ( !elem && !rajaxEvent.test( event ) ) {
-		migrateWarn( "Global events are undocumented and deprecated" );
-	}
-	return eventTrigger.call( this,  event, data, elem || document, onlyHandlers  );
-};
-jQuery.each( ajaxEvents.split("|"),
-	function( _, name ) {
-		jQuery.event.special[ name ] = {
-			setup: function() {
-				var elem = this;
-
-				// The document needs no shimming; must be !== for oldIE
-				if ( elem !== document ) {
-					jQuery.event.add( document, name + "." + jQuery.guid, function() {
-						jQuery.event.trigger( name, null, elem, true );
-					});
-					jQuery._data( this, name, jQuery.guid++ );
-				}
-				return false;
-			},
-			teardown: function() {
-				if ( this !== document ) {
-					jQuery.event.remove( document, name + "." + jQuery._data( this, name ) );
-				}
-				return false;
-			}
-		};
-	}
-);
-
-
-})( jQuery, window );
 ;/**
  * Ajax Queue Plugin
  * 
@@ -12651,7 +12130,528 @@ $.fn.metadata = function( opts ){
 	return $.metadata.get( this[0], opts );
 };
 
-})(jQuery);;/*! TableSorter (FORK) v2.20.1 */
+})(jQuery);;/*!
+ * jQuery Migrate - v1.2.1 - 2013-05-08
+ * https://github.com/jquery/jquery-migrate
+ * Copyright 2005, 2013 jQuery Foundation, Inc. and other contributors; Licensed MIT
+ */
+(function( jQuery, window, undefined ) {
+// See http://bugs.jquery.com/ticket/13335
+// "use strict";
+
+
+var warnedAbout = {};
+
+// List of warnings already given; public read only
+jQuery.migrateWarnings = [];
+
+// Set to true to prevent console output; migrateWarnings still maintained
+// jQuery.migrateMute = false;
+
+// Show a message on the console so devs know we're active
+if ( !jQuery.migrateMute && window.console && window.console.log ) {
+	window.console.log("JQMIGRATE: Logging is active");
+}
+
+// Set to false to disable traces that appear with warnings
+if ( jQuery.migrateTrace === undefined ) {
+	jQuery.migrateTrace = true;
+}
+
+// Forget any warnings we've already given; public
+jQuery.migrateReset = function() {
+	warnedAbout = {};
+	jQuery.migrateWarnings.length = 0;
+};
+
+function migrateWarn( msg) {
+	var console = window.console;
+	if ( !warnedAbout[ msg ] ) {
+		warnedAbout[ msg ] = true;
+		jQuery.migrateWarnings.push( msg );
+		if ( console && console.warn && !jQuery.migrateMute ) {
+			console.warn( "JQMIGRATE: " + msg );
+			if ( jQuery.migrateTrace && console.trace ) {
+				console.trace();
+			}
+		}
+	}
+}
+
+function migrateWarnProp( obj, prop, value, msg ) {
+	if ( Object.defineProperty ) {
+		// On ES5 browsers (non-oldIE), warn if the code tries to get prop;
+		// allow property to be overwritten in case some other plugin wants it
+		try {
+			Object.defineProperty( obj, prop, {
+				configurable: true,
+				enumerable: true,
+				get: function() {
+					migrateWarn( msg );
+					return value;
+				},
+				set: function( newValue ) {
+					migrateWarn( msg );
+					value = newValue;
+				}
+			});
+			return;
+		} catch( err ) {
+			// IE8 is a dope about Object.defineProperty, can't warn there
+		}
+	}
+
+	// Non-ES5 (or broken) browser; just set the property
+	jQuery._definePropertyBroken = true;
+	obj[ prop ] = value;
+}
+
+if ( document.compatMode === "BackCompat" ) {
+	// jQuery has never supported or tested Quirks Mode
+	migrateWarn( "jQuery is not compatible with Quirks Mode" );
+}
+
+
+var attrFn = jQuery( "<input/>", { size: 1 } ).attr("size") && jQuery.attrFn,
+	oldAttr = jQuery.attr,
+	valueAttrGet = jQuery.attrHooks.value && jQuery.attrHooks.value.get ||
+		function() { return null; },
+	valueAttrSet = jQuery.attrHooks.value && jQuery.attrHooks.value.set ||
+		function() { return undefined; },
+	rnoType = /^(?:input|button)$/i,
+	rnoAttrNodeType = /^[238]$/,
+	rboolean = /^(?:autofocus|autoplay|async|checked|controls|defer|disabled|hidden|loop|multiple|open|readonly|required|scoped|selected)$/i,
+	ruseDefault = /^(?:checked|selected)$/i;
+
+// jQuery.attrFn
+migrateWarnProp( jQuery, "attrFn", attrFn || {}, "jQuery.attrFn is deprecated" );
+
+jQuery.attr = function( elem, name, value, pass ) {
+	var lowerName = name.toLowerCase(),
+		nType = elem && elem.nodeType;
+
+	if ( pass ) {
+		// Since pass is used internally, we only warn for new jQuery
+		// versions where there isn't a pass arg in the formal params
+		if ( oldAttr.length < 4 ) {
+			migrateWarn("jQuery.fn.attr( props, pass ) is deprecated");
+		}
+		if ( elem && !rnoAttrNodeType.test( nType ) &&
+			(attrFn ? name in attrFn : jQuery.isFunction(jQuery.fn[name])) ) {
+			return jQuery( elem )[ name ]( value );
+		}
+	}
+
+	// Warn if user tries to set `type`, since it breaks on IE 6/7/8; by checking
+	// for disconnected elements we don't warn on $( "<button>", { type: "button" } ).
+	if ( name === "type" && value !== undefined && rnoType.test( elem.nodeName ) && elem.parentNode ) {
+		migrateWarn("Can't change the 'type' of an input or button in IE 6/7/8");
+	}
+
+	// Restore boolHook for boolean property/attribute synchronization
+	if ( !jQuery.attrHooks[ lowerName ] && rboolean.test( lowerName ) ) {
+		jQuery.attrHooks[ lowerName ] = {
+			get: function( elem, name ) {
+				// Align boolean attributes with corresponding properties
+				// Fall back to attribute presence where some booleans are not supported
+				var attrNode,
+					property = jQuery.prop( elem, name );
+				return property === true || typeof property !== "boolean" &&
+					( attrNode = elem.getAttributeNode(name) ) && attrNode.nodeValue !== false ?
+
+					name.toLowerCase() :
+					undefined;
+			},
+			set: function( elem, value, name ) {
+				var propName;
+				if ( value === false ) {
+					// Remove boolean attributes when set to false
+					jQuery.removeAttr( elem, name );
+				} else {
+					// value is true since we know at this point it's type boolean and not false
+					// Set boolean attributes to the same name and set the DOM property
+					propName = jQuery.propFix[ name ] || name;
+					if ( propName in elem ) {
+						// Only set the IDL specifically if it already exists on the element
+						elem[ propName ] = true;
+					}
+
+					elem.setAttribute( name, name.toLowerCase() );
+				}
+				return name;
+			}
+		};
+
+		// Warn only for attributes that can remain distinct from their properties post-1.9
+		if ( ruseDefault.test( lowerName ) ) {
+			migrateWarn( "jQuery.fn.attr('" + lowerName + "') may use property instead of attribute" );
+		}
+	}
+
+	return oldAttr.call( jQuery, elem, name, value );
+};
+
+// attrHooks: value
+jQuery.attrHooks.value = {
+	get: function( elem, name ) {
+		var nodeName = ( elem.nodeName || "" ).toLowerCase();
+		if ( nodeName === "button" ) {
+			return valueAttrGet.apply( this, arguments );
+		}
+		if ( nodeName !== "input" && nodeName !== "option" ) {
+			migrateWarn("jQuery.fn.attr('value') no longer gets properties");
+		}
+		return name in elem ?
+			elem.value :
+			null;
+	},
+	set: function( elem, value ) {
+		var nodeName = ( elem.nodeName || "" ).toLowerCase();
+		if ( nodeName === "button" ) {
+			return valueAttrSet.apply( this, arguments );
+		}
+		if ( nodeName !== "input" && nodeName !== "option" ) {
+			migrateWarn("jQuery.fn.attr('value', val) no longer sets properties");
+		}
+		// Does not return so that setAttribute is also used
+		elem.value = value;
+	}
+};
+
+
+var matched, browser,
+	oldInit = jQuery.fn.init,
+	oldParseJSON = jQuery.parseJSON,
+	// Note: XSS check is done below after string is trimmed
+	rquickExpr = /^([^<]*)(<[\w\W]+>)([^>]*)$/;
+
+// $(html) "looks like html" rule change
+jQuery.fn.init = function( selector, context, rootjQuery ) {
+	var match;
+
+	if ( selector && typeof selector === "string" && !jQuery.isPlainObject( context ) &&
+			(match = rquickExpr.exec( jQuery.trim( selector ) )) && match[ 0 ] ) {
+		// This is an HTML string according to the "old" rules; is it still?
+		if ( selector.charAt( 0 ) !== "<" ) {
+			migrateWarn("$(html) HTML strings must start with '<' character");
+		}
+		if ( match[ 3 ] ) {
+			migrateWarn("$(html) HTML text after last tag is ignored");
+		}
+		// Consistently reject any HTML-like string starting with a hash (#9521)
+		// Note that this may break jQuery 1.6.x code that otherwise would work.
+		if ( match[ 0 ].charAt( 0 ) === "#" ) {
+			migrateWarn("HTML string cannot start with a '#' character");
+			jQuery.error("JQMIGRATE: Invalid selector string (XSS)");
+		}
+		// Now process using loose rules; let pre-1.8 play too
+		if ( context && context.context ) {
+			// jQuery object as context; parseHTML expects a DOM object
+			context = context.context;
+		}
+		if ( jQuery.parseHTML ) {
+			return oldInit.call( this, jQuery.parseHTML( match[ 2 ], context, true ),
+					context, rootjQuery );
+		}
+	}
+	return oldInit.apply( this, arguments );
+};
+jQuery.fn.init.prototype = jQuery.fn;
+
+// Let $.parseJSON(falsy_value) return null
+jQuery.parseJSON = function( json ) {
+	if ( !json && json !== null ) {
+		migrateWarn("jQuery.parseJSON requires a valid JSON string");
+		return null;
+	}
+	return oldParseJSON.apply( this, arguments );
+};
+
+jQuery.uaMatch = function( ua ) {
+	ua = ua.toLowerCase();
+
+	var match = /(chrome)[ \/]([\w.]+)/.exec( ua ) ||
+		/(webkit)[ \/]([\w.]+)/.exec( ua ) ||
+		/(opera)(?:.*version|)[ \/]([\w.]+)/.exec( ua ) ||
+		/(msie) ([\w.]+)/.exec( ua ) ||
+		ua.indexOf("compatible") < 0 && /(mozilla)(?:.*? rv:([\w.]+)|)/.exec( ua ) ||
+		[];
+
+	return {
+		browser: match[ 1 ] || "",
+		version: match[ 2 ] || "0"
+	};
+};
+
+// Don't clobber any existing jQuery.browser in case it's different
+if ( !jQuery.browser ) {
+	matched = jQuery.uaMatch( navigator.userAgent );
+	browser = {};
+
+	if ( matched.browser ) {
+		browser[ matched.browser ] = true;
+		browser.version = matched.version;
+	}
+
+	// Chrome is Webkit, but Webkit is also Safari.
+	if ( browser.chrome ) {
+		browser.webkit = true;
+	} else if ( browser.webkit ) {
+		browser.safari = true;
+	}
+
+	jQuery.browser = browser;
+}
+
+// Warn if the code tries to get jQuery.browser
+migrateWarnProp( jQuery, "browser", jQuery.browser, "jQuery.browser is deprecated" );
+
+jQuery.sub = function() {
+	function jQuerySub( selector, context ) {
+		return new jQuerySub.fn.init( selector, context );
+	}
+	jQuery.extend( true, jQuerySub, this );
+	jQuerySub.superclass = this;
+	jQuerySub.fn = jQuerySub.prototype = this();
+	jQuerySub.fn.constructor = jQuerySub;
+	jQuerySub.sub = this.sub;
+	jQuerySub.fn.init = function init( selector, context ) {
+		if ( context && context instanceof jQuery && !(context instanceof jQuerySub) ) {
+			context = jQuerySub( context );
+		}
+
+		return jQuery.fn.init.call( this, selector, context, rootjQuerySub );
+	};
+	jQuerySub.fn.init.prototype = jQuerySub.fn;
+	var rootjQuerySub = jQuerySub(document);
+	migrateWarn( "jQuery.sub() is deprecated" );
+	return jQuerySub;
+};
+
+
+// Ensure that $.ajax gets the new parseJSON defined in core.js
+jQuery.ajaxSetup({
+	converters: {
+		"text json": jQuery.parseJSON
+	}
+});
+
+
+var oldFnData = jQuery.fn.data;
+
+jQuery.fn.data = function( name ) {
+	var ret, evt,
+		elem = this[0];
+
+	// Handles 1.7 which has this behavior and 1.8 which doesn't
+	if ( elem && name === "events" && arguments.length === 1 ) {
+		ret = jQuery.data( elem, name );
+		evt = jQuery._data( elem, name );
+		if ( ( ret === undefined || ret === evt ) && evt !== undefined ) {
+			migrateWarn("Use of jQuery.fn.data('events') is deprecated");
+			return evt;
+		}
+	}
+	return oldFnData.apply( this, arguments );
+};
+
+
+var rscriptType = /\/(java|ecma)script/i,
+	oldSelf = jQuery.fn.andSelf || jQuery.fn.addBack;
+
+jQuery.fn.andSelf = function() {
+	migrateWarn("jQuery.fn.andSelf() replaced by jQuery.fn.addBack()");
+	return oldSelf.apply( this, arguments );
+};
+
+// Since jQuery.clean is used internally on older versions, we only shim if it's missing
+if ( !jQuery.clean ) {
+	jQuery.clean = function( elems, context, fragment, scripts ) {
+		// Set context per 1.8 logic
+		context = context || document;
+		context = !context.nodeType && context[0] || context;
+		context = context.ownerDocument || context;
+
+		migrateWarn("jQuery.clean() is deprecated");
+
+		var i, elem, handleScript, jsTags,
+			ret = [];
+
+		jQuery.merge( ret, jQuery.buildFragment( elems, context ).childNodes );
+
+		// Complex logic lifted directly from jQuery 1.8
+		if ( fragment ) {
+			// Special handling of each script element
+			handleScript = function( elem ) {
+				// Check if we consider it executable
+				if ( !elem.type || rscriptType.test( elem.type ) ) {
+					// Detach the script and store it in the scripts array (if provided) or the fragment
+					// Return truthy to indicate that it has been handled
+					return scripts ?
+						scripts.push( elem.parentNode ? elem.parentNode.removeChild( elem ) : elem ) :
+						fragment.appendChild( elem );
+				}
+			};
+
+			for ( i = 0; (elem = ret[i]) != null; i++ ) {
+				// Check if we're done after handling an executable script
+				if ( !( jQuery.nodeName( elem, "script" ) && handleScript( elem ) ) ) {
+					// Append to fragment and handle embedded scripts
+					fragment.appendChild( elem );
+					if ( typeof elem.getElementsByTagName !== "undefined" ) {
+						// handleScript alters the DOM, so use jQuery.merge to ensure snapshot iteration
+						jsTags = jQuery.grep( jQuery.merge( [], elem.getElementsByTagName("script") ), handleScript );
+
+						// Splice the scripts into ret after their former ancestor and advance our index beyond them
+						ret.splice.apply( ret, [i + 1, 0].concat( jsTags ) );
+						i += jsTags.length;
+					}
+				}
+			}
+		}
+
+		return ret;
+	};
+}
+
+var eventAdd = jQuery.event.add,
+	eventRemove = jQuery.event.remove,
+	eventTrigger = jQuery.event.trigger,
+	oldToggle = jQuery.fn.toggle,
+	oldLive = jQuery.fn.live,
+	oldDie = jQuery.fn.die,
+	ajaxEvents = "ajaxStart|ajaxStop|ajaxSend|ajaxComplete|ajaxError|ajaxSuccess",
+	rajaxEvent = new RegExp( "\\b(?:" + ajaxEvents + ")\\b" ),
+	rhoverHack = /(?:^|\s)hover(\.\S+|)\b/,
+	hoverHack = function( events ) {
+		if ( typeof( events ) !== "string" || jQuery.event.special.hover ) {
+			return events;
+		}
+		if ( rhoverHack.test( events ) ) {
+			migrateWarn("'hover' pseudo-event is deprecated, use 'mouseenter mouseleave'");
+		}
+		return events && events.replace( rhoverHack, "mouseenter$1 mouseleave$1" );
+	};
+
+// Event props removed in 1.9, put them back if needed; no practical way to warn them
+if ( jQuery.event.props && jQuery.event.props[ 0 ] !== "attrChange" ) {
+	jQuery.event.props.unshift( "attrChange", "attrName", "relatedNode", "srcElement" );
+}
+
+// Undocumented jQuery.event.handle was "deprecated" in jQuery 1.7
+if ( jQuery.event.dispatch ) {
+	migrateWarnProp( jQuery.event, "handle", jQuery.event.dispatch, "jQuery.event.handle is undocumented and deprecated" );
+}
+
+// Support for 'hover' pseudo-event and ajax event warnings
+jQuery.event.add = function( elem, types, handler, data, selector ){
+	if ( elem !== document && rajaxEvent.test( types ) ) {
+		migrateWarn( "AJAX events should be attached to document: " + types );
+	}
+	eventAdd.call( this, elem, hoverHack( types || "" ), handler, data, selector );
+};
+jQuery.event.remove = function( elem, types, handler, selector, mappedTypes ){
+	eventRemove.call( this, elem, hoverHack( types ) || "", handler, selector, mappedTypes );
+};
+
+jQuery.fn.error = function() {
+	var args = Array.prototype.slice.call( arguments, 0);
+	migrateWarn("jQuery.fn.error() is deprecated");
+	args.splice( 0, 0, "error" );
+	if ( arguments.length ) {
+		return this.bind.apply( this, args );
+	}
+	// error event should not bubble to window, although it does pre-1.7
+	this.triggerHandler.apply( this, args );
+	return this;
+};
+
+jQuery.fn.toggle = function( fn, fn2 ) {
+
+	// Don't mess with animation or css toggles
+	if ( !jQuery.isFunction( fn ) || !jQuery.isFunction( fn2 ) ) {
+		return oldToggle.apply( this, arguments );
+	}
+	migrateWarn("jQuery.fn.toggle(handler, handler...) is deprecated");
+
+	// Save reference to arguments for access in closure
+	var args = arguments,
+		guid = fn.guid || jQuery.guid++,
+		i = 0,
+		toggler = function( event ) {
+			// Figure out which function to execute
+			var lastToggle = ( jQuery._data( this, "lastToggle" + fn.guid ) || 0 ) % i;
+			jQuery._data( this, "lastToggle" + fn.guid, lastToggle + 1 );
+
+			// Make sure that clicks stop
+			event.preventDefault();
+
+			// and execute the function
+			return args[ lastToggle ].apply( this, arguments ) || false;
+		};
+
+	// link all the functions, so any of them can unbind this click handler
+	toggler.guid = guid;
+	while ( i < args.length ) {
+		args[ i++ ].guid = guid;
+	}
+
+	return this.click( toggler );
+};
+
+jQuery.fn.live = function( types, data, fn ) {
+	migrateWarn("jQuery.fn.live() is deprecated");
+	if ( oldLive ) {
+		return oldLive.apply( this, arguments );
+	}
+	jQuery( this.context ).on( types, this.selector, data, fn );
+	return this;
+};
+
+jQuery.fn.die = function( types, fn ) {
+	migrateWarn("jQuery.fn.die() is deprecated");
+	if ( oldDie ) {
+		return oldDie.apply( this, arguments );
+	}
+	jQuery( this.context ).off( types, this.selector || "**", fn );
+	return this;
+};
+
+// Turn global events into document-triggered events
+jQuery.event.trigger = function( event, data, elem, onlyHandlers  ){
+	if ( !elem && !rajaxEvent.test( event ) ) {
+		migrateWarn( "Global events are undocumented and deprecated" );
+	}
+	return eventTrigger.call( this,  event, data, elem || document, onlyHandlers  );
+};
+jQuery.each( ajaxEvents.split("|"),
+	function( _, name ) {
+		jQuery.event.special[ name ] = {
+			setup: function() {
+				var elem = this;
+
+				// The document needs no shimming; must be !== for oldIE
+				if ( elem !== document ) {
+					jQuery.event.add( document, name + "." + jQuery.guid, function() {
+						jQuery.event.trigger( name, null, elem, true );
+					});
+					jQuery._data( this, name, jQuery.guid++ );
+				}
+				return false;
+			},
+			teardown: function() {
+				if ( this !== document ) {
+					jQuery.event.remove( document, name + "." + jQuery._data( this, name ) );
+				}
+				return false;
+			}
+		};
+	}
+);
+
+
+})( jQuery, window );
+;/*! TableSorter (FORK) v2.20.1 */
 !function(a){"function"==typeof define&&define.amd?define(["jquery"],a):"object"==typeof module&&"object"==typeof module.exports?module.exports=a(require("jquery")):a(jQuery)}(function(a){"use strict";a.extend({tablesorter:new function(){function b(){var a=arguments[0],b=arguments.length>1?Array.prototype.slice.call(arguments):a;"undefined"!=typeof console&&"undefined"!=typeof console.log?console[/error/i.test(a)?"error":/warn/i.test(a)?"warn":"log"](b):alert(b)}function c(a,c){b(a+" ("+((new Date).getTime()-c.getTime())+"ms)")}function d(a){for(var b in a)return!1;return!0}function e(c,d,e,f){for(var g,h,i=c.config,j=u.parsers.length,k=!1,l="",m=!0;""===l&&m;)e++,d[e]?(k=d[e].cells[f],l=u.getElementText(i,k,f),h=a(k),c.config.debug&&b("Checking if value was empty on row "+e+", column: "+f+': "'+l+'"')):m=!1;for(;--j>=0;)if(g=u.parsers[j],g&&"text"!==g.id&&g.is&&g.is(l,c,k,h))return g;return u.getParserById("text")}function f(a){var d,f,g,h,i,j,k,l,m,n,o=a.config,p=o.$tbodies=o.$table.children("tbody:not(."+o.cssInfoBlock+")"),q=0,r="",s=p.length;if(0===s)return o.debug?b("Warning: *Empty table!* Not building a parser cache"):"";for(o.debug&&(n=new Date,b("Detecting parsers for each column")),f={extractors:[],parsers:[]};s>q;){if(d=p[q].rows,d.length)for(g=o.columns,h=0;g>h;h++)i=o.$headers.filter('[data-column="'+h+'"]:last'),j=u.getColumnData(a,o.headers,h),m=u.getParserById(u.getData(i,j,"extractor")),l=u.getParserById(u.getData(i,j,"sorter")),k="false"===u.getData(i,j,"parser"),o.empties[h]=(u.getData(i,j,"empty")||o.emptyTo||(o.emptyToBottom?"bottom":"top")).toLowerCase(),o.strings[h]=(u.getData(i,j,"string")||o.stringTo||"max").toLowerCase(),k&&(l=u.getParserById("no-parser")),m||(m=!1),l||(l=e(a,d,-1,h)),o.debug&&(r+="column:"+h+"; extractor:"+m.id+"; parser:"+l.id+"; string:"+o.strings[h]+"; empty: "+o.empties[h]+"\n"),f.parsers[h]=l,f.extractors[h]=m;q+=f.parsers.length?s:1}o.debug&&(b(r?r:"No parsers detected"),c("Completed detecting parsers",n)),o.parsers=f.parsers,o.extractors=f.extractors}function g(d){var e,f,g,h,i,j,k,l,m,n,o,p,q,r=d.config,s=r.$tbodies,t=r.extractors,v=r.parsers;if(r.cache={},r.totalRows=0,!v)return r.debug?b("Warning: *Empty table!* Not building a cache"):"";for(r.debug&&(n=new Date),r.showProcessing&&u.isProcessing(d,!0),k=0;k<s.length;k++){for(q=[],e=r.cache[k]={normalized:[]},o=s[k]&&s[k].rows.length||0,i=0;o>i;++i)if(p={child:[],raw:[]},l=a(s[k].rows[i]),m=[],l.hasClass(r.cssChildRow)&&0!==i)f=e.normalized.length-1,e.normalized[f][r.columns].$row=e.normalized[f][r.columns].$row.add(l),l.prev().hasClass(r.cssChildRow)||l.prev().addClass(u.css.cssHasChild),p.child[f]=a.trim(l[0].textContent||l.text()||"");else{for(p.$row=l,p.order=i,j=0;j<r.columns;++j)"undefined"!=typeof v[j]?(f=u.getElementText(r,l[0].cells[j],j),p.raw.push(f),g="undefined"==typeof t[j].id?f:t[j].format(f,d,l[0].cells[j],j),h="no-parser"===v[j].id?"":v[j].format(g,d,l[0].cells[j],j),m.push(r.ignoreCase&&"string"==typeof h?h.toLowerCase():h),"numeric"===(v[j].type||"").toLowerCase()&&(q[j]=Math.max(Math.abs(h)||0,q[j]||0))):r.debug&&b("No parser found for cell:",l[0].cells[j],"does it have a header?");m[r.columns]=p,e.normalized.push(m)}e.colMax=q,r.totalRows+=e.normalized.length}r.showProcessing&&u.isProcessing(d),r.debug&&c("Building cache for "+o+" rows",n)}function h(a,b){var e,f,g,h,i,j,k,l=a.config,m=l.widgetOptions,n=l.$tbodies,o=[],p=l.cache;if(d(p))return l.appender?l.appender(a,o):a.isUpdating?l.$table.trigger("updateComplete",a):"";for(l.debug&&(k=new Date),j=0;j<n.length;j++)if(g=n.eq(j),g.length){for(h=u.processTbody(a,g,!0),e=p[j].normalized,f=e.length,i=0;f>i;i++)o.push(e[i][l.columns].$row),l.appender&&(!l.pager||l.pager.removeRows&&m.pager_removeRows||l.pager.ajax)||h.append(e[i][l.columns].$row);u.processTbody(a,h,!1)}l.appender&&l.appender(a,o),l.debug&&c("Rebuilt table",k),b||l.appender||u.applyWidget(a),a.isUpdating&&l.$table.trigger("updateComplete",a)}function i(a){return/^d/i.test(a)||1===a}function j(d){var e,f,g,h,j,k,m,n=d.config;n.headerList=[],n.headerContent=[],n.debug&&(m=new Date),n.columns=u.computeColumnIndex(n.$table.children("thead, tfoot").children("tr")),h=n.cssIcon?'<i class="'+(n.cssIcon===u.css.icon?u.css.icon:n.cssIcon+" "+u.css.icon)+'"></i>':"",n.$headers=a(a.map(a(d).find(n.selectorHeaders),function(b,c){return f=a(b),f.parent().hasClass(n.cssIgnoreRow)?void 0:(e=u.getColumnData(d,n.headers,c,!0),n.headerContent[c]=f.html(),""===n.headerTemplate||f.find("."+u.css.headerIn).length||(j=n.headerTemplate.replace(/\{content\}/g,f.html()).replace(/\{icon\}/g,f.find("."+u.css.icon).length?"":h),n.onRenderTemplate&&(g=n.onRenderTemplate.apply(f,[c,j]),g&&"string"==typeof g&&(j=g)),f.html('<div class="'+u.css.headerIn+'">'+j+"</div>")),n.onRenderHeader&&n.onRenderHeader.apply(f,[c,n,n.$table]),b.column=parseInt(f.attr("data-column"),10),b.order=i(u.getData(f,e,"sortInitialOrder")||n.sortInitialOrder)?[1,0,2]:[0,1,2],b.count=-1,b.lockedOrder=!1,k=u.getData(f,e,"lockedOrder")||!1,"undefined"!=typeof k&&k!==!1&&(b.order=b.lockedOrder=i(k)?[1,1,1]:[0,0,0]),f.addClass(u.css.header+" "+n.cssHeader),n.headerList[c]=b,f.parent().addClass(u.css.headerRow+" "+n.cssHeaderRow).attr("role","row"),n.tabIndex&&f.attr("tabindex",0),b)})),a(d).find(n.selectorHeaders).attr({scope:"col",role:"columnheader"}),l(d),n.debug&&(c("Built headers:",m),b(n.$headers))}function k(a,b,c){var d=a.config;d.$table.find(d.selectorRemove).remove(),f(a),g(a),s(d,b,c)}function l(b){var c,d,e,f=b.config;f.$headers.each(function(g,h){d=a(h),e=u.getColumnData(b,f.headers,g,!0),c="false"===u.getData(h,e,"sorter")||"false"===u.getData(h,e,"parser"),h.sortDisabled=c,d[c?"addClass":"removeClass"]("sorter-false").attr("aria-disabled",""+c),b.id&&(c?d.removeAttr("aria-controls"):d.attr("aria-controls",b.id))})}function m(b){var c,d,e,f=b.config,g=f.sortList,h=g.length,i=u.css.sortNone+" "+f.cssNone,j=[u.css.sortAsc+" "+f.cssAsc,u.css.sortDesc+" "+f.cssDesc],k=[f.cssIconAsc,f.cssIconDesc,f.cssIconNone],l=["ascending","descending"],m=a(b).find("tfoot tr").children().add(f.$extraHeaders).removeClass(j.join(" "));for(f.$headers.removeClass(j.join(" ")).addClass(i).attr("aria-sort","none").find("."+f.cssIcon).removeClass(k.join(" ")).addClass(k[2]),d=0;h>d;d++)if(2!==g[d][1]&&(c=f.$headers.not(".sorter-false").filter('[data-column="'+g[d][0]+'"]'+(1===h?":last":"")),c.length)){for(e=0;e<c.length;e++)c[e].sortDisabled||c.eq(e).removeClass(i).addClass(j[g[d][1]]).attr("aria-sort",l[g[d][1]]).find("."+f.cssIcon).removeClass(k[2]).addClass(k[g[d][1]]);m.length&&m.filter('[data-column="'+g[d][0]+'"]').removeClass(i).addClass(j[g[d][1]])}f.$headers.not(".sorter-false").each(function(){var b=a(this),c=this.order[(this.count+1)%(f.sortReset?3:2)],d=a.trim(b.text())+": "+u.language[b.hasClass(u.css.sortAsc)?"sortAsc":b.hasClass(u.css.sortDesc)?"sortDesc":"sortNone"]+u.language[0===c?"nextAsc":1===c?"nextDesc":"nextNone"];b.attr("aria-label",d)})}function n(b,c){var d,e,f,g,h,i=b.config,j=c||i.sortList;i.sortList=[],a.each(j,function(b,c){if(g=parseInt(c[0],10),f=i.$headers.filter('[data-column="'+g+'"]:last')[0]){switch(e=(""+c[1]).match(/^(1|d|s|o|n)/),e=e?e[0]:""){case"1":case"d":e=1;break;case"s":e=h||0;break;case"o":d=f.order[(h||0)%(i.sortReset?3:2)],e=0===d?1:1===d?0:2;break;case"n":f.count=f.count+1,e=f.order[f.count%(i.sortReset?3:2)];break;default:e=0}h=0===b?e:h,d=[g,parseInt(e,10)||0],i.sortList.push(d),e=a.inArray(d[1],f.order),f.count=e>=0?e:d[1]%(i.sortReset?3:2)}})}function o(a,b){return a&&a[b]?a[b].type||"":""}function p(b,c,d){if(b.isUpdating)return setTimeout(function(){p(b,c,d)},50);var e,f,g,i,j,k=b.config,l=!d[k.sortMultiSortKey],n=k.$table;if(n.trigger("sortStart",b),c.count=d[k.sortResetKey]?2:(c.count+1)%(k.sortReset?3:2),k.sortRestart&&(f=c,k.$headers.each(function(){this===f||!l&&a(this).is("."+u.css.sortDesc+",."+u.css.sortAsc)||(this.count=-1)})),f=parseInt(a(c).attr("data-column"),10),l){if(k.sortList=[],null!==k.sortForce)for(e=k.sortForce,g=0;g<e.length;g++)e[g][0]!==f&&k.sortList.push(e[g]);if(i=c.order[c.count],2>i&&(k.sortList.push([f,i]),c.colSpan>1))for(g=1;g<c.colSpan;g++)k.sortList.push([f+g,i])}else{if(k.sortAppend&&k.sortList.length>1)for(g=0;g<k.sortAppend.length;g++)j=u.isValueInArray(k.sortAppend[g][0],k.sortList),j>=0&&k.sortList.splice(j,1);if(u.isValueInArray(f,k.sortList)>=0)for(g=0;g<k.sortList.length;g++)j=k.sortList[g],i=k.$headers.filter('[data-column="'+j[0]+'"]:last')[0],j[0]===f&&(j[1]=i.order[c.count],2===j[1]&&(k.sortList.splice(g,1),i.count=-1));else if(i=c.order[c.count],2>i&&(k.sortList.push([f,i]),c.colSpan>1))for(g=1;g<c.colSpan;g++)k.sortList.push([f+g,i])}if(null!==k.sortAppend)for(e=k.sortAppend,g=0;g<e.length;g++)e[g][0]!==f&&k.sortList.push(e[g]);n.trigger("sortBegin",b),setTimeout(function(){m(b),q(b),h(b),n.trigger("sortEnd",b)},1)}function q(a){var b,e,f,g,h,i,j,k,l,m,n,p=0,q=a.config,r=q.textSorter||"",s=q.sortList,t=s.length,v=q.$tbodies.length;if(!q.serverSideSorting&&!d(q.cache)){for(q.debug&&(h=new Date),e=0;v>e;e++)i=q.cache[e].colMax,j=q.cache[e].normalized,j.sort(function(c,d){for(b=0;t>b;b++){if(g=s[b][0],k=s[b][1],p=0===k,q.sortStable&&c[g]===d[g]&&1===t)return c[q.columns].order-d[q.columns].order;if(f=/n/i.test(o(q.parsers,g)),f&&q.strings[g]?(f="boolean"==typeof q.string[q.strings[g]]?(p?1:-1)*(q.string[q.strings[g]]?-1:1):q.strings[g]?q.string[q.strings[g]]||0:0,l=q.numberSorter?q.numberSorter(c[g],d[g],p,i[g],a):u["sortNumeric"+(p?"Asc":"Desc")](c[g],d[g],f,i[g],g,a)):(m=p?c:d,n=p?d:c,l="function"==typeof r?r(m[g],n[g],p,g,a):"object"==typeof r&&r.hasOwnProperty(g)?r[g](m[g],n[g],p,g,a):u["sortNatural"+(p?"Asc":"Desc")](c[g],d[g],g,a,q)),l)return l}return c[q.columns].order-d[q.columns].order});q.debug&&c("Sorting on "+s.toString()+" and dir "+k+" time",h)}}function r(b,c){b.table.isUpdating&&b.$table.trigger("updateComplete",b.table),a.isFunction(c)&&c(b.table)}function s(b,c,d){var e=a.isArray(c)?c:b.sortList,f="undefined"==typeof c?b.resort:c;f===!1||b.serverSideSorting||b.table.isProcessing?(r(b,d),u.applyWidget(b.table,!1)):e.length?b.$table.trigger("sorton",[e,function(){r(b,d)},!0]):b.$table.trigger("sortReset",[function(){r(b,d),u.applyWidget(b.table,!1)}])}function t(b){var c=b.config,e=c.$table,i="sortReset update updateRows updateCell updateAll addRows updateComplete sorton appendCache updateCache applyWidgetId applyWidgets refreshWidgets destroy mouseup mouseleave ".split(" ").join(c.namespace+" ");e.unbind(i.replace(/\s+/g," ")).bind("sortReset"+c.namespace,function(d,e){d.stopPropagation(),c.sortList=[],m(b),q(b),h(b),a.isFunction(e)&&e(b)}).bind("updateAll"+c.namespace,function(a,d,e){a.stopPropagation(),b.isUpdating=!0,u.refreshWidgets(b,!0,!0),j(b),u.bindEvents(b,c.$headers,!0),t(b),k(b,d,e)}).bind("update"+c.namespace+" updateRows"+c.namespace,function(a,c,d){a.stopPropagation(),b.isUpdating=!0,l(b),k(b,c,d)}).bind("updateCell"+c.namespace,function(d,f,g,h){d.stopPropagation(),b.isUpdating=!0,e.find(c.selectorRemove).remove();var i,j,k,l,m=c.$tbodies,n=a(f),o=m.index(a.fn.closest?n.closest("tbody"):n.parents("tbody").filter(":first")),p=a.fn.closest?n.closest("tr"):n.parents("tr").filter(":first");f=n[0],m.length&&o>=0&&(k=m.eq(o).find("tr").index(p),l=n.index(),c.cache[o].normalized[k][c.columns].$row=p,j="undefined"==typeof c.extractors[l].id?u.getElementText(c,f,l):c.extractors[l].format(u.getElementText(c,f,l),b,f,l),i="no-parser"===c.parsers[l].id?"":c.parsers[l].format(j,b,f,l),c.cache[o].normalized[k][l]=c.ignoreCase&&"string"==typeof i?i.toLowerCase():i,"numeric"===(c.parsers[l].type||"").toLowerCase()&&(c.cache[o].colMax[l]=Math.max(Math.abs(i)||0,c.cache[o].colMax[l]||0)),i="undefined"!==g?g:c.resort,i!==!1?s(c,i,h):(a.isFunction(h)&&h(b),c.$table.trigger("updateComplete",c.table)))}).bind("addRows"+c.namespace,function(e,g,h,i){if(e.stopPropagation(),b.isUpdating=!0,d(c.cache))l(b),k(b,h,i);else{g=a(g).attr("role","row");var j,m,n,o,p,q,r,t=g.filter("tr").length,v=c.$tbodies.index(g.parents("tbody").filter(":first"));for(c.parsers&&c.parsers.length||f(b),j=0;t>j;j++){for(n=g[j].cells.length,r=[],q={child:[],$row:g.eq(j),order:c.cache[v].normalized.length},m=0;n>m;m++)o="undefined"==typeof c.extractors[m].id?u.getElementText(c,g[j].cells[m],m):c.extractors[m].format(u.getElementText(c,g[j].cells[m],m),b,g[j].cells[m],m),p="no-parser"===c.parsers[m].id?"":c.parsers[m].format(o,b,g[j].cells[m],m),r[m]=c.ignoreCase&&"string"==typeof p?p.toLowerCase():p,"numeric"===(c.parsers[m].type||"").toLowerCase()&&(c.cache[v].colMax[m]=Math.max(Math.abs(r[m])||0,c.cache[v].colMax[m]||0));r.push(q),c.cache[v].normalized.push(r)}s(c,h,i)}}).bind("updateComplete"+c.namespace,function(){b.isUpdating=!1}).bind("sorton"+c.namespace,function(c,f,i,j){var k=b.config;c.stopPropagation(),e.trigger("sortStart",this),n(b,f),m(b),k.delayInit&&d(k.cache)&&g(b),e.trigger("sortBegin",this),q(b),h(b,j),e.trigger("sortEnd",this),u.applyWidget(b),a.isFunction(i)&&i(b)}).bind("appendCache"+c.namespace,function(c,d,e){c.stopPropagation(),h(b,e),a.isFunction(d)&&d(b)}).bind("updateCache"+c.namespace,function(d,e){c.parsers&&c.parsers.length||f(b),g(b),a.isFunction(e)&&e(b)}).bind("applyWidgetId"+c.namespace,function(a,d){a.stopPropagation(),u.getWidgetById(d).format(b,c,c.widgetOptions)}).bind("applyWidgets"+c.namespace,function(a,c){a.stopPropagation(),u.applyWidget(b,c)}).bind("refreshWidgets"+c.namespace,function(a,c,d){a.stopPropagation(),u.refreshWidgets(b,c,d)}).bind("destroy"+c.namespace,function(a,c,d){a.stopPropagation(),u.destroy(b,c,d)}).bind("resetToLoadState"+c.namespace,function(){u.removeWidget(b,!0,!1),c=a.extend(!0,u.defaults,c.originalSettings),b.hasInitialized=!1,u.setup(b,c)})}var u=this;u.version="2.20.1",u.parsers=[],u.widgets=[],u.defaults={theme:"default",widthFixed:!1,showProcessing:!1,headerTemplate:"{content}",onRenderTemplate:null,onRenderHeader:null,cancelSelection:!0,tabIndex:!0,dateFormat:"mmddyyyy",sortMultiSortKey:"shiftKey",sortResetKey:"ctrlKey",usNumberFormat:!0,delayInit:!1,serverSideSorting:!1,resort:!0,headers:{},ignoreCase:!0,sortForce:null,sortList:[],sortAppend:null,sortStable:!1,sortInitialOrder:"asc",sortLocaleCompare:!1,sortReset:!1,sortRestart:!1,emptyTo:"bottom",stringTo:"max",textExtraction:"basic",textAttribute:"data-text",textSorter:null,numberSorter:null,widgets:[],widgetOptions:{zebra:["even","odd"]},initWidgets:!0,widgetClass:"widget-{name}",initialized:null,tableClass:"",cssAsc:"",cssDesc:"",cssNone:"",cssHeader:"",cssHeaderRow:"",cssProcessing:"",cssChildRow:"tablesorter-childRow",cssIcon:"tablesorter-icon",cssIconNone:"",cssIconAsc:"",cssIconDesc:"",cssInfoBlock:"tablesorter-infoOnly",cssNoSort:"tablesorter-noSort",cssIgnoreRow:"tablesorter-ignoreRow",selectorHeaders:"> thead th, > thead td",selectorSort:"th, td",selectorRemove:".remove-me",debug:!1,headerList:[],empties:{},strings:{},parsers:[]},u.css={table:"tablesorter",cssHasChild:"tablesorter-hasChildRow",childRow:"tablesorter-childRow",colgroup:"tablesorter-colgroup",header:"tablesorter-header",headerRow:"tablesorter-headerRow",headerIn:"tablesorter-header-inner",icon:"tablesorter-icon",processing:"tablesorter-processing",sortAsc:"tablesorter-headerAsc",sortDesc:"tablesorter-headerDesc",sortNone:"tablesorter-headerUnSorted"},u.language={sortAsc:"Ascending sort applied, ",sortDesc:"Descending sort applied, ",sortNone:"No sort applied, ",nextAsc:"activate to apply an ascending sort",nextDesc:"activate to apply a descending sort",nextNone:"activate to remove the sort"},u.log=b,u.benchmark=c,u.getElementText=function(b,c,d){if(!c)return"";var e,f=b.textExtraction||"",g=c.jquery?c:a(c);return a.trim("string"==typeof f?("basic"===f?g.attr(b.textAttribute)||c.textContent:c.textContent)||g.text()||"":"function"==typeof f?f(g[0],b.table,d):"function"==typeof(e=u.getColumnData(b.table,f,d))?e(g[0],b.table,d):g[0].textContent||g.text()||"")},u.construct=function(b){return this.each(function(){var c=this,d=a.extend(!0,{},u.defaults,b);d.originalSettings=b,!c.hasInitialized&&u.buildTable&&"TABLE"!==this.tagName?u.buildTable(c,d):u.setup(c,d)})},u.setup=function(c,d){if(!c||!c.tHead||0===c.tBodies.length||c.hasInitialized===!0)return d.debug?b("ERROR: stopping initialization! No table, thead, tbody or tablesorter has already been initialized"):"";var e="",h=a(c),i=a.metadata;c.hasInitialized=!1,c.isProcessing=!0,c.config=d,a.data(c,"tablesorter",d),d.debug&&a.data(c,"startoveralltimer",new Date),d.supportsDataObject=function(a){return a[0]=parseInt(a[0],10),a[0]>1||1===a[0]&&parseInt(a[1],10)>=4}(a.fn.jquery.split(".")),d.string={max:1,min:-1,emptymin:1,emptymax:-1,zero:0,none:0,"null":0,top:!0,bottom:!1},d.emptyTo=d.emptyTo.toLowerCase(),d.stringTo=d.stringTo.toLowerCase(),/tablesorter\-/.test(h.attr("class"))||(e=""!==d.theme?" tablesorter-"+d.theme:""),d.table=c,d.$table=h.addClass(u.css.table+" "+d.tableClass+e).attr("role","grid"),d.$headers=h.find(d.selectorHeaders),d.namespace=d.namespace?"."+d.namespace.replace(/\W/g,""):".tablesorter"+Math.random().toString(16).slice(2),d.$table.children().children("tr").attr("role","row"),d.$tbodies=h.children("tbody:not(."+d.cssInfoBlock+")").attr({"aria-live":"polite","aria-relevant":"all"}),d.$table.children("caption").length&&(e=d.$table.children("caption")[0],e.id||(e.id=d.namespace.slice(1)+"caption"),d.$table.attr("aria-labelledby",e.id)),d.widgetInit={},d.textExtraction=d.$table.attr("data-text-extraction")||d.textExtraction||"basic",j(c),u.fixColumnWidth(c),f(c),d.totalRows=0,d.delayInit||g(c),u.bindEvents(c,d.$headers,!0),t(c),d.supportsDataObject&&"undefined"!=typeof h.data().sortlist?d.sortList=h.data().sortlist:i&&h.metadata()&&h.metadata().sortlist&&(d.sortList=h.metadata().sortlist),u.applyWidget(c,!0),d.sortList.length>0?h.trigger("sorton",[d.sortList,{},!d.initWidgets,!0]):(m(c),d.initWidgets&&u.applyWidget(c,!1)),d.showProcessing&&h.unbind("sortBegin"+d.namespace+" sortEnd"+d.namespace).bind("sortBegin"+d.namespace+" sortEnd"+d.namespace,function(a){clearTimeout(d.processTimer),u.isProcessing(c),"sortBegin"===a.type&&(d.processTimer=setTimeout(function(){u.isProcessing(c,!0)},500))}),c.hasInitialized=!0,c.isProcessing=!1,d.debug&&u.benchmark("Overall initialization time",a.data(c,"startoveralltimer")),h.trigger("tablesorter-initialized",c),"function"==typeof d.initialized&&d.initialized(c)},u.fixColumnWidth=function(b){b=a(b)[0];var c,d,e=b.config,f=e.$table.children("colgroup");f.length&&f.hasClass(u.css.colgroup)&&f.remove(),e.widthFixed&&0===e.$table.children("colgroup").length&&(f=a('<colgroup class="'+u.css.colgroup+'">'),c=e.$table.width(),e.$tbodies.find("tr:first").children(":visible").each(function(){d=parseInt(a(this).width()/c*1e3,10)/10+"%",f.append(a("<col>").css("width",d))}),e.$table.prepend(f))},u.getColumnData=function(b,c,d,e,f){if("undefined"!=typeof c&&null!==c){b=a(b)[0];var g,h,i=b.config,j=f||i.$headers;if(c[d])return e?c[d]:c[j.index(j.filter('[data-column="'+d+'"]:last'))];for(h in c)if("string"==typeof h&&(g=j.filter('[data-column="'+d+'"]:last').filter(h).add(j.filter('[data-column="'+d+'"]:last').find(h)),g.length))return c[h]}},u.computeColumnIndex=function(b){var c,d,e,f,g,h,i,j,k,l,m,n,o,p=[],q={},r=0;for(c=0;c<b.length;c++)for(i=b[c].cells,d=0;d<i.length;d++){for(h=i[d],g=a(h),j=h.parentNode.rowIndex,k=j+"-"+g.index(),l=h.rowSpan||1,m=h.colSpan||1,"undefined"==typeof p[j]&&(p[j]=[]),e=0;e<p[j].length+1;e++)if("undefined"==typeof p[j][e]){n=e;break}for(q[k]=n,r=Math.max(n,r),g.attr({"data-column":n}),e=j;j+l>e;e++)for("undefined"==typeof p[e]&&(p[e]=[]),o=p[e],f=n;n+m>f;f++)o[f]="x"}return r+1},u.isProcessing=function(b,c,d){b=a(b);var e=b[0].config,f=d||b.find("."+u.css.header);c?("undefined"!=typeof d&&e.sortList.length>0&&(f=f.filter(function(){return this.sortDisabled?!1:u.isValueInArray(parseFloat(a(this).attr("data-column")),e.sortList)>=0})),b.add(f).addClass(u.css.processing+" "+e.cssProcessing)):b.add(f).removeClass(u.css.processing+" "+e.cssProcessing)},u.processTbody=function(b,c,d){b=a(b)[0];var e;return d?(b.isProcessing=!0,c.before('<span class="tablesorter-savemyplace"/>'),e=a.fn.detach?c.detach():c.remove()):(e=a(b).find("span.tablesorter-savemyplace"),c.insertAfter(e),e.remove(),void(b.isProcessing=!1))},u.clearTableBody=function(b){a(b)[0].config.$tbodies.children().detach()},u.bindEvents=function(b,c,e){b=a(b)[0];var f,h=b.config;e!==!0&&(h.$extraHeaders=h.$extraHeaders?h.$extraHeaders.add(c):c),c.find(h.selectorSort).add(c.filter(h.selectorSort)).unbind("mousedown mouseup sort keyup ".split(" ").join(h.namespace+" ").replace(/\s+/g," ")).bind("mousedown mouseup sort keyup ".split(" ").join(h.namespace+" "),function(e,i){var j,k=a(e.target),l=e.type;if(!(1!==(e.which||e.button)&&!/sort|keyup/.test(l)||"keyup"===l&&13!==e.which||"mouseup"===l&&i!==!0&&(new Date).getTime()-f>250)){if("mousedown"===l)return void(f=(new Date).getTime());if(j=a.fn.closest?k.closest("td,th"):k.parents("td,th").filter(":first"),/(input|select|button|textarea)/i.test(e.target.tagName)||k.hasClass(h.cssNoSort)||k.parents("."+h.cssNoSort).length>0||k.parents("button").length>0)return!h.cancelSelection;h.delayInit&&d(h.cache)&&g(b),j=a.fn.closest?a(this).closest("th, td")[0]:/TH|TD/.test(this.tagName)?this:a(this).parents("th, td")[0],j=h.$headers[c.index(j)],j.sortDisabled||p(b,j,e)}}),h.cancelSelection&&c.attr("unselectable","on").bind("selectstart",!1).css({"user-select":"none",MozUserSelect:"none"})},u.restoreHeaders=function(b){var c,d=a(b)[0].config;d.$table.find(d.selectorHeaders).each(function(b){c=a(this),c.find("."+u.css.headerIn).length&&c.html(d.headerContent[b])})},u.destroy=function(b,c,d){if(b=a(b)[0],b.hasInitialized){u.removeWidget(b,!0,!1);var e,f=a(b),g=b.config,h=f.find("thead:first"),i=h.find("tr."+u.css.headerRow).removeClass(u.css.headerRow+" "+g.cssHeaderRow),j=f.find("tfoot:first > tr").children("th, td");c===!1&&a.inArray("uitheme",g.widgets)>=0&&(f.trigger("applyWidgetId",["uitheme"]),f.trigger("applyWidgetId",["zebra"])),h.find("tr").not(i).remove(),e="sortReset update updateAll updateRows updateCell addRows updateComplete sorton appendCache updateCache "+"applyWidgetId applyWidgets refreshWidgets destroy mouseup mouseleave keypress sortBegin sortEnd resetToLoadState ".split(" ").join(g.namespace+" "),f.removeData("tablesorter").unbind(e.replace(/\s+/g," ")),g.$headers.add(j).removeClass([u.css.header,g.cssHeader,g.cssAsc,g.cssDesc,u.css.sortAsc,u.css.sortDesc,u.css.sortNone].join(" ")).removeAttr("data-column").removeAttr("aria-label").attr("aria-disabled","true"),i.find(g.selectorSort).unbind("mousedown mouseup keypress ".split(" ").join(g.namespace+" ").replace(/\s+/g," ")),u.restoreHeaders(b),f.toggleClass(u.css.table+" "+g.tableClass+" tablesorter-"+g.theme,c===!1),b.hasInitialized=!1,delete b.config.cache,"function"==typeof d&&d(b)}},u.regex={chunk:/(^([+\-]?(?:0|[1-9]\d*)(?:\.\d*)?(?:[eE][+\-]?\d+)?)?$|^0x[0-9a-f]+$|\d+)/gi,chunks:/(^\\0|\\0$)/,hex:/^0x[0-9a-f]+$/i},u.sortNatural=function(a,b){if(a===b)return 0;var c,d,e,f,g,h,i,j,k=u.regex;if(k.hex.test(b)){if(d=parseInt(a.match(k.hex),16),f=parseInt(b.match(k.hex),16),f>d)return-1;if(d>f)return 1}for(c=a.replace(k.chunk,"\\0$1\\0").replace(k.chunks,"").split("\\0"),e=b.replace(k.chunk,"\\0$1\\0").replace(k.chunks,"").split("\\0"),j=Math.max(c.length,e.length),i=0;j>i;i++){if(g=isNaN(c[i])?c[i]||0:parseFloat(c[i])||0,h=isNaN(e[i])?e[i]||0:parseFloat(e[i])||0,isNaN(g)!==isNaN(h))return isNaN(g)?1:-1;if(typeof g!=typeof h&&(g+="",h+=""),h>g)return-1;if(g>h)return 1}return 0},u.sortNaturalAsc=function(a,b,c,d,e){if(a===b)return 0;var f=e.string[e.empties[c]||e.emptyTo];return""===a&&0!==f?"boolean"==typeof f?f?-1:1:-f||-1:""===b&&0!==f?"boolean"==typeof f?f?1:-1:f||1:u.sortNatural(a,b)},u.sortNaturalDesc=function(a,b,c,d,e){if(a===b)return 0;var f=e.string[e.empties[c]||e.emptyTo];return""===a&&0!==f?"boolean"==typeof f?f?-1:1:f||1:""===b&&0!==f?"boolean"==typeof f?f?1:-1:-f||-1:u.sortNatural(b,a)},u.sortText=function(a,b){return a>b?1:b>a?-1:0},u.getTextValue=function(a,b,c){if(c){var d,e=a?a.length:0,f=c+b;for(d=0;e>d;d++)f+=a.charCodeAt(d);return b*f}return 0},u.sortNumericAsc=function(a,b,c,d,e,f){if(a===b)return 0;var g=f.config,h=g.string[g.empties[e]||g.emptyTo];return""===a&&0!==h?"boolean"==typeof h?h?-1:1:-h||-1:""===b&&0!==h?"boolean"==typeof h?h?1:-1:h||1:(isNaN(a)&&(a=u.getTextValue(a,c,d)),isNaN(b)&&(b=u.getTextValue(b,c,d)),a-b)},u.sortNumericDesc=function(a,b,c,d,e,f){if(a===b)return 0;var g=f.config,h=g.string[g.empties[e]||g.emptyTo];return""===a&&0!==h?"boolean"==typeof h?h?-1:1:h||1:""===b&&0!==h?"boolean"==typeof h?h?1:-1:-h||-1:(isNaN(a)&&(a=u.getTextValue(a,c,d)),isNaN(b)&&(b=u.getTextValue(b,c,d)),b-a)},u.sortNumeric=function(a,b){return a-b},u.characterEquivalents={a:"áàâãäąå",A:"ÁÀÂÃÄĄÅ",c:"çćč",C:"ÇĆČ",e:"éèêëěę",E:"ÉÈÊËĚĘ",i:"íìİîïı",I:"ÍÌİÎÏ",o:"óòôõö",O:"ÓÒÔÕÖ",ss:"ß",SS:"ẞ",u:"úùûüů",U:"ÚÙÛÜŮ"},u.replaceAccents=function(a){var b,c="[",d=u.characterEquivalents;if(!u.characterRegex){u.characterRegexArray={};for(b in d)"string"==typeof b&&(c+=d[b],u.characterRegexArray[b]=new RegExp("["+d[b]+"]","g"));u.characterRegex=new RegExp(c+"]")}if(u.characterRegex.test(a))for(b in d)"string"==typeof b&&(a=a.replace(u.characterRegexArray[b],b));return a},u.isValueInArray=function(a,b){var c,d=b.length;for(c=0;d>c;c++)if(b[c][0]===a)return c;return-1},u.addParser=function(a){var b,c=u.parsers.length,d=!0;for(b=0;c>b;b++)u.parsers[b].id.toLowerCase()===a.id.toLowerCase()&&(d=!1);d&&u.parsers.push(a)},u.getParserById=function(a){if("false"==a)return!1;var b,c=u.parsers.length;for(b=0;c>b;b++)if(u.parsers[b].id.toLowerCase()===a.toString().toLowerCase())return u.parsers[b];return!1},u.addWidget=function(a){u.widgets.push(a)},u.hasWidget=function(b,c){return b=a(b),b.length&&b[0].config&&b[0].config.widgetInit[c]||!1},u.getWidgetById=function(a){var b,c,d=u.widgets.length;for(b=0;d>b;b++)if(c=u.widgets[b],c&&c.hasOwnProperty("id")&&c.id.toLowerCase()===a.toLowerCase())return c},u.applyWidget=function(b,d,e){b=a(b)[0];var f,g,h,i,j=b.config,k=j.widgetOptions,l=" "+j.table.className+" ",m=[];d!==!1&&b.hasInitialized&&(b.isApplyingWidgets||b.isUpdating)||(j.debug&&(f=new Date),i=new RegExp("\\s"+j.widgetClass.replace(/\{name\}/i,"([\\w-]+)")+"\\s","g"),l.match(i)&&(h=l.match(i),h&&a.each(h,function(a,b){j.widgets.push(b.replace(i,"$1"))})),j.widgets.length&&(b.isApplyingWidgets=!0,j.widgets=a.grep(j.widgets,function(b,c){return a.inArray(b,j.widgets)===c}),a.each(j.widgets||[],function(a,b){i=u.getWidgetById(b),i&&i.id&&(i.priority||(i.priority=10),m[a]=i)}),m.sort(function(a,b){return a.priority<b.priority?-1:a.priority===b.priority?0:1}),a.each(m,function(c,e){e&&((d||!j.widgetInit[e.id])&&(j.widgetInit[e.id]=!0,e.hasOwnProperty("options")&&(k=b.config.widgetOptions=a.extend(!0,{},e.options,k)),e.hasOwnProperty("init")&&(j.debug&&(g=new Date),e.init(b,e,j,k),j.debug&&u.benchmark("Initializing "+e.id+" widget",g))),!d&&e.hasOwnProperty("format")&&(j.debug&&(g=new Date),e.format(b,j,k,!1),j.debug&&u.benchmark((d?"Initializing ":"Applying ")+e.id+" widget",g)))}),d||"function"!=typeof e||e(b)),setTimeout(function(){b.isApplyingWidgets=!1,a.data(b,"lastWidgetApplication",new Date)},0),j.debug&&(h=j.widgets.length,c("Completed "+(d===!0?"initializing ":"applying ")+h+" widget"+(1!==h?"s":""),f)))},u.removeWidget=function(c,d,e){c=a(c)[0],d===!0?(d=[],a.each(u.widgets,function(a,b){b&&b.id&&d.push(b.id)})):d=(a.isArray(d)?d.join(","):d||"").toLowerCase().split(/[\s,]+/);var f,g,h,i=c.config,j=d.length;for(f=0;j>f;f++)g=u.getWidgetById(d[f]),h=a.inArray(d[f],i.widgets),g&&"remove"in g&&(i.debug&&h>=0&&b('Removing "'+d[f]+'" widget'),g.remove(c,i,i.widgetOptions,e),i.widgetInit[d[f]]=!1),h>=0&&e!==!0&&i.widgets.splice(h,1)},u.refreshWidgets=function(b,c,d){b=a(b)[0];var e=b.config,f=e.widgets,g=[],h=function(b){a(b).trigger("refreshComplete")};a.each(u.widgets,function(b,d){d&&d.id&&(c||a.inArray(d.id,f)<0)&&g.push(d.id)}),u.removeWidget(b,g.join(","),!0),d!==!0?(u.applyWidget(b,c||!1,h),c&&u.applyWidget(b,!1,h)):h(b)},u.getData=function(b,c,d){var e,f,g="",h=a(b);return h.length?(e=a.metadata?h.metadata():!1,f=" "+(h.attr("class")||""),"undefined"!=typeof h.data(d)||"undefined"!=typeof h.data(d.toLowerCase())?g+=h.data(d)||h.data(d.toLowerCase()):e&&"undefined"!=typeof e[d]?g+=e[d]:c&&"undefined"!=typeof c[d]?g+=c[d]:" "!==f&&f.match(" "+d+"-")&&(g=f.match(new RegExp("\\s"+d+"-([\\w-]+)"))[1]||""),a.trim(g)):""},u.formatFloat=function(b,c){if("string"!=typeof b||""===b)return b;var d,e=c&&c.config?c.config.usNumberFormat!==!1:"undefined"!=typeof c?c:!0;return b=e?b.replace(/,/g,""):b.replace(/[\s|\.]/g,"").replace(/,/g,"."),/^\s*\([.\d]+\)/.test(b)&&(b=b.replace(/^\s*\(([.\d]+)\)/,"-$1")),d=parseFloat(b),isNaN(d)?a.trim(b):d},u.isDigit=function(a){return isNaN(a)?/^[\-+(]?\d+[)]?$/.test(a.toString().replace(/[,.'"\s]/g,"")):!0}}});var b=a.tablesorter;return a.fn.extend({tablesorter:b.construct}),b.addParser({id:"no-parser",is:function(){return!1},format:function(){return""},type:"text"}),b.addParser({id:"text",is:function(){return!0},format:function(c,d){var e=d.config;return c&&(c=a.trim(e.ignoreCase?c.toLocaleLowerCase():c),c=e.sortLocaleCompare?b.replaceAccents(c):c),c},type:"text"}),b.addParser({id:"digit",is:function(a){return b.isDigit(a)},format:function(c,d){var e=b.formatFloat((c||"").replace(/[^\w,. \-()]/g,""),d);return c&&"number"==typeof e?e:c?a.trim(c&&d.config.ignoreCase?c.toLocaleLowerCase():c):c},type:"numeric"}),b.addParser({id:"currency",is:function(a){return/^\(?\d+[\u00a3$\u20ac\u00a4\u00a5\u00a2?.]|[\u00a3$\u20ac\u00a4\u00a5\u00a2?.]\d+\)?$/.test((a||"").replace(/[+\-,. ]/g,""))},format:function(c,d){var e=b.formatFloat((c||"").replace(/[^\w,. \-()]/g,""),d);return c&&"number"==typeof e?e:c?a.trim(c&&d.config.ignoreCase?c.toLocaleLowerCase():c):c},type:"numeric"}),b.addParser({id:"url",is:function(a){return/^(https?|ftp|file):\/\//.test(a)},format:function(b){return b?a.trim(b.replace(/(https?|ftp|file):\/\//,"")):b},parsed:!0,type:"text"}),b.addParser({id:"isoDate",is:function(a){return/^\d{4}[\/\-]\d{1,2}[\/\-]\d{1,2}/.test(a)},format:function(a){var b=a?new Date(a.replace(/-/g,"/")):a;return b instanceof Date&&isFinite(b)?b.getTime():a},type:"numeric"}),b.addParser({id:"percent",is:function(a){return/(\d\s*?%|%\s*?\d)/.test(a)&&a.length<15},format:function(a,c){return a?b.formatFloat(a.replace(/%/g,""),c):a},type:"numeric"}),b.addParser({id:"image",is:function(a,b,c,d){return d.find("img").length>0},format:function(b,c,d){return a(d).find("img").attr(c.config.imgAttr||"alt")||b},parsed:!0,type:"text"}),b.addParser({id:"usLongDate",is:function(a){return/^[A-Z]{3,10}\.?\s+\d{1,2},?\s+(\d{4})(\s+\d{1,2}:\d{2}(:\d{2})?(\s+[AP]M)?)?$/i.test(a)||/^\d{1,2}\s+[A-Z]{3,10}\s+\d{4}/i.test(a)},format:function(a){var b=a?new Date(a.replace(/(\S)([AP]M)$/i,"$1 $2")):a;return b instanceof Date&&isFinite(b)?b.getTime():a},type:"numeric"}),b.addParser({id:"shortDate",is:function(a){return/(^\d{1,2}[\/\s]\d{1,2}[\/\s]\d{4})|(^\d{4}[\/\s]\d{1,2}[\/\s]\d{1,2})/.test((a||"").replace(/\s+/g," ").replace(/[\-.,]/g,"/"))},format:function(a,c,d,e){if(a){var f,g,h=c.config,i=h.$headers.filter('[data-column="'+e+'"]:last'),j=i.length&&i[0].dateFormat||b.getData(i,b.getColumnData(c,h.headers,e),"dateFormat")||h.dateFormat;return g=a.replace(/\s+/g," ").replace(/[\-.,]/g,"/"),"mmddyyyy"===j?g=g.replace(/(\d{1,2})[\/\s](\d{1,2})[\/\s](\d{4})/,"$3/$1/$2"):"ddmmyyyy"===j?g=g.replace(/(\d{1,2})[\/\s](\d{1,2})[\/\s](\d{4})/,"$3/$2/$1"):"yyyymmdd"===j&&(g=g.replace(/(\d{4})[\/\s](\d{1,2})[\/\s](\d{1,2})/,"$1/$2/$3")),f=new Date(g),f instanceof Date&&isFinite(f)?f.getTime():a}return a},type:"numeric"}),b.addParser({id:"time",is:function(a){return/^(([0-2]?\d:[0-5]\d)|([0-1]?\d:[0-5]\d\s?([AP]M)))$/i.test(a)},format:function(a){var b=a?new Date("2000/01/01 "+a.replace(/(\S)([AP]M)$/i,"$1 $2")):a;return b instanceof Date&&isFinite(b)?b.getTime():a},type:"numeric"}),b.addParser({id:"metadata",is:function(){return!1
 },format:function(b,c,d){var e=c.config,f=e.parserMetadataName?e.parserMetadataName:"sortValue";return a(d).metadata()[f]},type:"numeric"}),b.addWidget({id:"zebra",priority:90,format:function(b,c,d){var e,f,g,h,i,j,k,l=new RegExp(c.cssChildRow,"i"),m=c.$tbodies;for(c.debug&&(j=new Date),k=0;k<m.length;k++)h=0,e=m.eq(k),f=e.children("tr:visible").not(c.selectorRemove),f.each(function(){g=a(this),l.test(this.className)||h++,i=h%2===0,g.removeClass(d.zebra[i?1:0]).addClass(d.zebra[i?0:1])})},remove:function(a,c,d,e){if(!e){var f,g,h=c.$tbodies,i=(d.zebra||["even","odd"]).join(" ");for(f=0;f<h.length;f++)g=b.processTbody(a,h.eq(f),!0),g.children().removeClass(i),b.processTbody(a,g,!1)}}}),b});;/*! jQuery Validation Plugin - v1.13.1 - 10/14/2014
  * http://jqueryvalidation.org/
@@ -14681,6 +14681,8 @@ function enable_delete(confirm_message,none_selected_message)
 			if(confirm(confirm_message))
 			{
 				do_delete($(this).attr('href'));
+			} else {
+				return false;
 			}
 		}
 		else
@@ -14714,10 +14716,7 @@ function do_delete(url)
 					$("#sortable_table tbody tr").length > 0 && update_sortable_table();
 					
 				});
-			});	
-			for(index in response.ids) {
-				update_row(response.ids[index],url.replace(/[^\/]+$/,'get_row'));
-			}
+			});
 			
 			set_feedback(response.message,'success_message',false);	
 		}

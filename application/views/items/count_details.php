@@ -123,6 +123,7 @@ $(document).ready(function()
 function display_stock(location_id)
 {
     var item_quantities= <?php echo json_encode($item_quantities ); ?>;
+    var item_units = <?php echo json_encode($item_units); ?>;
     document.getElementById("quantity").value = item_quantities[location_id];
     
     var inventory_data = <?php echo json_encode($inventory_array); ?>;

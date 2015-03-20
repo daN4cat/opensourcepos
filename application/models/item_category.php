@@ -3,10 +3,10 @@
 class Item_category extends CI_Model
 {
 	
-	function exists($description) 
+	function exists($name) 
 	{
 		$this->db->from('items_categories');
-		$this->db->where('description', $description);
+		$this->db->where('name', $name);
 		$query = $this->db->get();
 		return ($query->num_rows()==1);
 	}
@@ -18,33 +18,33 @@ class Item_category extends CI_Model
 		return $this->db->get();
 	}
 	
-	function save(&$item_category_data,$category_id=false)
+	function save(&$category_data,$category_id=false)
 	{
 		if (!$category_id or !$this->exists($category_id))
 		{
-			if ($this->db->insert('items_categories',$item_category_data))
+			if ($this->db->insert('items_categories',$category_data))
 			{
-				$item_category_data['id']=$this->db->insert_id();
+				$category_data['category_id']=$this->db->insert_id();
 				return true;
 			}
 				
 			return false;
 		}
 		
-		$this->db->where('id', $category_id);
-		return $this->db->update('items_categories',$item_category_data);
+		$this->db->where('category_id', $category_id);
+		return $this->db->update('items_categories',$category_data);
 	}
 	
-	function get_category_by_description($description)
+	function get_category_by_name($name)
 	{
 		$this->db->from('items_categories');
-		$this->db->where('description', $description);
+		$this->db->where('name', $name);
 		return $this->db->get();
 	}
 	
 	function get_category($category_id) 
 	{
-		$this->db->where('id', $category_id);
+		$this->db->where('category_id', $category_id);
 		return $this->db->get('items_categories')->row_array();
 	}
 	
@@ -57,15 +57,15 @@ class Item_category extends CI_Model
 	{
 		$suggestions = array();
 		$this->db->distinct();
-		$this->db->select("id, abbreviation");
+		$this->db->select("category_id, short_name");
 		$this->db->from('items_categories');
 		$this->db->where('deleted', 0);
-		$this->db->like('abbreviation', $search);
-		$this->db->order_by('abbreviation', "asc");
+		$this->db->like('short_name', $search);
+		$this->db->order_by('short_name', "asc");
 		$by_category = $this->db->get();
 		foreach($by_category->result() as $row)
 		{
-			$suggestions[]=$row->id . "|" . $row->abbreviation;
+			$suggestions[]=$row->category_id . "|" . $row->short_name;
 		}
 		return $suggestions;
 	}

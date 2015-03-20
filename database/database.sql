@@ -176,8 +176,8 @@ CREATE TABLE `ospos_items` (
   `receiving_quantity` int(10) NOT NULL DEFAULT '1',
   `item_id` int(10) NOT NULL AUTO_INCREMENT,
   `pic_id` int(10) DEFAULT NULL,
-  `item_category_id` int(10) DEFAULT NULL,
-  `item_size_id` int(10) DEFAULT NULL,
+  `category_id` int(10) DEFAULT NULL,
+  `size_id` int(10) DEFAULT NULL,
   `allow_alt_description` tinyint(1) NOT NULL,
   `is_serialized` tinyint(1) NOT NULL,
   `deleted` int(1) NOT NULL DEFAULT '0',
@@ -193,7 +193,9 @@ CREATE TABLE `ospos_items` (
   `custom10` VARCHAR(25) NOT NULL,
   PRIMARY KEY (`item_id`),
   UNIQUE KEY `item_number` (`item_number`),
-  KEY `ospos_items_ibfk_1` (`supplier_id`)
+  KEY `ospos_items_ibfk_1` (`supplier_id`),
+  KEY `ospos_items_ibfk_2` (`category_id`),
+  KEY `ospos_items_ibfk_3` (`size_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8  ;
 
 --
@@ -264,9 +266,9 @@ CREATE TABLE `ospos_item_kit_items` (
 CREATE TABLE IF NOT EXISTS `ospos_item_quantities` (
   `item_id` int(10) NOT NULL,
   `location_id` int(10) NOT NULL,
-  `unit_id` int(11) NOT NULL DEFAULT '0',
+  `unit_id` int(11) NOT NULL DEFAULT '1',
   `quantity` int(11) NOT NULL DEFAULT '0',
-  `margin` int(11) NOT NULL,
+  `margin` int(8) NOT NULL,
   PRIMARY KEY (`item_id`,`location_id`,`unit_id`),
   KEY `item_id` (`item_id`),
   KEY `location_id` (`location_id`),
@@ -294,7 +296,7 @@ CREATE TABLE IF NOT EXISTS `ospos_item_units` (
 -- Dumping data for table `ospos_item_units`
 --
 
-INSERT INTO `ospos_item_units` (`unit_id`, `unit_name`) VALUES (0, '');
+INSERT INTO `ospos_item_units` (`unit_id`, `unit_name`) VALUES (1, '');
 -- --------------------------------------------------------
 --
 -- Table structure for table `ospos_modules`
@@ -735,58 +737,79 @@ CREATE TABLE `ospos_suppliers` (
 -- Dumping data for table `ospos_suppliers`
 --
 
+-- --------------------------------------------------------
+
 --
 -- Table structure for table `ospos_items_categories`
 --
 
 CREATE TABLE `ospos_items_categories` (
-  `id` int(10) NOT NULL AUTO_INCREMENT,
-  `description` text NOT NULL,
-  `abbreviation` varchar(32) DEFAULT NULL,
-  `item_size_category_id` int(10) DEFAULT NULL,
+  `category_id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(16) NOT NULL,
+  `short_name` varchar(8) DEFAULT NULL,
   `supplier_id` int(10) DEFAULT NULL,
   `deleted` int(1) NOT NULL DEFAULT '0',
-  PRIMARY KEY (`id`),
-  KEY `fk_items_sizes_categories` (`item_size_category_id`),
-  KEY `fk_suppliers` (`supplier_id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;
+  PRIMARY KEY (`category_id`),
+  KEY `supplier_id` (`supplier_id`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 ;
 
 
 --
 -- Dumping data for table `ospos_items_categories`
 --
 
+INSERT INTO `ospos_items_categories` (`name`, `short_name`, `deleted`) VALUES ('default', 'DF', 0);
+-- --------------------------------------------------------
+
 --
 -- Table structure for table `ospos_items_sizes`
 --
 
 CREATE TABLE `ospos_items_sizes` (
-  `id` int(10) NOT NULL AUTO_INCREMENT,
-  `size` varchar(255) DEFAULT NULL,
-  `item_size_category_id` int(10) DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `fk_items_sizes_categories` (`item_size_category_id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+  `size_id` int(10) NOT NULL AUTO_INCREMENT,
+  `size` varchar(16) DEFAULT NULL,
+  PRIMARY KEY (`size_id`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 ;
 
 --
 -- Dumping data for table `ospos_items_sizes`
 --
+
+-- --------------------------------------------------------
 
 --
 -- Table structure for table `ospos_items_sizes_categories`
 --
 
 CREATE TABLE `ospos_items_sizes_categories` (
-  `id` int(10) NOT NULL AUTO_INCREMENT,
-  `name` varchar(255) NOT NULL,
-  `description` text,
-  `abbreviation` text,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;
+  `category_id` int(11) NOT NULL,
+  `size_id` int(11) NOT NULL,
+  PRIMARY KEY (`category_id`, `size_id`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 ;
 
 --
 -- Dumping data for table `ospos_items_sizes_categories`
 --
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `ospos_items_units_categories`
+--
+
+CREATE TABLE `ospos_items_units_categories` (
+  `category_id` int(11) NOT NULL,
+  `unit_id` int(11) NOT NULL,
+  `exact` int(1) DEFAULT '0',
+  PRIMARY KEY (`category_id`, `unit_id`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 ;
+
+--
+-- Dumping data for table `ospos_items_sizes_categories`
+--
+
+INSERT INTO `ospos_items_units_categories` (`category_id`, `unit_id`) VALUES (1, 1);
+-- --------------------------------------------------------
 
 --
 -- Constraints for dumped tables
@@ -810,15 +833,16 @@ ALTER TABLE `ospos_employees`
 ALTER TABLE `ospos_inventory`
   ADD CONSTRAINT `ospos_inventory_ibfk_1` FOREIGN KEY (`trans_items`) REFERENCES `ospos_items` (`item_id`),
   ADD CONSTRAINT `ospos_inventory_ibfk_2` FOREIGN KEY (`trans_user`) REFERENCES `ospos_employees` (`person_id`),
-  ADD CONSTRAINT `ospos_inventory_ibfk_3` FOREIGN KEY (`trans_unit`) REFERENCES `ospos_item_units` (`unit_id`);
+  ADD CONSTRAINT `ospos_inventory_ibfk_3` FOREIGN KEY (`trans_location`) REFERENCES `ospos_stock_locations` (`location_id`),
+  ADD CONSTRAINT `ospos_inventory_ibfk_4` FOREIGN KEY (`trans_unit`) REFERENCES `ospos_item_units` (`unit_id`);
 
 --
 -- Constraints for table `ospos_items`
 --
 ALTER TABLE `ospos_items`
   ADD CONSTRAINT `ospos_items_ibfk_1` FOREIGN KEY (`supplier_id`) REFERENCES `ospos_suppliers` (`person_id`),
-  ADD CONSTRAINT `ospos_items_ibfk_2` FOREIGN KEY (`item_size_id`) REFERENCES `ospos_items_sizes` (`id`),
-  ADD CONSTRAINT `ospos_items_ibfk_3` FOREIGN KEY (`item_category_id`) REFERENCES `ospos_items_categories` (`id`);
+  ADD CONSTRAINT `ospos_items_ibfk_2` FOREIGN KEY (`size_id`) REFERENCES `ospos_items_sizes` (`size_id`),
+  ADD CONSTRAINT `ospos_items_ibfk_3` FOREIGN KEY (`category_id`) REFERENCES `ospos_items_categories` (`category_id`);
 
 --
 -- Constraints for table `ospos_items_taxes`
@@ -937,11 +961,21 @@ ALTER TABLE `ospos_giftcards`
   ADD CONSTRAINT `ospos_giftcards_ibfk_1` FOREIGN KEY (`person_id`) REFERENCES `ospos_people` (`person_id`);
 
 --
--- Constraints for table `ospos_categories`
+-- Constraints for table `ospos_items_categories`
 --
 ALTER TABLE `ospos_items_categories`
-  ADD CONSTRAINT `ospos_items_categories_ibfk_1` FOREIGN KEY (`item_size_category_id`) REFERENCES `ospos_items_sizes_categories` (`id`),
-  ADD CONSTRAINT `ospos_items_categories_ibfk_2` FOREIGN KEY (`supplier_id`) REFERENCES `ospos_suppliers` (`person_id`);
-  
-ALTER TABLE `ospos_items_sizes`
-  ADD CONSTRAINT `ospos_items_sizes_ibfk_1` FOREIGN KEY (`item_size_category_id`) REFERENCES `ospos_items_sizes_categories` (`id`);
+  ADD CONSTRAINT `ospos_items_categories_ibfk_1` FOREIGN KEY (`supplier_id`) REFERENCES `ospos_suppliers` (`person_id`);
+
+--
+-- Constraints for table `ospos_items_sizes_categories`
+--
+ALTER TABLE `ospos_items_sizes_categories`
+  ADD CONSTRAINT `ospos_items_sizes_categories_ibfk_1` FOREIGN KEY (`category_id`) REFERENCES `ospos_items_categories` (`category_id`),
+  ADD CONSTRAINT `ospos_items_sizes_categories_ibfk_2` FOREIGN KEY (`size_id`) REFERENCES `ospos_items_sizes` (`size_id`);
+ 
+--
+-- Constraints for table `ospos_items_units_categories`
+--
+ALTER TABLE `ospos_items_units_categories`
+  ADD CONSTRAINT `ospos_items_units_categories_ibfk_1` FOREIGN KEY (`category_id`) REFERENCES `ospos_items_categories` (`category_id`),
+  ADD CONSTRAINT `ospos_items_units_categories_ibfk_2` FOREIGN KEY (`unit_id`) REFERENCES `ospos_item_units` (`unit_id`);
