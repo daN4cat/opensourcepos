@@ -275,24 +275,15 @@ function get_items_manage_table_data_rows($items,$controller)
 function get_item_data_row($item,$controller)
 {
 	$CI =& get_instance();
-	/*$item_tax_info=$CI->Item_taxes->get_info($item->item_id);
-	$tax_percents = '';
-	foreach($item_tax_info as $tax_info)
-	{
-		$tax_percents.=$tax_info['percent']. '%, ';
-	}
-	$tax_percents=substr($tax_percents, 0, -2);*/
 	$controller_name=strtolower(get_class($CI));
 	$width = $controller->get_form_width();
 
-    $item_quantity='';
-    
 	$table_data_row='<tr>';
 	$table_data_row.="<td width='3%'><input type='checkbox' id='item_$item->item_id' value='".$item->item_id."'/></td>";
 	$table_data_row.='<td width="15%">'.$item->item_number.'</td>';
 	$table_data_row.='<td width="20%">'.$item->name.'</td>';
-	$table_data_row.='<td width="14%">'.$item->size.'</td>';
-	$table_data_row.='<td width="14%">'.$item->short_name.'</td>';
+	$table_data_row.='<td width="14%">'.$item->size_name.'</td>';
+	$table_data_row.='<td width="14%">'.$item->category_short_name.'</td>';
 	$table_data_row.='<td width="14%">'.to_currency($item->cost_price).'</td>';
 	$table_data_row.='<td width="14%">'.to_currency($item->unit_price).'</td>';
     $table_data_row.='<td width="14%">'.$item->quantity.'</td>';

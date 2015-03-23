@@ -66,28 +66,31 @@ echo form_open('items/save_inventory/'.$item_info->item_id,array('id'=>'item_for
 </td>
 <td>
     <?php 
-            echo form_dropdown('stock_location',$stock_locations,current($stock_locations),'onchange="fill_quantity(this.value)"'); 
+    	echo form_dropdown('stock_location',$stock_locations,current($stock_locations),'onchange="fill_quantity(this.value)"'); 
     ?> 
 </td>
 </tr>
+<?php foreach($item_units as $unit_detail) { ?>
 <tr>
-<td>
-<?php echo form_label($this->lang->line('items_current_quantity').':', 'quantity',array('class'=>'wide')); ?>
-</td>
-<td>
-	<?php $qty = array (
-	
-		'name'=>'quantity',
-		'id'=>'quantity',
-		'value'=>current($item_quantities),
-		'style'       => 'border:none',
-		'readonly' => 'readonly'
-		);
-	
-		echo form_input($qty);
-	?>
-</td>
+	<td>
+		<?php echo form_label($this->lang->line('items_current_quantity', $unit_detail['unit_name']).':', 'quantity',array('class'=>'wide')); ?>
+	</td>
+	<td>
+		<?php 
+		$unit_id = $unit_detail['unit_id'];
+		$qty = array (
+		
+			'name'=>'quantity',
+			'id'=>'quantity_' . $unit_id,
+			'value'=>$item_quantities[key($stock_locations)][$unit_id],
+			'style'       => 'border:none',
+			'readonly' => 'readonly'
+			);
+			echo form_input($qty);
+		?>
+	</td>
 </tr>
+<?php } ?>
 </div>	
 </table>
 
@@ -168,7 +171,10 @@ $(document).ready(function()
 
 function fill_quantity(val) 
 {   
-    var item_quantities= <?php echo json_encode($item_quantities ); ?>;
-    document.getElementById("quantity").value = item_quantities[val];
+    var item_quantities= <?php echo json_encode($item_quantities); ?>;
+    for(var unit_id in item_quantities[val]) 
+    {
+    	document.getElementById("quantity_" + unit_id).value = item_quantities[val][unit_id];
+    }
 }
 </script>

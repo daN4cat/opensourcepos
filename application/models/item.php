@@ -49,7 +49,7 @@ class Item extends CI_Model
 				$this->db->where("(name LIKE '%" . $search . "%' OR " .
 					"item_number LIKE '" . $search . "%' OR " .
 					$this->db->dbprefix('items').".item_id LIKE '" . $search . "%' OR " .
-				$this->db->dbprefix('items_categories').".name LIKE '%" . $search . "%')");
+				"category_name LIKE '%" . $search . "%')");
 			}
 			else
 			{
@@ -91,8 +91,12 @@ class Item extends CI_Model
 		$this->db->join('items_categories','items_categories.category_id=items.category_id');
 		if ($stock_location_id > -1)
 		{
+			$this->db->select('items.*, items_categories.*, item_quantities.*, items_sizes.*');
+			$this->db->select('GROUP_CONCAT(quantity, unit_name SEPARATOR \' \') AS quantity', FALSE);
 			$this->db->join('item_quantities','item_quantities.item_id=items.item_id');
+			$this->db->join('item_units','item_units.unit_id=item_quantities.unit_id');
 			$this->db->where('location_id',$stock_location_id);
+			$this->db->group_by('item_quantities.item_id');
 		}
 		$this->db->where('items.deleted',0);
 		$this->db->order_by("items.name","asc");
@@ -232,8 +236,8 @@ class Item extends CI_Model
 		$this->db->join('items_categories','items_categoried.category_id=items.category_id', 'left');
 		$this->db->where('items.deleted',0);
 		$this->db->distinct();
-		$this->db->like('items_categories.name', $search);
-		$this->db->order_by('items_categories.name', 'asc');
+		$this->db->like('category_name', $search);
+		$this->db->order_by('category_name', 'asc');
 		$by_category = $this->db->get();
 		foreach($by_category->result() as $row)
 		{
@@ -549,8 +553,12 @@ class Item extends CI_Model
 		$this->db->join('items_categories','items_categories.category_id=items.category_id', 'left');
 		if ($stock_location_id > -1)
 		{
+			$this->db->select('GROUP_CONCAT(quantity, unit_name SEPARATOR \', \')');
+			$this->db->select('*');
 			$this->db->join('item_quantities','item_quantities.item_id=items.item_id');
+			$this->db->join('item_units','item_units.unit_id=item_quantities.unit_id');
 			$this->db->where('location_id',$stock_location_id);
+			$this->db->group_by('item_quantities.item_id');
 		}
 		if (!empty($search)) 
 		{
@@ -559,7 +567,7 @@ class Item extends CI_Model
 				$this->db->where("(name LIKE '%" . $search . "%' OR " .
 					"item_number LIKE '" . $search . "%' OR " .
 					$this->db->dbprefix('items').".item_id LIKE '" . $search . "%' OR " .
-					$this->db->dbprefix('items_categories').".name LIKE '%" . $search . "%')");
+					"category_name LIKE '%" . $search . "%')");
 			}
 			else
 			{

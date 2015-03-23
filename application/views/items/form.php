@@ -44,7 +44,7 @@ echo form_open('items/save/'.$item_info->item_id,array('id'=>'item_form', 'encty
 </div>
 
 <div class="field_row clearfix">
-<?php echo form_label($this->lang->line('items_supplier').':', 'supplier_id',array('class'=>'required wide')); ?>
+<?php echo form_label($this->lang->line('items_supplier').':', 'supplier_id',array('class'=>'wide')); ?>
 	<div class='form_field'>
 	<?php echo form_dropdown('supplier_id', $suppliers, $selected_supplier_id);?>
 	</div>
@@ -119,23 +119,51 @@ echo form_open('items/save/'.$item_info->item_id,array('id'=>'item_form', 'encty
 <?php
 foreach($stock_locations as $location_id=>$location_detail)
 {
-	foreach($item_units as $unit_id)
+	foreach($item_units as $unit_id => $unit_detail)
 	{
 	?>
     <div class="field_row clearfix">
-    <?php echo form_label($this->lang->line('items_quantity').' '.$location_detail['location_name'] .':', 
+    <?php echo form_label($this->lang->line('items_quantity').' '.$location_detail[$unit_id]['location_name'] .':', 
                             $location_id.'_quantity',
                             array('class'=>'required wide')); ?>
     	<div class='form_field'>
     	<?php echo form_input(array(
-    		'name'=>$location_id.'_quantity_'.$unit_id,
-    		'id'=>$location_id.'_quantity_'.$unit_id,
+    		'name'=>'quantities[]',
+    		'class'=>'quantity',
     		'size'=>'8',
-    		'value'=>$location_detail['quantity'])
+    		'value'=>$location_detail[$unit_id]['quantity'])
     	);?>
+    	<?php echo $unit_detail['unit_name'];?>
     	</div>
-    	<?php echo $location_detail['unit_name'];?>
     </div>
+    <?php if (!$unit_detail['exact']) :?>
+    <div class="field_row clearfix">
+    <?php echo form_label($this->lang->line('items_initial_quantity').' '.$location_detail[$unit_id]['location_name'] .':', 
+                            $location_id.'_initial_quantity',
+                            array('class'=>'required wide')); ?>
+    	<div class='form_field'>
+    	<?php echo form_input(array(
+    		'name'=>'initial_quantities[]',
+    		'size'=>'8',
+    		'class'=>'quantity',
+    		'value'=>$location_detail[$unit_id]['initial_quantity'])
+    	);?>
+    	<?php echo $unit_detail['unit_name'];?>
+    	</div>
+    	<div class='form_field'>
+    	<?php echo form_input(array(
+    		'name'=>'margins[]',
+    		'class'=>'quantity',
+    	    'type'=>'number',
+    		'max'=>100,
+    		'min'=>0,
+    		'style' => 'width:40px',
+    		'value'=>$location_detail[$unit_id]['margin'])
+    	);?>
+    	% / <?php echo $unit_detail['unit_name'];?>
+    	</div>
+    </div>
+    <?php endif; ?>
 	<?php
 	}
 }
@@ -431,6 +459,12 @@ $(document).ready(function()
         }).responseText).success;
         
     }, '<?php echo $this->lang->line("items_item_number_duplicate"); ?>');
+
+	jQuery.validator.addClassRules("quantity", {
+	    number: true,
+	    required: true
+	});
+
 	$('#item_form').validate({
 		submitHandler:function(form)
 		{
@@ -501,8 +535,11 @@ $(document).ready(function()
 			{
 				required:"<?php echo $this->lang->line('items_reorder_level_required'); ?>",
 				number:"<?php echo $this->lang->line('items_reorder_level_number'); ?>"
+			},
+			quantity:
+			{
+				number:"<?php echo $this->lang->line('items_quantity_number'); ?>"
 			}
-
 		}
 	});
 });

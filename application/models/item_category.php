@@ -57,15 +57,15 @@ class Item_category extends CI_Model
 	{
 		$suggestions = array();
 		$this->db->distinct();
-		$this->db->select("category_id, short_name");
+		$this->db->select("category_id, category_short_name");
 		$this->db->from('items_categories');
 		$this->db->where('deleted', 0);
-		$this->db->like('short_name', $search);
-		$this->db->order_by('short_name', "asc");
+		$this->db->like('category_short_name', $search);
+		$this->db->order_by('category_short_name', "asc");
 		$by_category = $this->db->get();
 		foreach($by_category->result() as $row)
 		{
-			$suggestions[]=$row->category_id . "|" . $row->short_name;
+			$suggestions[]=$row->category_id . "|" . $row->category_short_name;
 		}
 		return $suggestions;
 	}

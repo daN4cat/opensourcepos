@@ -32,6 +32,7 @@ class Item_quantities extends CI_Model
     function get_item_quantities($item_id, $location_id)
     {
     	$this->db->from('item_quantities');
+    	$this->db->join('item_units', 'item_units.unit_id=item_quantities.unit_id');
     	$this->db->where('item_id',$item_id);
     	$this->db->where('location_id',$location_id);
     	return $this->db->get()->result_array();
@@ -54,7 +55,9 @@ class Item_quantities extends CI_Model
             {
                 $result->$field='';
             }
-            $result->quantity = 0;
+            $result->initial_quantity = 0.00;
+            $result->quantity = 0.00;
+            $result->margin = 0.00;
         }          
         return $result;   
     }

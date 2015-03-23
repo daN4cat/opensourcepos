@@ -145,8 +145,8 @@ CREATE TABLE `ospos_inventory` (
   `trans_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `trans_comment` text NOT NULL,
   `trans_location` int(10) NOT NULL,
-  `trans_unit` int(11) NOT NULL,
-  `trans_inventory` int(11) NOT NULL DEFAULT '0',
+  `trans_unit` int(10) NOT NULL,
+  `trans_inventory` int(10) NOT NULL DEFAULT '0',
   PRIMARY KEY (`trans_id`),
   KEY `trans_items` (`trans_items`),
   KEY `trans_user` (`trans_user`),
@@ -263,12 +263,13 @@ CREATE TABLE `ospos_item_kit_items` (
 -- Table structure for table `ospos_item_quantities`
 --
 
-CREATE TABLE IF NOT EXISTS `ospos_item_quantities` (
+CREATE TABLE `ospos_item_quantities` (
   `item_id` int(10) NOT NULL,
   `location_id` int(10) NOT NULL,
-  `unit_id` int(11) NOT NULL DEFAULT '1',
-  `quantity` int(11) NOT NULL DEFAULT '0',
-  `margin` int(8) NOT NULL,
+  `unit_id` int(10) NOT NULL DEFAULT '1',
+  `initial_quantity` decimal(15,2) DEFAULT NULL,
+  `quantity` decimal(15,2) NOT NULL DEFAULT '0',
+  `margin` int(8) DEFAULT NULL,
   PRIMARY KEY (`item_id`,`location_id`,`unit_id`),
   KEY `item_id` (`item_id`),
   KEY `location_id` (`location_id`),
@@ -285,9 +286,10 @@ CREATE TABLE IF NOT EXISTS `ospos_item_quantities` (
 -- Table structure for table `ospos_item_units`
 --
 
-CREATE TABLE IF NOT EXISTS `ospos_item_units` (
-  `unit_id` int(11) NOT NULL AUTO_INCREMENT,
+CREATE TABLE `ospos_item_units` (
+  `unit_id` int(10) NOT NULL AUTO_INCREMENT,
   `unit_name` varchar(8) NOT NULL,
+  `exact` int(1) NOT NULL DEFAULT '1',
   `deleted` int(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`unit_id`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8  ;
@@ -744,9 +746,9 @@ CREATE TABLE `ospos_suppliers` (
 --
 
 CREATE TABLE `ospos_items_categories` (
-  `category_id` int(11) NOT NULL AUTO_INCREMENT,
-  `name` varchar(16) NOT NULL,
-  `short_name` varchar(8) DEFAULT NULL,
+  `category_id` int(10) NOT NULL AUTO_INCREMENT,
+  `category_name` varchar(16) NOT NULL,
+  `category_short_name` varchar(8) DEFAULT NULL,
   `supplier_id` int(10) DEFAULT NULL,
   `deleted` int(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`category_id`),
@@ -758,7 +760,7 @@ CREATE TABLE `ospos_items_categories` (
 -- Dumping data for table `ospos_items_categories`
 --
 
-INSERT INTO `ospos_items_categories` (`name`, `short_name`, `deleted`) VALUES ('default', 'DF', 0);
+INSERT INTO `ospos_items_categories` (`category_name`, `category_short_name`, `deleted`) VALUES ('default', 'DF', 0);
 -- --------------------------------------------------------
 
 --
@@ -767,7 +769,7 @@ INSERT INTO `ospos_items_categories` (`name`, `short_name`, `deleted`) VALUES ('
 
 CREATE TABLE `ospos_items_sizes` (
   `size_id` int(10) NOT NULL AUTO_INCREMENT,
-  `size` varchar(16) DEFAULT NULL,
+  `size_name` varchar(16) DEFAULT NULL,
   PRIMARY KEY (`size_id`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 ;
 
@@ -782,8 +784,8 @@ CREATE TABLE `ospos_items_sizes` (
 --
 
 CREATE TABLE `ospos_items_sizes_categories` (
-  `category_id` int(11) NOT NULL,
-  `size_id` int(11) NOT NULL,
+  `category_id` int(10) NOT NULL,
+  `size_id` int(10) NOT NULL,
   PRIMARY KEY (`category_id`, `size_id`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 ;
 
@@ -798,8 +800,8 @@ CREATE TABLE `ospos_items_sizes_categories` (
 --
 
 CREATE TABLE `ospos_items_units_categories` (
-  `category_id` int(11) NOT NULL,
-  `unit_id` int(11) NOT NULL,
+  `category_id` int(10) NOT NULL,
+  `unit_id` int(10) NOT NULL,
   `exact` int(1) DEFAULT '0',
   PRIMARY KEY (`category_id`, `unit_id`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 ;

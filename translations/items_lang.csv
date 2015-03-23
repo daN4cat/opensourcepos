@@ -20,7 +20,7 @@ items_cost_price,Aankoopprijs,Precio de Compra,Cost Price,Prix de Gros,成本價
 items_cost_price_number,Kostprijs moet een cijfer zijn,Precio de Compra debe ser número,Cost price must be a number,Le Prix d\'achat doit etre un nombre,成本價必需是數值,Оптовая цена должно быть число,ราคาทุนต้องเป็นตัวเลข,Fiyat sayı olmalıdır (9.90),Biaya Item harus angka
 items_cost_price_required,Aankoopprijs moet ingevuld worden,Precio de Compra es requerido,Cost Price is a required field,Le Prix de gros est requis,成本價為必填攔位,Оптовая цена обязательное пробелья,ราคาทุนต้องกรอก,Maliyet Fiyatı zorunlu alandır,Biaya Item wajib diisi
 items_count,Update Stock,Actualizar Inventario,Update Inventory,Mise à jour Inventaire,更新庫存,Обновление инвентории,แก้ไขจำนวนสินค้าคงคลัง,Stoğu Güncelle,Mutasi/Penyesuaian Inventori
-items_current_quantity,Huidige hoeveelheid,Cantidad Actual,Current Quantity,Quantité Actuelle,當前數量,Количество Сейчас,ปริมาณสินค้าคงคลัง,Mevcut Adet,Jumlah Saat ini
+items_current_quantity,Huidige hoeveelheid (%1),Cantidad Actual,Current Quantity (%1),Quantité Actuelle,當前數量,Количество Сейчас,ปริมาณสินค้าคงคลัง,Mevcut Adet,Jumlah Saat ini
 items_description,Omschrijving,Descripción,Description,Description,描述,Описание,รายละเอียด,Tanım,Deskripsi
 items_details_count,Stockgegevens,Detalles de Cuenta de Inventario,Inventory Count Details,Détais Inventaire,庫存盤點詳情,детали инвентаризацего количество,รายละเอียดจำนวนสินค้าคงคลัง,Stok Hareket Detayları,Jumlah Detail Inventori
 items_do_nothing,Doe Niets,No Hacer Nada,Do Nothing,Ne rien faire,沒有執行任何修改,Ничего не делать,ไม่ต้องทำอะไร,Değiştirme,Tidak ada Perubahan
@@ -82,4 +82,5 @@ items_unit_price_required,Verkoopprijs moet ingevuld worden,Precio de Venta es r
 items_upc_database,UPC Database,Base de datos UPC,UPC Database,Base de Données UPC,UPC Database,UPC база данных,UPC ฐานข้อมูล,UPC Veritabanı,Database UPC
 items_update,Bewerk Product,Actualizar Artículo,Update Item,Éditer Item,更新產品,Обновить Товар,ปรับแต่งสินค้า,Ürün Güncelle,Ubah
 items_use_inventory_menu,Use Inv. Menu,Usar Menú de Inventario,Use Inv. Menu,Utiliser Menu Inv.,使用庫存清單,Используйте меню инвентаря,ใช้เมนูสินค้าคงเหลือ,Stok Menüsünü Kullan,Gunakan Inv. Menu
-items_size,Maat,,Size,,,,,,
+items_size,Maat,Size,Size,Size,Size,Size,Size,Size,Size
+items_initial_quantity,Initiële hoeveelheid,Initial Quantity,Initial Quantity,Initial Quantity,Initial Quantity,Initial Quantity,Initial Quantity,Initial Quantity,Initial Quantity

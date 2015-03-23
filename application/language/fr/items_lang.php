@@ -83,4 +83,5 @@ $lang["items_unit_price_required"] = "Le Prix de revente est requis";
 $lang["items_upc_database"] = "Base de Données UPC";
 $lang["items_update"] = "Éditer Item";
 $lang["items_use_inventory_menu"] = "Utiliser Menu Inv.";
-$lang["items_size"] = "";
+$lang["items_size"] = "Size";
+$lang["items_initial_quantity"] = "Initial Quantity";
