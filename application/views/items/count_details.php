@@ -116,8 +116,14 @@ foreach( $inventory_array as $row)
 }
 ?>
 <table id="inventory_result" border="0" align="center">
-<tr bgcolor="#FF0033" align="center" style="font-weight:bold"><td colspan="4">Inventory Data Tracking</td></tr>
-<tr align="center" style="font-weight:bold"><td width="15%">Date</td><td width="25%">Employee</td><td width="15%">In/Out Qty</td><td width="45%">Remarks</td></tr>
+<tr bgcolor="#FF0033" align="center" style="font-weight:bold">
+	<td colspan="4">Inventory Data Tracking</td>
+</tr>
+<tr align="center" style="font-weight:bold">
+	<td width="15%">Date</td><td width="25%">Employee</td>
+	<td width="15%">In/Out Qty</td>
+	<td width="45%">Remarks</td>
+</tr>
 </table>
 
 <script type='text/javascript'>

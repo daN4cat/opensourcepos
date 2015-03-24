@@ -26,6 +26,11 @@ class Items extends Secure_area implements iData_controller
 		$this->load->view('items/manage',$data);
 		$this->_remove_duplicate_cookies();
 	}
+	
+	function item_quantities($item_id, $category_id)
+	{
+		$this->load->view('partial/item_quantities', $this->_prepare_view($item_id, $category_id));
+	}
 
 	function find_item_info()
 	{
@@ -248,48 +253,51 @@ class Items extends Secure_area implements iData_controller
 		}
 		
 		$data['item_categories']=$item_categories; 
-		$data['selected_category_id']=$data['item_info']->category_id;
+		$selected_category_id=$data['item_info']->category_id;
+		$data['selected_category_id']=$selected_category_id;
 		
 		$item_sizes = array('' => $this->lang->line('items_none'));
-		foreach($this->Item_sizes->get_sizes_by_category_id($data['selected_category_id']) as $row) {
+		foreach($this->Item_sizes->get_sizes_by_category_id($selected_category_id) as $row) {
 			$item_sizes[$row['size_id']] = $row['size_name'];
 		}
 		$data['item_sizes']=$item_sizes;
 		$data['selected_size_id']=$data['item_info']->size_id;
+        $data = array_merge($data, $this->_prepare_view($item_id, $selected_category_id));
         
+		$this->load->view("items/form", $data);
+	}
+	
+	function _prepare_view($item_id, $category_id)
+	{
 		$item_units = array();
-		foreach($this->Item_units->get_units_by_category_id($data['selected_category_id']) as $item_unit => $unit_detail)
+		foreach($this->Item_units->get_units_by_category_id($category_id) as $item_unit => $unit_detail)
 		{
 			$item_units[$unit_detail['unit_id']] = $unit_detail;
 		}
-		$data['item_units'] = $item_units;
 		
-        $stock_locations = $this->Stock_locations->get_undeleted_all()->result_array();
-        foreach($stock_locations as $stock_location)
-        {
-        	$location_id = $stock_location['location_id'];
-        	foreach($item_units as $unit_id => $unit_detail)
-        	{
-        		$location_array[$location_id][$unit_id] =  array(
-        			'location_name'=>$stock_location['location_name'], 
-        			'quantity' => null,
-        			'initial_quantity' => null,
-        			'unit_name' => null,
-        			'margin' => null);
-	        	$item_quantity = (array) $this->Item_quantities->get_item_quantity($item_id,$location_id,$unit_id);
-        		$merged_array = array_replace_recursive($location_array[$location_id][$unit_id], array(
-        				'quantity'=>$item_quantity['quantity'],
-        				'initial_quantity'=>$item_quantity['initial_quantity'],
-        				'unit_name'=>$unit_detail['unit_name'],
-        				'margin'=>$item_quantity['margin']));
-        		$location_array[$location_id][$unit_id] = $merged_array;
-        	}
-        	$data['stock_locations']= $location_array;
-        }
-        
-		$this->load->view("items/form",$data);
+		$stock_locations = $this->Stock_locations->get_undeleted_all()->result_array();
+		foreach($stock_locations as $stock_location)
+		{
+			$location_id = $stock_location['location_id'];
+			foreach($item_units as $unit_id => $unit_detail)
+			{
+				$location_array[$location_id][$unit_id] =  array(
+						'location_name'=>$stock_location['location_name'],
+						'quantity' => null,
+						'initial_quantity' => null,
+						'unit_name' => null,
+						'margin' => null);
+				$item_quantity = (array) $this->Item_quantities->get_item_quantity($item_id,$location_id,$unit_id);
+				$merged_array = array_replace_recursive($location_array[$location_id][$unit_id], array(
+						'quantity'=>$item_quantity['quantity'],
+						'initial_quantity'=>$item_quantity['initial_quantity'],
+						'unit_name'=>$unit_detail['unit_name'],
+						'margin'=>$item_quantity['margin']));
+				$location_array[$location_id][$unit_id] = $merged_array;
+			}
+		}
+		return array('item_units' => $item_units, 'stock_locations' => $location_array);
 	}
-
     
 	//Ramel Inventory Tracking
 	function inventory($item_id=-1)
