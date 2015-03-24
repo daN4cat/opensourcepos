@@ -67,6 +67,7 @@ echo form_open('items/save_inventory/'.$item_info->item_id,array('id'=>'item_for
     ?> 
 </td>
 </tr>
+<?php if (count($item_units) > 1) : ?>
 <tr>
 	<td>
 		<?php echo form_label($this->lang->line('items_unit_name').':', 'unit_name',array('class'=>'wide')); ?>
@@ -77,6 +78,7 @@ echo form_open('items/save_inventory/'.$item_info->item_id,array('id'=>'item_for
 	    ?> 
 	</td>
 </tr>
+<?php endif; ?>
 <?php foreach($item_units as $unit_id => $unit_name) { ?>
 
 <tr>
