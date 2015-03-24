@@ -268,7 +268,7 @@ CREATE TABLE `ospos_item_quantities` (
   `location_id` int(10) NOT NULL,
   `unit_id` int(10) NOT NULL DEFAULT '1',
   `initial_quantity` decimal(15,2) DEFAULT NULL,
-  `quantity` decimal(15,2) NOT NULL DEFAULT '0',
+  `quantity` decimal(15,2) DEFAULT '0',
   `margin` int(8) DEFAULT NULL,
   PRIMARY KEY (`item_id`,`location_id`,`unit_id`),
   KEY `item_id` (`item_id`),

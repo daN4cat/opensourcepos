@@ -259,7 +259,7 @@ $(document).ready(function()
 			 }
 		, "json");
 		// reload quantities if category changes
-		$("#item_quantities").load('<?php echo site_url("items/item_quantities/".$item_info->item_id);?>/' + ($(this).val() || "0"));
+		$("#item_quantities").load('<?php echo site_url("items/item_quantities/".$item_id);?>/' + ($(this).val() || "0"));
 	});
 	<?php for ($i = 0; $i < 11; $i++) 
 	{ 
@@ -275,7 +275,7 @@ $(document).ready(function()
 		{
 			  type: 'POST',
 			  url: '<?php echo site_url($controller_name . "/check_item_number")?>',
-			  data: {'item_id' : '<?php echo $item_info->item_id; ?>', 'item_number' : $(element).val() },
+			  data: {'item_id' : '<?php echo $item_id; ?>', 'item_number' : $(element).val() },
 			  success: function(response) 
 			  {
 				  success=response.success;

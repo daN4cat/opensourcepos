@@ -158,6 +158,11 @@ input#search
 	padding: 0px;
 }
 
+.noborder
+{
+	border: none;
+}
+
 #select_customer_form input, #select_supplier_form input
 {
 	width: 95%;

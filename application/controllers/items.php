@@ -296,7 +296,7 @@ class Items extends Secure_area implements iData_controller
 				$location_array[$location_id][$unit_id] = $merged_array;
 			}
 		}
-		return array('item_units' => $item_units, 'stock_locations' => $location_array);
+		return array('item_units' => $item_units, 'stock_locations' => $location_array, 'item_id' => $item_id);
 	}
     
 	//Ramel Inventory Tracking

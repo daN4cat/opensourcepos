@@ -4,6 +4,7 @@ ALTER TABLE `ospos_items`
    ADD COLUMN `category_id` int(10) DEFAULT NULL AFTER `name`,
    ADD COLUMN `size_id` int(10) DEFAULT NULL AFTER `pic_id`;
 
+ALTER TABLE `ospos_item_quantities` CHANGE `quantity` `quantity` DECIMAL(15,2) NULL DEFAULT '0.00'; 
 
 CREATE TABLE IF NOT EXISTS `ospos_items_categories` (
   `category_id` int(10) NOT NULL AUTO_INCREMENT,

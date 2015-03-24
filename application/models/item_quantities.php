@@ -55,9 +55,6 @@ class Item_quantities extends CI_Model
             {
                 $result->$field='';
             }
-            $result->initial_quantity = 0.00;
-            $result->quantity = 0.00;
-            $result->margin = 0.00;
         }          
         return $result;   
     }

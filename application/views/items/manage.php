@@ -163,7 +163,7 @@ function show_hide_search_filter(search_filter_section, switchImgTag) {
 		<?php if (count($stock_locations) > 1): ?>
 		<li class="float_left">
 			<span>
-			<?php echo form_dropdown('stock_location',$stock_locations,$stock_location,'id="stock_location" onchange="$(\'#search_form\').submit();"'); ?>
+			<?php echo form_dropdown('stock_location',$stock_locations,$stock_location,'id="stock_location" class="noborder" onchange="$(\'#search_form\').submit();"'); ?>
 			</span>
 		</li>
 		<?php endif; ?>
