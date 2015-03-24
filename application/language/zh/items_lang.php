@@ -85,3 +85,4 @@ $lang["items_update"] = "更新產品";
 $lang["items_use_inventory_menu"] = "使用庫存清單";
 $lang["items_size"] = "Size";
 $lang["items_initial_quantity"] = "Initial Quantity";
+$lang["items_unit_name"] = "Unit";

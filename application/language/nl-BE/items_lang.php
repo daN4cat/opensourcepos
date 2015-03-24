@@ -85,3 +85,4 @@ $lang["items_update"] = "Bewerk Product";
 $lang["items_use_inventory_menu"] = "Use Inv. Menu";
 $lang["items_size"] = "Maat";
 $lang["items_initial_quantity"] = "Initiële hoeveelheid";
+$lang["items_unit_name"] = "Eenheid";

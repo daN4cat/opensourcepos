@@ -85,3 +85,4 @@ $lang["items_update"] = "Éditer Item";
 $lang["items_use_inventory_menu"] = "Utiliser Menu Inv.";
 $lang["items_size"] = "Size";
 $lang["items_initial_quantity"] = "Initial Quantity";
+$lang["items_unit_name"] = "Unit";

@@ -299,7 +299,7 @@ class Items extends Secure_area implements iData_controller
         $stock_locations = $this->Stock_locations->get_undeleted_all()->result_array();          
         $data['stock_locations'] = array();
         $item_units = $this->Item_units->get_units_by_category_id($item_info->category_id);
-        $data['item_units'] = $item_units;
+        $data['item_units'] = array();
         
         foreach($stock_locations as $location_detail)
         {
@@ -307,6 +307,7 @@ class Items extends Secure_area implements iData_controller
         	foreach($item_units as $unit_detail)
         	{
         		$unit_id = $unit_detail['unit_id'];
+        		$data['item_units'][$unit_id] = $unit_detail['unit_name']; 
 	            $data['stock_locations'][$location_id] = $location_detail['location_name'];
 	            $data['item_quantities'][$location_id][$unit_id] = $this->Item_quantities->get_item_quantity($item_id,$location_id,$unit_id)->quantity;
 	        }     
@@ -323,7 +324,9 @@ class Items extends Secure_area implements iData_controller
         $stock_locations = $this->Stock_locations->get_undeleted_all()->result_array();
         $data['stock_locations'] = array();
         $item_units = $this->Item_units->get_units_by_category_id($item_info->category_id);
-        $data['item_units'] = $item_units;
+        $data['item_units'] = array();
+        $inventory_array = $this->Inventory->get_inventory_data_for_item($item_info->item_id)->result_array();
+        $data['inventory_array'] = $inventory_array;
 		
         foreach($stock_locations as $location_detail)
         {       
@@ -331,6 +334,7 @@ class Items extends Secure_area implements iData_controller
 	       	foreach($item_units as $unit_detail)
     	   	{
     	   		$unit_id = $unit_detail['unit_id'];
+    	   		$data['item_units'][$unit_id] = $unit_detail['unit_name'];
 	        	$data['stock_locations'][$location_id] = $location_detail['location_name'];
 	        	$data['item_quantities'][$location_id][$unit_id] = $this->Item_quantities->get_item_quantity($item_id,$location_id,$unit_id)->quantity;
         	}	
@@ -456,18 +460,22 @@ class Items extends Secure_area implements iData_controller
            		foreach($item_units as $unit_detail)
            		{
            			$unit_id = $unit_detail['unit_id'];
+           			$convert = !$unit_detail['exact'];
             		$location_detail = array(
             				'item_id'=>$item_id,
             				'location_id'=>$location_id,
             				'unit_id'=>$unit_id,
-            				'initial_quantity'=>array_pop($initial_quantities),
-            				'margin'=>array_pop($margins),
-            				'quantity'=>array_pop($quantities));
+            				'quantity'=>array_shift($quantities));
+            		if ($convert) 
+            		{
+            			$location_detail['initial_quantity'] = array_shift($initial_quantities);
+            			$location_detail['margin'] = array_shift($margins);
+            		}
             		$item_quantity = (object) $this->Item_quantities->get_item_quantity($item_id, $location_id, $unit_id);
 
             		if ($item_quantity->quantity != $location_detail['quantity'] || 
-            			$item_quantity->initial_quantity != $location_detail['initial_quantity'] ||
-            			$item_quantity->margin != $location_detail['margin'] || $new_item)
+            			($convert && $item_quantity->initial_quantity != $location_detail['initial_quantity']) ||
+            			($convert && $item_quantity->margin != $location_detail['margin']) || $new_item)
             		{
             			$success &= $this->Item_quantities->save($location_detail, $item_id, $location_id, $unit_id);
             		
@@ -540,6 +548,7 @@ class Items extends Secure_area implements iData_controller
 		$employee_id=$this->Employee->get_logged_in_employee_info()->person_id;
 		$cur_item_info = $this->Item->get_info($item_id);
         $location_id = $this->input->post('stock_location');
+        $unit_id = $this->input->post('trans_unit');
 		$inv_data = array
 		(
 			'trans_date'=>date('Y-m-d H:i:s'),
@@ -547,19 +556,18 @@ class Items extends Secure_area implements iData_controller
 			'trans_user'=>$employee_id,
 			'trans_location'=>$location_id,
 			'trans_comment'=>$this->input->post('trans_comment'),
-			'trans_inventory'=>$this->input->post('newquantity')
+			'trans_inventory'=>$this->input->post('trans_inventory'),
+			'trans_unit'=>$unit_id
 		);
 		$this->Inventory->insert($inv_data);
 		
 		//Update stock quantity
 		
-		$item_quantity= $this->Item_quantities->get_item_quantity($item_id,$location_id);
+		$item_quantity= $this->Item_quantities->get_item_quantity($item_id,$location_id,$unit_id);
 		$item_quantity_data = array(
-		'item_id'=>$item_id,
-		'location_id'=>$location_id,
-		'quantity'=>$item_quantity->quantity + $this->input->post('newquantity')
+		'quantity'=>$item_quantity->quantity + $this->input->post('trans_inventory'),
 		);
-		if($this->Item_quantities->save($item_quantity_data,$item_id,$location_id))
+		if($this->Item_quantities->save($item_quantity_data,$item_id,$location_id,$unit_id))
 		{			
 			echo json_encode(array('success'=>true,'message'=>$this->lang->line('items_successful_updating').' '.
 			$cur_item_info->name,'item_id'=>$item_id));

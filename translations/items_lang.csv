@@ -84,3 +84,4 @@ items_update,Bewerk Product,Actualizar Artículo,Update Item,Éditer Item,更新
 items_use_inventory_menu,Use Inv. Menu,Usar Menú de Inventario,Use Inv. Menu,Utiliser Menu Inv.,使用庫存清單,Используйте меню инвентаря,ใช้เมนูสินค้าคงเหลือ,Stok Menüsünü Kullan,Gunakan Inv. Menu
 items_size,Maat,Size,Size,Size,Size,Size,Size,Size,Size
 items_initial_quantity,Initiële hoeveelheid,Initial Quantity,Initial Quantity,Initial Quantity,Initial Quantity,Initial Quantity,Initial Quantity,Initial Quantity,Initial Quantity
+items_unit_name,Eenheid,Unit,Unit,Unit,Unit,Unit,Unit,Unit,Unit

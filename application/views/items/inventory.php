@@ -51,7 +51,7 @@ echo form_open('items/save_inventory/'.$item_info->item_id,array('id'=>'item_for
 		
 		'name'=>'category',
 		'id'=>'category',
-		'value'=>$item_info->description,
+		'value'=>$item_info->category_name,
 		'style'       => 'border:none',
 		'readonly' => 'readonly'
 		);
@@ -70,14 +70,13 @@ echo form_open('items/save_inventory/'.$item_info->item_id,array('id'=>'item_for
     ?> 
 </td>
 </tr>
-<?php foreach($item_units as $unit_detail) { ?>
+<?php foreach($item_units as $unit_id => $unit_name) { ?>
 <tr>
 	<td>
-		<?php echo form_label($this->lang->line('items_current_quantity', $unit_detail['unit_name']).':', 'quantity',array('class'=>'wide')); ?>
+		<?php echo form_label($this->lang->line('items_current_quantity', $unit_name).':', 'quantity',array('class'=>'wide')); ?>
 	</td>
 	<td>
 		<?php 
-		$unit_id = $unit_detail['unit_id'];
 		$qty = array (
 		
 			'name'=>'quantity',
@@ -98,11 +97,17 @@ echo form_open('items/save_inventory/'.$item_info->item_id,array('id'=>'item_for
 <?php echo form_label($this->lang->line('items_add_minus').':', 'quantity',array('class'=>'required wide')); ?>
 	<div class='form_field'>
 	<?php echo form_input(array(
-		'name'=>'newquantity',
-		'id'=>'newquantity'
+		'name'=>'trans_inventory',
+		'id'=>'trans_inventory',
+		'size' => '10'
 		)
 	);?>
 	</div>
+	<?php if (count($item_units) > 1) :?>
+	<div class="form_field">
+	<?php echo form_dropdown('trans_unit', $item_units);?>
+	</div>
+	<?php endif; ?>
 </div>
 
 <div class="field_row clearfix">	
@@ -150,7 +155,7 @@ $(document).ready(function()
  		wrapper: "li",
 		rules: 
 		{
-			newquantity:
+			trans_inventory:
 			{
 				required:true,
 				number:true
@@ -159,7 +164,7 @@ $(document).ready(function()
 		messages: 
 		{
 			
-			newquantity:
+			trans_inventory:
 			{
 				required:"<?php echo $this->lang->line('items_quantity_required'); ?>",
 				number:"<?php echo $this->lang->line('items_quantity_number'); ?>"

@@ -48,7 +48,7 @@ echo form_open('items/save_inventory/'.$item_info->item_id,array('id'=>'item_for
 		
 		'name'=>'category',
 		'id'=>'category',
-		'value'=>$item_info->description,
+		'value'=>$item_info->category_name,
 		'style'       => 'border:none',
 		'readonly' => 'readonly'
 		);
@@ -63,18 +63,28 @@ echo form_open('items/save_inventory/'.$item_info->item_id,array('id'=>'item_for
 </td>
 <td>
     <?php 
-        echo form_dropdown('stock_location',$stock_locations,current($stock_locations),'onchange="display_stock(this.value)"');
+        echo form_dropdown('stock_location',$stock_locations,current($stock_locations),'id="stock_location" onchange="display_stock(this.value,$(\'#unit_name\').val())"');
     ?> 
 </td>
 </tr>
-<?php foreach($item_units as $unit_detail) { ?>
 <tr>
 	<td>
-		<?php echo form_label($this->lang->line('items_current_quantity', $unit_detail['unit_name']).':', 'quantity',array('class'=>'wide')); ?>
+		<?php echo form_label($this->lang->line('items_unit_name').':', 'unit_name',array('class'=>'wide')); ?>
+	</td>
+	<td>
+	    <?php 
+	        echo form_dropdown('unit_name',$item_units,current($item_units),'id="unit_name" onchange="display_stock($(\'#stock_location\').val(),this.value)"');
+	    ?> 
+	</td>
+</tr>
+<?php foreach($item_units as $unit_id => $unit_name) { ?>
+
+<tr>
+	<td>
+		<?php echo form_label($this->lang->line('items_current_quantity', $unit_name).':', 'quantity',array('class'=>'wide')); ?>
 	</td>
 	<td>
 		<?php 
-		$unit_id = $unit_detail['unit_id'];
 		$qty = array (
 			'name'=>'quantity',
 			'id'=>'quantity_'.$unit_id,
@@ -92,19 +102,11 @@ echo form_open('items/save_inventory/'.$item_info->item_id,array('id'=>'item_for
 </div>	
 </table>
 
-<div class="field_row clearfix">
-  <div class='form_field'></div>
-</div>
-
-<div class="field_row clearfix">
-  <div class='form_field'></div>
-</div>
 </fieldset>
 <?php 
 echo form_close();
 ?>
 <?php
-$inventory_array = $this->Inventory->get_inventory_data_for_item($item_info->item_id)->result_array();
 $employee_name = array();
 foreach( $inventory_array as $row)
 {
@@ -121,17 +123,17 @@ foreach( $inventory_array as $row)
 <script type='text/javascript'>
 $(document).ready(function()
 {
-    display_stock(<?php echo json_encode(key($stock_locations)); ?>);
+    display_stock(<?php echo json_encode(key($stock_locations)); ?>, <?php echo json_encode(current(array_keys($item_units))); ?>);
 });
 
-function display_stock(location_id)
+function display_stock(location_id,unit_id)
 {
     var item_quantities= <?php echo json_encode($item_quantities ); ?>;
     var item_units = <?php echo json_encode($item_units); ?>;
-    for (var unit_detail in item_units) 
+    $.each(item_units, function(index, item_unit) 
     {
-	    document.getElementById("quantity_" + unit_detail).value = item_quantities[location_id][unit_detail];
-    }
+        $("quantity_" + index).val(item_quantities[location_id][index]);
+    });
     
     var inventory_data = <?php echo json_encode($inventory_array); ?>;
     var employee_data = <?php echo json_encode($employee_name); ?>;
@@ -148,7 +150,7 @@ function display_stock(location_id)
     for (var index = 0; index < inventory_data.length; index++) 
     {                
         var data = inventory_data[index];
-        if(data['trans_location'] == location_id)
+        if(data['trans_location'] == location_id && data['trans_unit'] == unit_id)
         {
             var tr = document.createElement('TR');
             tr.setAttribute("bgColor","#CCCCCC");
@@ -164,7 +166,7 @@ function display_stock(location_id)
             
             td = document.createElement('TD');
             td.setAttribute("align","right");
-            td.appendChild(document.createTextNode(data['trans_inventory']));
+            td.appendChild(document.createTextNode(data['trans_inventory'] + item_units[data['trans_unit']]));
             tr.appendChild(td);
             
             td = document.createElement('TD');            

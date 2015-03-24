@@ -85,3 +85,4 @@ $lang["items_update"] = "Обновить Товар";
 $lang["items_use_inventory_menu"] = "Используйте меню инвентаря";
 $lang["items_size"] = "Size";
 $lang["items_initial_quantity"] = "Initial Quantity";
+$lang["items_unit_name"] = "Unit";

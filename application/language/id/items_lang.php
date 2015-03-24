@@ -85,3 +85,4 @@ $lang["items_update"] = "Ubah";
 $lang["items_use_inventory_menu"] = "Gunakan Inv. Menu";
 $lang["items_size"] = "Size";
 $lang["items_initial_quantity"] = "Initial Quantity";
+$lang["items_unit_name"] = "Unit";

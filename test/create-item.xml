@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head profile="http://selenium-ide.openqa.org/profiles/test-case">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<link rel="selenium.base" href="http://localhost/pos" />
+<title>create new item</title>
+</head>
+<body>
+<table cellpadding="1" cellspacing="1" border="1">
+<thead>
+<tr><td rowspan="1" colspan="3">create new item</td></tr>
+</thead><tbody>
+<tr>
+	<td>open</td>
+	<td>/pos/index.php/login</td>
+	<td></td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>name=username</td>
+	<td>admin</td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>name=password</td>
+	<td>pointofsale</td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>name=loginButton</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>xpath=(//img[@alt='Menubar Image'])[2]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>css=div.big_button &gt; span</td>
+	<td></td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>id=name</td>
+	<td>1234</td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>id=category</td>
+	<td>aCategory</td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>id=cost_price</td>
+	<td>23</td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>id=unit_price</td>
+	<td>24</td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>id=1_quantity</td>
+	<td>1</td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>id=reorder_level</td>
+	<td>0</td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>id=submit_form</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>id=submit_form</td>
+	<td></td>
+</tr>
+
+</tbody></table>
+</body>
+</html>
