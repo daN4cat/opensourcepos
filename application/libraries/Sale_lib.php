@@ -240,7 +240,7 @@ class Sale_lib
     	$this->CI->session->unset_userdata('giftcard_remainder');
     }
     
-	function add_item($item_id,$quantity=1,$item_location,$discount=0,$price=null,$description=null,$serialnumber=null)
+	function add_item($item_id,$item_location,$quantity=1,$unit_id=null,$discount=0,$price=null,$description=null,$serialnumber=null)
 	{
 		//make sure item exists	     
 		if($this->validate_item($item_id) == false)
@@ -282,9 +282,13 @@ class Sale_lib
 
 		$insertkey=$maxkey+1;
 		$item_info=$this->CI->Item->get_info($item_id,$item_location);
+		$item_units=$this->CI->Item_units->get_units_by_category_id($item_info->category_id);
+		
 		//array/cart records are identified by $insertkey and item_id is just another field.
 		$price=$price!=null?$price:$item_info->unit_price;
 		$total=$this->get_item_total($quantity, $price, $discount);
+		$unit_id == null && $unit_id = key(current($item_units));			
+		$unit_name = current($item_units);
 		$item = array(($insertkey)=>
 		array(
 			'item_id'=>$item_id,
@@ -298,8 +302,11 @@ class Sale_lib
 			'allow_alt_description'=>$item_info->allow_alt_description,
 			'is_serialized'=>$item_info->is_serialized,
 			'quantity'=>$quantity,
+			'unit_id'=>$unit_id,
             'discount'=>$discount,
-			'in_stock'=>$this->CI->Item_quantities->get_item_quantity($item_id, $item_location)->quantity,
+			'item_units'=>$item_units,
+			'unit_name'=>$unit_name,
+			'in_stock'=>$this->CI->Item_quantities->get_item_quantity($item_id, $item_location,$unit_id)->quantity,
 			'price'=>$price,
 			'total'=>$total,
 			'discounted_total'=>$this->get_item_total($quantity, $price, $discount, TRUE)
@@ -330,14 +337,21 @@ class Sale_lib
             return false;
         }
 
+		$items = $this->get_cart();
 		
-		//$item = $this->CI->Item->get_info($item_id);
-		$item_quantity = $this->CI->Item_quantities->get_item_quantity($item_id,$item_location)->quantity; 
-		$quanity_added = $this->get_quantity_already_added($item_id,$item_location);
-		
-		if ($item_quantity - $quanity_added < 0)
+		foreach($items as $item)
 		{
-			return true;
+			if ($item['item_id']==$item_id)
+			{
+				$unit_id = $item['unit_id'];
+				$item_quantity = $this->CI->Item_quantities->get_item_quantity($item_id,$item_location,$unit_id)->quantity; 
+				$quanity_added = $this->get_quantity_already_added($item_id,$item_location);
+				
+				if ($item_quantity - $quanity_added < 0)
+				{
+					return true;
+				}
+			}
 		}
 		
 		return false;

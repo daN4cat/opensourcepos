@@ -145,7 +145,7 @@ CREATE TABLE `ospos_inventory` (
   `trans_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `trans_comment` text NOT NULL,
   `trans_location` int(10) NOT NULL,
-  `trans_unit` int(10) NOT NULL,
+  `trans_unit` int(10) DEFAULT NULL,
   `trans_inventory` int(10) NOT NULL DEFAULT '0',
   PRIMARY KEY (`trans_id`),
   KEY `trans_items` (`trans_items`),
@@ -266,7 +266,7 @@ CREATE TABLE `ospos_item_kit_items` (
 CREATE TABLE `ospos_item_quantities` (
   `item_id` int(10) NOT NULL,
   `location_id` int(10) NOT NULL,
-  `unit_id` int(10) NOT NULL DEFAULT '1',
+  `unit_id` int(10) DEFAULT NULL,
   `initial_quantity` decimal(15,2) DEFAULT NULL,
   `quantity` decimal(15,2) DEFAULT '0',
   `margin` int(8) DEFAULT NULL,

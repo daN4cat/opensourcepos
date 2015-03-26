@@ -219,7 +219,7 @@ class Sales extends Secure_area
 		{
 			$this->sale_lib->add_item_kit($item_id_or_number_or_item_kit_or_receipt,$item_location);
 		}
-		elseif(!$this->sale_lib->add_item($item_id_or_number_or_item_kit_or_receipt,$quantity,$item_location,$this->config->item('default_sales_discount')))
+		elseif(!$this->sale_lib->add_item($item_id_or_number_or_item_kit_or_receipt,$item_location,$quantity,$this->config->item('default_sales_discount')))
 		{
 			$data['error']=$this->lang->line('sales_unable_to_add_item');
 		}
@@ -244,6 +244,7 @@ class Sales extends Secure_area
 		$quantity = $this->input->post("quantity");
 		$discount = $this->input->post("discount");
 		$item_location = $this->input->post("location");
+		$unit_id = $this->input->post("unit_id");
 
 
 		if ($this->form_validation->run() != FALSE)
@@ -255,7 +256,7 @@ class Sales extends Secure_area
 			$data['error']=$this->lang->line('sales_error_editing_item');
 		}
 		
-		if($this->sale_lib->out_of_stock($this->sale_lib->get_item_id($line),$item_location))
+		if($this->sale_lib->out_of_stock($this->sale_lib->get_item_id($line),$item_location,$unit_id))
 		{
 			$data['warning'] = $this->lang->line('sales_quantity_less_than_zero');
 		}
