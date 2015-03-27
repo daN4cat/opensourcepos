@@ -11,6 +11,7 @@ class Config extends Secure_area
 	function index()
 	{
 		$data['stock_locations'] = $this->Stock_locations->get_all()->result_array();
+		$data['default_unit_id'] = $this->Item_units->get_default_unit_id();
 		$data['item_units'] = $this->Item_units->get_all()->result_array();
 		$data['support_barcode'] = $this->barcode_lib->get_list_barcodes();
 		$this->load->view("configs/manage", $data);
@@ -79,8 +80,9 @@ class Config extends Secure_area
 	
 	function item_units()
 	{
+		$default_unit_id = $this->Item_units->get_default_unit_id();
 		$item_units = $this->Item_units->get_undeleted_all();
-		$this->load->view('partial/item_units', array('item_units' => $item_units));
+		$this->load->view('partial/item_units', array('item_units' => $item_units, 'default_unit_id' => $default_unit_id));
 	}
 	
 	function _clear_session_state()
@@ -168,6 +170,7 @@ class Config extends Secure_area
         'barcode_page_width'=>$this->input->post('barcode_page_width'),
         'barcode_page_cellspacing'=>$this->input->post('barcode_page_cellspacing'),
         'barcode_content'=>$this->input->post('barcode_content'),
+        'barcode_separator'=>$this->input->post('barcode_separator')
         );
         
         $result = $this->Appconfig->batch_save( $batch_save_data );

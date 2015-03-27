@@ -18,7 +18,7 @@ foreach($stock_locations as $location_id=>$location_detail)
     	<?php echo $unit_detail['unit_name'];?>
     	</div>
     </div>
-    <?php if (!$unit_detail['exact']) :?>
+   	<?php if ($unit_detail['unit_conversion']) :?>
     <div class="field_row clearfix">
     <?php echo form_label($this->lang->line('items_initial_quantity').' '.$location_detail[$unit_id]['location_name'] .':', 
                             $location_id.'_initial_quantity',
@@ -32,6 +32,7 @@ foreach($stock_locations as $location_id=>$location_detail)
     	);?>
     	<?php echo $unit_detail['unit_name'];?>
     	</div>
+    	<?php if ($unit_detail['inventory_check']) :?>
     	<div class='form_field'>
     	<?php echo form_input(array(
     		'name'=>'margins[]',
@@ -44,6 +45,7 @@ foreach($stock_locations as $location_id=>$location_detail)
     	);?>
     	% / <?php echo $unit_detail['unit_name'];?>
     	</div>
+    	<?php endif; ?>
     </div>
     <?php endif; ?>
 	<?php

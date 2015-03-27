@@ -88,6 +88,16 @@ echo form_open('config/save_barcode/',array('id'=>'barcode_config_form'));
 					<?php echo $this->lang->line('config_barcode_number'); ?>
 				</div>
 			</div>
+			
+			<div class="field_row clearfix">    
+            <?php echo form_label($this->lang->line('config_barcode_separator').':', 'barcode_separator',array('class'=>'wide required')); ?>
+                <div class='form_field'>
+                <?php echo form_input(array(
+                    'name'=>'barcode_separator',
+                    'id'=>'barcode_separator',
+                    'value'=>$this->config->item('barcode_separator')));?>
+                </div>
+            </div>
 
             <div class="field_row clearfix">    
             <?php echo form_label($this->lang->line('config_barcode_layout').':', 'barcode_layout',array('class'=>'wide')); ?>

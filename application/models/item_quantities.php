@@ -38,6 +38,17 @@ class Item_quantities extends CI_Model
     	return $this->db->get()->result_array();
     }
     
+    function get_item_unit_quantity($item_id, $location_id, $unit_id)
+    {
+    	$this->db->select('GROUP_CONCAT(quantity, unit_name SEPARATOR \' \') AS quantity', FALSE);
+    	$this->db->from('item_quantities');
+    	$this->db->join('item_units','item_units.unit_id=item_quantities.unit_id');
+    	$this->db->where('location_id', $location_id);
+    	$this->db->where('item_quantities.unit_id', $unit_id);
+    	$this->db->where('item_id', $item_id);
+    	return $this->db->get()->row();
+    }
+    
     function get_item_quantity($item_id, $location_id, $unit_id)
     {     
         $this->db->from('item_quantities');
@@ -68,7 +79,10 @@ class Item_quantities extends CI_Model
 	{
 		$quantity_old = $this->get_item_quantity($item_id, $location_id, $unit_id);
 		$quantity_new = $quantity_old->quantity + intval($quantity_change);
-		$location_detail = array('quantity'=>$quantity_new);
+		$location_detail = array('item_id'=>$item_id,
+									'location_id'=>$location_id,
+									'unit_id'=>$unit_id,				
+									'quantity'=>$quantity_new);
 		return $this->save($location_detail,$item_id,$location_id,$unit_id);
 	}
 }

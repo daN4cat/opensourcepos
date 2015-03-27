@@ -66,7 +66,7 @@ if (isset($error_message))
 		
 			<td><?php echo to_currency($item['price']); ?></td>
 			<td><?php 
-				echo $item['quantity'] . " " . ($show_stock_locations ? " [" . $item['stock_name'] . "]" : ""); 
+				echo $item['quantity'] . $item['unit_name'] . " " . ($show_stock_locations ? " [" . $item['stock_name'] . "]" : ""); 
 			?></td>
 			<td><div class="total-value"><?php echo to_currency($item[($this->Appconfig->get('show_total_discount') ? 'total' : 'discounted_total')]); ?></div></td>
 		</tr>

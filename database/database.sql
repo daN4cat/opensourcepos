@@ -66,7 +66,10 @@ INSERT INTO `ospos_app_config` (`key`, `value`) VALUES
 ('print_right_margin', '0'),
 ('default_sales_discount', '0'),
 ('lines_per_page', '25'),
-('show_total_discount', '1');
+('show_total_discount', '1'),
+('barcode_separator', '@'),
+('decimal_point', '.'),
+('thousands_separator', '');
 
 -- --------------------------------------------------------
 
@@ -289,7 +292,6 @@ CREATE TABLE `ospos_item_quantities` (
 CREATE TABLE `ospos_item_units` (
   `unit_id` int(10) NOT NULL AUTO_INCREMENT,
   `unit_name` varchar(8) NOT NULL,
-  `exact` int(1) NOT NULL DEFAULT '1',
   `deleted` int(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`unit_id`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8  ;
@@ -489,8 +491,11 @@ CREATE TABLE `ospos_receivings_items` (
   `item_unit_price` decimal(15,2) NOT NULL,
   `discount_percent` decimal(15,2) NOT NULL DEFAULT '0',
   `item_location` int(10) NOT NULL,
+  `unit_id` int(10) NOT NULL,
   PRIMARY KEY (`receiving_id`,`item_id`,`line`),
-  KEY `item_id` (`item_id`)
+  KEY `item_id` (`item_id`),
+  KEY `item_location` (`item_location`),
+  KEY `unit_id` (`unit_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
@@ -535,15 +540,17 @@ CREATE TABLE `ospos_sales_items` (
   `description` varchar(30) DEFAULT NULL,
   `serialnumber` varchar(30) DEFAULT NULL,
   `line` int(3) NOT NULL DEFAULT '0',
-  `quantity_purchased` decimal(15,2) NOT NULL DEFAULT '0.00',
+  `quantity_purchased` decimal(15,2) NOT NULL DEFAULT '0',
   `item_cost_price` decimal(15,2) NOT NULL,
   `item_unit_price` decimal(15,2) NOT NULL,
   `discount_percent` decimal(15,2) NOT NULL DEFAULT '0',
   `item_location` int(10) NOT NULL,
+  `unit_id` int(10) NOT NULL,
   PRIMARY KEY (`sale_id`,`item_id`,`line`),
   KEY `sale_id` (`sale_id`),
   KEY `item_id` (`item_id`),
-  KEY `item_location` (`item_location`)
+  KEY `item_location` (`item_location`),
+  KEY `unit_id` (`unit_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
@@ -628,14 +635,17 @@ CREATE TABLE `ospos_sales_suspended_items` (
   `description` varchar(30) DEFAULT NULL,
   `serialnumber` varchar(30) DEFAULT NULL,
   `line` int(3) NOT NULL DEFAULT '0',
-  `quantity_purchased` decimal(15,2) NOT NULL DEFAULT '0.00',
+  `quantity_purchased` decimal(15,2) NOT NULL DEFAULT '0',
   `item_cost_price` decimal(15,2) NOT NULL,
   `item_unit_price` decimal(15,2) NOT NULL,
   `discount_percent` decimal(15,2) NOT NULL DEFAULT '0',
   `item_location` int(10) NOT NULL,
+  `unit_id` int(10) NOT NULL,
   PRIMARY KEY (`sale_id`,`item_id`,`line`),
   KEY `sale_id` (`sale_id`),
-  KEY `item_id` (`item_id`)
+  KEY `item_id` (`item_id`),
+  KEY `item_location` (`item_location`),
+  KEY `unit_id` (`unit_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
@@ -802,7 +812,8 @@ CREATE TABLE `ospos_items_sizes_categories` (
 CREATE TABLE `ospos_items_units_categories` (
   `category_id` int(10) NOT NULL,
   `unit_id` int(10) NOT NULL,
-  `exact` int(1) DEFAULT '0',
+  `inventory_check` int(1) NOT NULL DEFAULT '0',
+  `unit_conversion` int(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`category_id`, `unit_id`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 ;
 
@@ -885,7 +896,10 @@ ALTER TABLE `ospos_receivings`
 --
 ALTER TABLE `ospos_receivings_items`
   ADD CONSTRAINT `ospos_receivings_items_ibfk_1` FOREIGN KEY (`item_id`) REFERENCES `ospos_items` (`item_id`),
-  ADD CONSTRAINT `ospos_receivings_items_ibfk_2` FOREIGN KEY (`receiving_id`) REFERENCES `ospos_receivings` (`receiving_id`);
+  ADD CONSTRAINT `ospos_receivings_items_ibfk_2` FOREIGN KEY (`receiving_id`) REFERENCES `ospos_receivings` (`receiving_id`),
+  ADD CONSTRAINT `ospos_receivings_items_ibfk_3` FOREIGN KEY (`item_location`) REFERENCES `ospos_stock_locations` (`location_id`),
+  ADD CONSTRAINT `ospos_receivings_items_ibfk_4` FOREIGN KEY (`unit_id`) REFERENCES `ospos_item_units` (`unit_id`);
+  
 
 --
 -- Constraints for table `ospos_sales`
@@ -900,7 +914,9 @@ ALTER TABLE `ospos_sales`
 ALTER TABLE `ospos_sales_items`
   ADD CONSTRAINT `ospos_sales_items_ibfk_1` FOREIGN KEY (`item_id`) REFERENCES `ospos_items` (`item_id`),
   ADD CONSTRAINT `ospos_sales_items_ibfk_2` FOREIGN KEY (`sale_id`) REFERENCES `ospos_sales` (`sale_id`),
-  ADD CONSTRAINT `ospos_sales_items_ibfk_3` FOREIGN KEY (`item_location`) REFERENCES `ospos_stock_locations` (`location_id`);
+  ADD CONSTRAINT `ospos_sales_items_ibfk_3` FOREIGN KEY (`item_location`) REFERENCES `ospos_stock_locations` (`location_id`),
+  ADD CONSTRAINT `ospos_sales_items_ibfk_4` FOREIGN KEY (`unit_id`) REFERENCES `ospos_item_units` (`unit_id`);
+  
 --
 -- Constraints for table `ospos_sales_items_taxes`
 --
@@ -927,7 +943,8 @@ ALTER TABLE `ospos_sales_suspended`
 ALTER TABLE `ospos_sales_suspended_items`
   ADD CONSTRAINT `ospos_sales_suspended_items_ibfk_1` FOREIGN KEY (`item_id`) REFERENCES `ospos_items` (`item_id`),
   ADD CONSTRAINT `ospos_sales_suspended_items_ibfk_2` FOREIGN KEY (`sale_id`) REFERENCES `ospos_sales_suspended` (`sale_id`),
-  ADD CONSTRAINT `ospos_sales_suspended_items_ibfk_3` FOREIGN KEY (`item_location`) REFERENCES `ospos_stock_locations` (`location_id`);
+  ADD CONSTRAINT `ospos_sales_suspended_items_ibfk_3` FOREIGN KEY (`item_location`) REFERENCES `ospos_stock_locations` (`location_id`),
+  ADD CONSTRAINT `ospos_sales_suspended_items_ibfk_4` FOREIGN KEY (`unit_id`) REFERENCES `ospos_item_units` (`unit_id`);
 
 --
 -- Constraints for table `ospos_sales_suspended_items_taxes`

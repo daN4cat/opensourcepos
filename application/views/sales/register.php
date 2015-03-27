@@ -54,14 +54,14 @@ echo $this->lang->line('sales_find_or_scan_item_or_receipt');
 	<table id="register">
 		<thead>
 			<tr>
-				<th style="width: 11%;"><?php echo $this->lang->line('common_delete'); ?></th>
-				<th style="width: 30%;"><?php echo $this->lang->line('sales_item_number'); ?></th>
-				<th style="width: 30%;"><?php echo $this->lang->line('sales_item_name'); ?></th>
-				<th style="width: 11%;"><?php echo $this->lang->line('sales_price'); ?></th>
-				<th style="width: 11%;"><?php echo $this->lang->line('sales_quantity'); ?></th>
-				<th style="width: 11%;"><?php echo $this->lang->line('sales_discount'); ?></th>
-				<th style="width: 15%;"><?php echo $this->lang->line('sales_total'); ?></th>
-				<th style="width: 11%;"><?php echo $this->lang->line('sales_edit'); ?></th>
+				<th style="width: 10%;"><?php echo $this->lang->line('common_delete'); ?></th>
+				<th style="width: 25%;"><?php echo $this->lang->line('sales_item_number'); ?></th>
+				<th style="width: 25%;"><?php echo $this->lang->line('sales_item_name'); ?></th>
+				<th style="width: 8%;"><?php echo $this->lang->line('sales_price'); ?></th>
+				<th style="width: 30%;"><?php echo $this->lang->line('sales_quantity'); ?></th>
+				<th style="width: 5%;"><?php echo $this->lang->line('sales_discount'); ?></th>
+				<th style="width: 12%;"><?php echo $this->lang->line('sales_total'); ?></th>
+				<th style="width: 10%;"><?php echo $this->lang->line('sales_edit'); ?></th>
 			</tr>
 		</thead>
 		<tbody id="cart_contents">
@@ -93,7 +93,7 @@ else
 		<?php if ($items_module_allowed)
 		{
 		?>
-			<td><?php echo form_input(array('name'=>'price','value'=>$item['price'],'size'=>'6'));?></td>
+			<td><?php echo form_input(array('name'=>'price','value'=>$item['price'],'size'=>'5'));?></td>
 
 		<?php
 		}
@@ -107,20 +107,9 @@ else
 		?>
 
 		<td>
-		<?php
-        	if($item['is_serialized']==1)
-        	{
-        		echo $item['quantity'];
-        		echo form_hidden('quantity',$item['quantity']);
-        	}
-        	else
-        	{
-        		echo form_input(array('name'=>'quantity','value'=>$item['quantity'],'size'=>'2'));
-        	}
-		?>
+		<?php $this->load->view('partial/quantity_line', array('item' => $item)); ?>
 		</td>
-
-			<td><?php echo form_input(array('name'=>'discount','value'=>$item['discount'],'size'=>'3'));?></td>
+			<td><?php echo form_input(array('name'=>'discount','value'=>$item['discount'],'size'=>'2'));?></td>
 			<td><?php echo to_currency($item['price']*$item['quantity']-$item['price']*$item['quantity']*$item['discount']/100); ?></td>
 			<td><?php echo form_submit("edit_item", $this->lang->line('sales_edit_item'));?></td>
 		</tr>
@@ -256,7 +245,7 @@ else
 				<label id="comment_label" for="comment"><?php echo $this->lang->line('common_comments'); ?>:</label>
 				<?php echo form_textarea(array('name'=>'comment', 'id' => 'comment', 'value'=>$comment,'rows'=>'4','cols'=>'23'));?>
 				<br />
-		<br />
+				<br />
 				
 				<?php
 				

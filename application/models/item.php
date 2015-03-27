@@ -233,7 +233,7 @@ class Item extends CI_Model
 		}
 
 		$this->db->from('items');
-		$this->db->join('items_categories','items_categoried.category_id=items.category_id', 'left');
+		$this->db->join('items_categories','items_categories.category_id=items.category_id', 'left');
 		$this->db->where('items.deleted',0);
 		$this->db->distinct();
 		$this->db->like('category_name', $search);
@@ -362,187 +362,25 @@ class Item extends CI_Model
 		return $suggestions;
 	}
 
-	function get_custom1_suggestions($search)
+	function get_custom_suggestions($field,$search)
 	{
 		$suggestions = array();
 		$this->db->distinct();
-		$this->db->select('custom1');
+		$this->db->select('custom'.$field);
 		$this->db->from('items');
-		$this->db->like('custom1', $search);
+		$this->db->like('custom'.$field, $search);
 		$this->db->where('deleted', 0);
-		$this->db->order_by("custom1", "asc");
+		$this->db->order_by("custom".$field, "asc");
 		$by_category = $this->db->get();
 		foreach($by_category->result() as $row)
 		{
-			$suggestions[]=$row->custom1;
+			$row = (array) $row;
+			$suggestions[]=$row['custom'.$field];
 		}
 	
 		return $suggestions;
 	}
 	
-	function get_custom2_suggestions($search)
-	{
-		$suggestions = array();
-		$this->db->distinct();
-		$this->db->select('custom2');
-		$this->db->from('items');
-		$this->db->like('custom2', $search);
-		$this->db->where('deleted', 0);
-		$this->db->order_by("custom2", "asc");
-		$by_category = $this->db->get();
-		foreach($by_category->result() as $row)
-		{
-			$suggestions[]=$row->custom2;
-		}
-	
-		return $suggestions;
-	}
-	
-	function get_custom3_suggestions($search)
-	{
-		$suggestions = array();
-		$this->db->distinct();
-		$this->db->select('custom3');
-		$this->db->from('items');
-		$this->db->like('custom3', $search);
-		$this->db->where('deleted', 0);
-		$this->db->order_by("custom3", "asc");
-		$by_category = $this->db->get();
-		foreach($by_category->result() as $row)
-		{
-			$suggestions[]=$row->custom3;
-		}
-	
-		return $suggestions;
-	}
-	
-	function get_custom4_suggestions($search)
-	{
-		$suggestions = array();
-		$this->db->distinct();
-		$this->db->select('custom4');
-		$this->db->from('items');
-		$this->db->like('custom4', $search);
-		$this->db->where('deleted', 0);
-		$this->db->order_by("custom4", "asc");
-		$by_category = $this->db->get();
-		foreach($by_category->result() as $row)
-		{
-			$suggestions[]=$row->custom4;
-		}
-	
-		return $suggestions;
-	}
-	
-	function get_custom5_suggestions($search)
-	{
-		$suggestions = array();
-		$this->db->distinct();
-		$this->db->select('custom5');
-		$this->db->from('items');
-		$this->db->like('custom5', $search);
-		$this->db->where('deleted', 0);
-		$this->db->order_by("custom5", "asc");
-		$by_category = $this->db->get();
-		foreach($by_category->result() as $row)
-		{
-			$suggestions[]=$row->custom5;
-		}
-	
-		return $suggestions;
-	}
-	
-	function get_custom6_suggestions($search)
-	{
-		$suggestions = array();
-		$this->db->distinct();
-		$this->db->select('custom6');
-		$this->db->from('items');
-		$this->db->like('custom6', $search);
-		$this->db->where('deleted', 0);
-		$this->db->order_by("custom6", "asc");
-		$by_category = $this->db->get();
-		foreach($by_category->result() as $row)
-		{
-			$suggestions[]=$row->custom6;
-		}
-	
-		return $suggestions;
-	}
-	
-	function get_custom7_suggestions($search)
-	{
-		$suggestions = array();
-		$this->db->distinct();
-		$this->db->select('custom7');
-		$this->db->from('items');
-		$this->db->like('custom7', $search);
-		$this->db->where('deleted', 0);
-		$this->db->order_by("custom7", "asc");
-		$by_category = $this->db->get();
-		foreach($by_category->result() as $row)
-		{
-			$suggestions[]=$row->custom7;
-		}
-	
-		return $suggestions;
-	}
-	
-	function get_custom8_suggestions($search)
-	{
-		$suggestions = array();
-		$this->db->distinct();
-		$this->db->select('custom8');
-		$this->db->from('items');
-		$this->db->like('custom8', $search);
-		$this->db->where('deleted', 0);
-		$this->db->order_by("custom8", "asc");
-		$by_category = $this->db->get();
-		foreach($by_category->result() as $row)
-		{
-			$suggestions[]=$row->custom8;
-		}
-	
-		return $suggestions;
-	}
-	
-	function get_custom9_suggestions($search)
-	{
-		$suggestions = array();
-		$this->db->distinct();
-		$this->db->select('custom9');
-		$this->db->from('items');
-		$this->db->like('custom9', $search);
-		$this->db->where('deleted', 0);
-		$this->db->order_by("custom9", "asc");
-		$by_category = $this->db->get();
-		foreach($by_category->result() as $row)
-		{
-			$suggestions[]=$row->custom9;
-		}
-	
-		return $suggestions;
-	}
-	
-	function get_custom10_suggestions($search)
-	{
-		$suggestions = array();
-		$this->db->distinct();
-		$this->db->select('custom10');
-		$this->db->from('items');
-		$this->db->like('custom10', $search);
-		$this->db->where('deleted', 0);
-		$this->db->order_by("custom10", "asc");
-		$by_category = $this->db->get();
-		foreach($by_category->result() as $row)
-		{
-			$suggestions[]=$row->custom10;
-		}
-	
-		return $suggestions;
-	}
-/** END GARRISON ADDED **/	
-
 	/*
 	 Persform a search on items
 	*/

@@ -121,3 +121,4 @@ $lang["config_thousands_separator"] = "Pemisah Ribuan";
 $lang["config_timezone"] = "Zona Waktu";
 $lang["config_use_invoice_template"] = "Use invoice template";
 $lang["config_website"] = "Situs Perusahaan";
+$lang["config_barcode_separator"] = "Barcode Field Separator";

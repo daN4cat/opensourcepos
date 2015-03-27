@@ -109,3 +109,4 @@ $lang["sales_unsuccessfully_updated"] = "Ha fallado la actualización de la vent
 $lang["sales_unsuspend"] = "Retomar";
 $lang["sales_unsuspend_and_delete"] = "Retomar y Borrar";
 $lang["sales_update"] = "Edit Sale";
+$lang["sales_inventory_check_failed"] = "The actual quantity's deviation for %1 excesses the allowed margin of %2";

@@ -64,8 +64,8 @@ class Items extends Secure_area implements iData_controller
 		$total_rows = $this->Item->get_found_rows($search,$stock_location,$low_inventory,$is_serialized,$no_description,$search_custom,$is_deleted);
 		$links = $this->_initialize_pagination($this->Item, $lines_per_page, $limit_from, $total_rows, 'search');
 		$data_rows=get_items_manage_table_data_rows($items,$this);
-		echo json_encode(array('total_rows' => $total_rows, 'rows' => $data_rows, 'pagination' => $links));
 		$this->_remove_duplicate_cookies();
+		echo json_encode(array('total_rows' => $total_rows, 'rows' => $data_rows, 'pagination' => $links));
 	}
 	
 	function pic_thumb($pic_id)
@@ -127,7 +127,7 @@ class Items extends Secure_area implements iData_controller
 	*/
 	function suggest_custom1()
 	{
-		$suggestions = $this->Item->get_custom1_suggestions($this->input->post('q'));
+		$suggestions = $this->Item->get_custom_suggestions(1, $this->input->post('q'));
 		echo implode("\n",$suggestions);
 	}
 	
@@ -136,7 +136,7 @@ class Items extends Secure_area implements iData_controller
 	*/
 	function suggest_custom2()
 	{
-		$suggestions = $this->Item->get_custom2_suggestions($this->input->post('q'));
+		$suggestions = $this->Item->get_custom_suggestions(2, $this->input->post('q'));
 		echo implode("\n",$suggestions);
 	}
 	
@@ -145,7 +145,7 @@ class Items extends Secure_area implements iData_controller
 	*/
 	function suggest_custom3()
 	{
-		$suggestions = $this->Item->get_custom3_suggestions($this->input->post('q'));
+		$suggestions = $this->Item->get_custom_suggestions(3, $this->input->post('q'));
 		echo implode("\n",$suggestions);
 	}
 	
@@ -154,7 +154,7 @@ class Items extends Secure_area implements iData_controller
 	*/
 	function suggest_custom4()
 	{
-		$suggestions = $this->Item->get_custom4_suggestions($this->input->post('q'));
+		$suggestions = $this->Item->get_custom_suggestions(4, $this->input->post('q'));
 		echo implode("\n",$suggestions);
 	}
 	
@@ -163,7 +163,7 @@ class Items extends Secure_area implements iData_controller
 	*/
 	function suggest_custom5()
 	{
-		$suggestions = $this->Item->get_custom5_suggestions($this->input->post('q'));
+		$suggestions = $this->Item->get_custom_suggestions(5, $this->input->post('q'));
 		echo implode("\n",$suggestions);
 	}
 	
@@ -172,7 +172,7 @@ class Items extends Secure_area implements iData_controller
 	*/
 	function suggest_custom6()
 	{
-		$suggestions = $this->Item->get_custom6_suggestions($this->input->post('q'));
+		$suggestions = $this->Item->get_custom_suggestions(6, $this->input->post('q'));
 		echo implode("\n",$suggestions);
 	}
 	
@@ -181,7 +181,7 @@ class Items extends Secure_area implements iData_controller
 	*/
 	function suggest_custom7()
 	{
-		$suggestions = $this->Item->get_custom7_suggestions($this->input->post('q'));
+		$suggestions = $this->Item->get_custom_suggestions(7, $this->input->post('q'));
 		echo implode("\n",$suggestions);
 	}
 	
@@ -190,7 +190,7 @@ class Items extends Secure_area implements iData_controller
 	*/
 	function suggest_custom8()
 	{
-		$suggestions = $this->Item->get_custom8_suggestions($this->input->post('q'));
+		$suggestions = $this->Item->get_custom_suggestions(8, $this->input->post('q'));
 		echo implode("\n",$suggestions);
 	}
 	
@@ -199,7 +199,7 @@ class Items extends Secure_area implements iData_controller
 	*/
 	function suggest_custom9()
 	{
-		$suggestions = $this->Item->get_custom9_suggestions($this->input->post('q'));
+		$suggestions = $this->Item->get_custom_suggestions(9, $this->input->post('q'));
 		echo implode("\n",$suggestions);
 	}
 	
@@ -468,7 +468,7 @@ class Items extends Secure_area implements iData_controller
            		foreach($item_units as $unit_detail)
            		{
            			$unit_id = $unit_detail['unit_id'];
-           			$convert = !$unit_detail['exact'];
+           			$convert = $unit_detail['unit_conversion'];
             		$location_detail = array(
             				'item_id'=>$item_id,
             				'location_id'=>$location_id,
@@ -477,7 +477,7 @@ class Items extends Secure_area implements iData_controller
             		if ($convert) 
             		{
             			$location_detail['initial_quantity'] = array_shift($initial_quantities);
-            			$location_detail['margin'] = array_shift($margins);
+            			$unit_detail['inventory_check'] && $location_detail['margin'] = array_shift($margins);
             		}
             		$item_quantity = (object) $this->Item_quantities->get_item_quantity($item_id, $location_id, $unit_id);
 

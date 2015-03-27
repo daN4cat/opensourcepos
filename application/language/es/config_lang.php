@@ -121,3 +121,4 @@ $lang["config_thousands_separator"] = "Thousands Separator";
 $lang["config_timezone"] = "Zona Horaria";
 $lang["config_use_invoice_template"] = "Use invoice template";
 $lang["config_website"] = "Sitio Web";
+$lang["config_barcode_separator"] = "Barcode Field Separator";

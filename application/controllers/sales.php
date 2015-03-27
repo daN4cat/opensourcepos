@@ -204,21 +204,10 @@ class Sales extends Secure_area
 		//$quantity = ($mode=="return")? -1:1;
 		$item_location = $this->sale_lib->get_sale_location();
 		
-		//note:add option to prefix quantity on adding item (dvbondoy)
-		//for improvement:add option to change multiplier symbol in app config
-	        //let's look for multiplier symbol '@'
-	        $qty = strstr($item_id_or_number_or_item_kit_or_receipt, '@', true);
-	        
-	        if ($qty != false) {
-	            //we found one, let's exclude the quantity and multiplier '@'
-	            $item_id_or_number_or_item_kit_or_receipt = trim(strstr($item_id_or_number_or_item_kit_or_receipt, '@'), '@');
-	        } else {
-	            //user did not put a quantity, default to 1
-	            $qty = 1;
-	        }
-	        
+        // parse scanned barcode (if present)
+        $this->barcode_lib->parse_barcode_fields($unit_id, $qty, $item_id_or_number_or_item_kit_or_receipt);
+        
 		$quantity = ($mode=="return") ? '-'.$qty : $qty;
-	        //note:end of edit (dvbondoy)
 
 		if($mode == 'return' && $this->sale_lib->is_valid_receipt($item_id_or_number_or_item_kit_or_receipt))
 		{
@@ -235,12 +224,12 @@ class Sales extends Secure_area
 		{
 			$this->sale_lib->add_item_kit($item_id_or_number_or_item_kit_or_receipt,$item_location);
 		}
-		elseif(!$this->sale_lib->add_item($item_id_or_number_or_item_kit_or_receipt,$item_location,$quantity,$this->config->item('default_sales_discount')))
+		elseif(!$this->sale_lib->add_item($item_id_or_number_or_item_kit_or_receipt,$item_location,$unit_id,$quantity,$this->config->item('default_sales_discount')))
 		{
 			$data['error']=$this->lang->line('sales_unable_to_add_item');
 		}
 		
-		if($this->sale_lib->out_of_stock($item_id_or_number_or_item_kit_or_receipt,$item_location))
+		if($this->sale_lib->out_of_stock($item_id_or_number_or_item_kit_or_receipt,$item_location,$unit_id))
 		{
 			$data['warning'] = $this->lang->line('sales_quantity_less_than_zero');
 		}
@@ -250,33 +239,47 @@ class Sales extends Secure_area
 	function edit_item($line)
 	{
 		$data= array();
-
+		// validate fields first
+		if ($this->input->post('quantity'))
+		{
+			$valid = TRUE;
+			$this->form_validation->set_rules('quantity', 'lang:items_quantity', 'required|numeric');
+		}
+		else
+		{
+			$quantities = implode(",", $this->input->post('quantities'));
+			$decimal_point = $this->config->item('decimal_point');
+			$valid = preg_match("/^(\d+(?:\\" .$decimal_point."\d+)?,?)+$/", $quantities);
+		}
 		$this->form_validation->set_rules('price', 'lang:items_price', 'required|numeric');
-		$this->form_validation->set_rules('quantity', 'lang:items_quantity', 'required|numeric');
-
+		$this->form_validation->set_rules('discount', 'lang:items_discount', 'required|numeric');
+		
+		// further parse fields
+		$quantity_field = $this->input->post('quantity') ? 'quantity' : 'quantities';
+		$unit_id_field = $this->input->post('unit_id') ? 'unit_id' : 'unit_ids';
+		
         $description = $this->input->post("description");
         $serialnumber = $this->input->post("serialnumber");
 		$price = $this->input->post("price");
-		$quantity = $this->input->post("quantity");
+		$quantity = $this->input->post($quantity_field);
 		$discount = $this->input->post("discount");
 		$item_location = $this->input->post("location");
-		$unit_id = $this->input->post("unit_id");
+		$unit_id = $this->input->post($unit_id_field);
 
-
-		if ($this->form_validation->run() != FALSE)
+		if ($valid && $this->form_validation->run() != FALSE)
 		{
-			$this->sale_lib->edit_item($line,$description,$serialnumber,$quantity,$discount,$price);
+			$this->sale_lib->edit_item($line,$description,$serialnumber,$unit_id,$quantity,$discount,$price);
 		}
 		else
 		{
 			$data['error']=$this->lang->line('sales_error_editing_item');
 		}
 		
+		$unit_id = is_array($unit_id) ? current($unit_id) : $unit_id;
 		if($this->sale_lib->out_of_stock($this->sale_lib->get_item_id($line),$item_location,$unit_id))
 		{
 			$data['warning'] = $this->lang->line('sales_quantity_less_than_zero');
 		}
-
 
 		$this->_reload($data);
 	}
@@ -338,9 +341,15 @@ class Sales extends Secure_area
 			));
 		}
 		$invoice_number=$this->_substitute_invoice_number($cust_info);
+		$inventory_check = $this->sale_lib->check_inventory();
 		if ($this->sale_lib->is_invoice_number_enabled() && $this->Sale->invoice_number_exists($invoice_number))
 		{
 			$data['error']=$this->lang->line('sales_invoice_number_duplicate');
+			$this->_reload($data);
+		}
+		else if (count($inventory_check) > 0)
+		{
+			$data['error'] = implode("<br>", $inventory_check);
 			$this->_reload($data);
 		}
 		else 

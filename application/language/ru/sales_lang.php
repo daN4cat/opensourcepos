@@ -109,3 +109,4 @@ $lang["sales_unsuccessfully_updated"] = "Продажа безуспешно о�
 $lang["sales_unsuspend"] = "Разблокировать";
 $lang["sales_unsuspend_and_delete"] = "Разблокировать и удалить";
 $lang["sales_update"] = "Edit Sale";
+$lang["sales_inventory_check_failed"] = "The actual quantity's deviation for %1 excesses the allowed margin of %2";

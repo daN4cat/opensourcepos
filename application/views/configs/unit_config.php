@@ -9,7 +9,7 @@ echo form_open('config/save_units/',array('id'=>'unit_config_form'));
             <legend><?php echo $this->lang->line("config_unit_info"); ?></legend>
             
             <div id="item_units">
-				<?php $this->load->view('partial/item_units', array('item_units' => $item_units)); ?>
+				<?php $this->load->view('partial/item_units', array('item_units' => $item_units, 'default_unit_id' => $default_unit_id)); ?>
 			</div>
             
             <?php 
@@ -36,7 +36,7 @@ $(document).ready(function()
 
 	var hide_show_remove = function() 
 	{
-		if ($("input[name*='item_unit']:enabled").length > 1)
+		if ($("input[name*='item_unit']").length > 1)
 		{
 			$(".remove_item_unit").show();
 		} 
@@ -54,9 +54,7 @@ $(document).ready(function()
 		var new_block = block.insertAfter($(this).parent());
 		var new_block_id = 'item_unit_' + ++id;
 		$(new_block).find('label').html("<?php echo $this->lang->line('config_item_unit'); ?> " + ++unit_count + ": ").attr('for', new_block_id);
-		$(new_block).find('input').attr('id', new_block_id).attr('name', new_block_id).val('');
-		$('.add_item_unit', new_block).click(add_item_unit);
-		$('.remove_item_unit', new_block).click(remove_item_unit);
+		$(new_block).find('input').attr('id', new_block_id).removeAttr('disabled').attr('name', new_block_id).val('');
 		hide_show_remove();
 	};
 

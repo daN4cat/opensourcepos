@@ -121,3 +121,4 @@ $lang["config_thousands_separator"] = "Thousands Separator";
 $lang["config_timezone"] = "Часовой пояс";
 $lang["config_use_invoice_template"] = "Use invoice template";
 $lang["config_website"] = "Веб-сайт";
+$lang["config_barcode_separator"] = "Barcode Field Separator";

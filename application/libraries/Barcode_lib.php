@@ -37,6 +37,26 @@ class Barcode_lib
         return $data;
     }
     
+    function parse_barcode_fields(&$qty, &$unit_id, &$item_id_or_number_or_item_kit_or_receipt)
+    {
+    	$separator = $this->CI->config->item('barcode_separator');
+    	$qty = strstr($item_id_or_number_or_item_kit_or_receipt, $separator, true);
+    	if ($qty != false) {
+    		//we found one, let's exclude the quantity, unit_id and multiplier '@'
+    		$barcode_fields = explode($separator, $item_id_or_number_or_item_kit_or_receipt);
+    		$variables = array(&$unit_id, &$qty, &$item_id_or_number_or_item_kit_or_receipt);
+    		while(current($barcode_fields))
+    		{
+    			$key = end(array_keys($barcode_fields));
+    			$variables[$key] = array_pop($barcode_fields);
+    		}
+    	} else {
+    		//user did not put a quantity nor unit, default to 1
+    		$qty = 1;
+    		$unit_id = $this->CI->Item_units->get_default_unit_id();
+    	}
+    }
+    
     function generate_barcode($barcode_content, $barcode_config)
     {
     	try

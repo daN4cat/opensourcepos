@@ -78,7 +78,10 @@ class Receivings extends Secure_area
 		$data=array();
 		$mode = $this->receiving_lib->get_mode();
 		$item_id_or_number_or_item_kit_or_receipt = $this->input->post("item");
-		$quantity = ($mode=="receive" or $mode=="requisition") ? 1:-1;
+		// parse scanned barcode (if present)
+		$this->barcode_lib->parse_barcode_fields($unit_id, $qty, $item_id_or_number_or_item_kit_or_receipt);
+		
+		$quantity = ($mode=="receive" or $mode=="requisition") ? $qty:-$qty;
 		$item_location = $this->receiving_lib->get_stock_source();
 		if($mode=='return' && $this->receiving_lib->is_valid_receipt($item_id_or_number_or_item_kit_or_receipt))
 		{
@@ -100,20 +103,37 @@ class Receivings extends Secure_area
 	{
 		$data= array();
 
+		// validate fields first
+		if ($this->input->post('quantity'))
+		{
+			$valid = TRUE;
+			$this->form_validation->set_rules('quantity', 'lang:items_quantity', 'required|numeric');
+		}
+		else
+		{
+			$quantities = implode(",", $this->input->post('quantities'));
+			$decimal_point = $this->config->item('decimal_point');
+			$valid = preg_match("/^(\d+(?:\\" .$decimal_point."\d+)?,?)+$/", $quantities);
+		}
+		
 		$this->form_validation->set_rules('price', 'lang:items_price', 'required|numeric');
-		$this->form_validation->set_rules('quantity', 'lang:items_quantity', 'required|integer');
-		$this->form_validation->set_rules('discount', 'lang:items_discount', 'required|integer');
+		$this->form_validation->set_rules('discount', 'lang:items_discount', 'required|numeric');
 
+		// further parse fields
+		$quantity_field = $this->input->post('quantity') ? 'quantity' : 'quantities';
+		$unit_id_field = $this->input->post('unit_id') ? 'unit_id' : 'unit_ids';
+		
     	$description = $this->input->post("description");
     	$serialnumber = $this->input->post("serialnumber");
 		$price = $this->input->post("price");
-		$quantity = $this->input->post("quantity");
+		$quantity = $this->input->post($quantity_field);
 		$discount = $this->input->post("discount");
 		$item_location = $this->input->post("location");
+		$unit_id = $this->input->post($unit_id_field);
 
-		if ($this->form_validation->run() != FALSE)
+		if ($valid && $this->form_validation->run() != FALSE)
 		{
-			$this->receiving_lib->edit_item($item_id,$description,$serialnumber,$quantity,$discount,$price);
+			$this->receiving_lib->edit_item($item_id,$description,$serialnumber,$unit_id,$quantity,$discount,$price);
 		}
 		else
 		{
