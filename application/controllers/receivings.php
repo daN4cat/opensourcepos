@@ -113,7 +113,7 @@ class Receivings extends Secure_area
 		{
 			$quantities = implode(",", $this->input->post('quantities'));
 			$decimal_point = $this->config->item('decimal_point');
-			$valid = preg_match("/^(\d+(?:\\" .$decimal_point."\d+)?,?)+$/", $quantities);
+			$valid = preg_match("/^(\-?\d+(?:\\" .$decimal_point."\d+)?,?)+$/", $quantities);
 		}
 		
 		$this->form_validation->set_rules('price', 'lang:items_price', 'required|numeric');

@@ -314,6 +314,7 @@ class Sale_lib
 		//array/cart records are identified by $insertkey and item_id is just another field.
 		$price=$price!=null?$price:$item_info->unit_price;
 		$total=$this->get_item_total($quantity, $price, $discount);
+		$unit_name = isset($item_units[$unit_id]) ? $item_units[$unit_id]['unit_name'] : '';
 		
 		$item = array(($insertkey)=>
 		array(
@@ -328,7 +329,7 @@ class Sale_lib
 			'allow_alt_description'=>$item_info->allow_alt_description,
 			'is_serialized'=>$item_info->is_serialized,
 			'unit_id'=>$unit_id,
-			'unit_name'=>$item_units[$unit_id]['unit_name'],
+			'unit_name'=>$unit_name,
 			'quantity'=>$quantity,
 			'unit_ids'=>$unit_ids,
 			'quantities'=>$quantities,
@@ -408,8 +409,8 @@ class Sale_lib
 		$assumed_quantity = bcmul($proportion, $ref_quantity, PRECISION);
 		$pct_margin = bcdiv($margin, 100, PRECISION);
 		$max_deviation = abs(bcmul($pct_margin, $assumed_quantity, PRECISION));
-		$actual_deviation = abs(bcsub($actual_quantity, $assumed_quantity, PRECISION));
-		if (bcsub($max_deviation, $actual_deviation, PRECISION) < 0)
+		$actual_deviation = bcsub($actual_quantity, $assumed_quantity, PRECISION);
+		if (bcsub($max_deviation, abs($actual_deviation), PRECISION) < 0)
 		{
 			return $this->CI->lang->line('sales_inventory_check_failed', $actual_deviation, $max_deviation);
 		}
@@ -472,10 +473,16 @@ class Sale_lib
 			$line = &$items[$line];
 			if ($line['unit_validation_required'] /*&& !in_array($unit_id, $line['unit_ids'])*/)
 			{
-				$line['quantity'] = current($quantity);
-				$line['quantities'] = $quantity;
-				$line['unit_id'] = current($unit_id);
-				$line['unit_ids'] = $unit_id;
+				$i = 0;
+				foreach($unit_id as $item_unit_id)
+				{
+					$line['quantities'][$i] = array_shift($quantity);
+					if ($item_unit_id == $line['unit_id'])
+					{
+						$line['quantity'] = $line['quantities'][$i];
+					}
+					$i++;
+				}
 			}
 			else
 			{

@@ -217,6 +217,8 @@ class Receiving_lib
 		$item_info=$this->CI->Item->get_info($item_id,$item_location);
 		//array records are identified by $insertkey and item_id is just another field.
 		$price=$price!=null ? $price: $item_info->cost_price;
+		$unit_name = isset($item_units[$unit_id]) ? $item_units[$unit_id]['unit_name'] : '';
+		
 		$item = array(($insertkey)=>
 		array(
 			'item_id'=>$item_id,
@@ -229,7 +231,7 @@ class Receiving_lib
 			'allow_alt_description'=>$item_info->allow_alt_description,
 			'is_serialized'=>$item_info->is_serialized,
 			'unit_id'=>$unit_id,
-			'unit_name'=>$item_units[$unit_id]['unit_name'],
+			'unit_name'=>$unit_name,
 			'quantity'=>$quantity,
 			'unit_ids'=>$unit_ids,
 			'quantities'=>$quantities,
@@ -276,12 +278,19 @@ class Receiving_lib
 		if(isset($items[$line]))
 		{
 			$line = &$items[$line];
-			if ($line['unit_validation_required'] /*&& !in_array($unit_id, $line['unit_ids'])*/)
+			$index = array_search($unit_id, $line['unit_ids']);
+			if ($line['unit_validation_required'])
 			{
-				$line['quantity'] = current($quantity);
-				$line['quantities'] = $quantity;
-				$line['unit_id'] = current($unit_id);
-				$line['unit_ids'] = $unit_id;
+				$i = 0;
+				foreach($unit_id as $item_unit_id)
+				{
+					$line['quantities'][$i] = array_shift($quantity);
+					if ($item_unit_id == $line['unit_id'])
+					{
+						$line['quantity'] = $line['quantities'][$i];
+					}
+					$i++;
+				}
 			}
 			else
 			{
