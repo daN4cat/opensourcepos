@@ -229,12 +229,12 @@ function get_items_manage_table($items,$controller)
 	$headers = array('<input type="checkbox" id="select_all" />', 
 	$CI->lang->line('items_item_number'),
 	$CI->lang->line('items_name'),
-	$CI->lang->line('items_size'),
-	$CI->lang->line('items_category'),
+	$CI->lang->line('items_bin'),
+	$CI->lang->line('items_color'),
 	$CI->lang->line('items_cost_price'),
 	$CI->lang->line('items_unit_price'),
 	$CI->lang->line('items_quantity'),
-	//$CI->lang->line('items_tax_percents'),
+	$CI->lang->line('items_category'),
 	'&nbsp;',
 	'&nbsp;',
 	'&nbsp;'	
@@ -282,12 +282,12 @@ function get_item_data_row($item,$controller)
 	$table_data_row.="<td width='3%'><input type='checkbox' id='item_$item->item_id' value='".$item->item_id."'/></td>";
 	$table_data_row.='<td width="15%">'.$item->item_number.'</td>';
 	$table_data_row.='<td width="20%">'.$item->name.'</td>';
-	$table_data_row.='<td width="14%">'.$item->size_name.'</td>';
-	$table_data_row.='<td width="14%">'.$item->category_short_name.'</td>';
+	$table_data_row.='<td width="14%">'.$item->custom1.'</td>';
+	$table_data_row.='<td width="14%">'.$item->custom2.'</td>';
 	$table_data_row.='<td width="14%">'.to_currency($item->cost_price).'</td>';
 	$table_data_row.='<td width="14%">'.to_currency($item->unit_price).'</td>';
     $table_data_row.='<td width="14%">'.$item->quantity.'</td>';
-	//$table_data_row.='<td width="14%">'.$tax_percents.'</td>';
+	$table_data_row.='<td width="14%">'.$item->category_short_name.'</td>';
 	$image = '';
 	if (!empty($item->pic_id))
 	{
