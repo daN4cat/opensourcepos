@@ -88,7 +88,7 @@ class Item extends CI_Model
 	{
 		$this->db->from('items');
 		$this->db->join('items_sizes', 'items_sizes.size_id = items.size_id', 'left');
-		$this->db->join('items_categories','items_categories.category_id=items.category_id');
+		$this->db->join('items_categories','items_categories.category_id=items.category_id', 'left');
 		if ($stock_location_id > -1)
 		{
 			$this->db->select('items.*, items_categories.*, item_quantities.*, items_sizes.*');
@@ -114,7 +114,7 @@ class Item extends CI_Model
 		$this->db->from('items');
 		$this->db->where('item_id',$item_id);
 		$this->db->join('items_sizes', 'items_sizes.size_id = items.size_id', 'left');
-		$this->db->join('items_categories','items_categories.category_id=items.category_id');
+		$this->db->join('items_categories','items_categories.category_id=items.category_id', 'left');
 		
 		$query = $this->db->get();
 
