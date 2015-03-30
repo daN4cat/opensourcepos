@@ -37,7 +37,7 @@ class Barcode_lib
         return $data;
     }
     
-    function parse_barcode_fields(&$qty, &$unit_id, &$item_id_or_number_or_item_kit_or_receipt)
+    function parse_barcode_fields(&$unit_id, &$qty, &$item_id_or_number_or_item_kit_or_receipt)
     {
     	$separator = $this->CI->config->item('barcode_separator');
     	if (strstr($item_id_or_number_or_item_kit_or_receipt, $separator, true)) {
