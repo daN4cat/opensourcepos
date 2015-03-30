@@ -203,7 +203,6 @@ class Sales extends Secure_area
 		$item_id_or_number_or_item_kit_or_receipt = $this->input->post("item");
 		//$quantity = ($mode=="return")? -1:1;
 		$item_location = $this->sale_lib->get_sale_location();
-		
         // parse scanned barcode (if present)
         $this->barcode_lib->parse_barcode_fields($unit_id, $qty, $item_id_or_number_or_item_kit_or_receipt);
         
@@ -222,7 +221,7 @@ class Sales extends Secure_area
 		}
 		elseif($this->sale_lib->is_valid_item_kit($item_id_or_number_or_item_kit_or_receipt))
 		{
-			$this->sale_lib->add_item_kit($item_id_or_number_or_item_kit_or_receipt,$item_location);
+			$this->sale_lib->add_item_kit($item_id_or_number_or_item_kit_or_receipt,$item_location,$unit_id);
 		}
 		elseif(!$this->sale_lib->add_item($item_id_or_number_or_item_kit_or_receipt,$item_location,$unit_id,$quantity,$this->config->item('default_sales_discount')))
 		{
@@ -249,7 +248,7 @@ class Sales extends Secure_area
 		{
 			$quantities = implode(",", $this->input->post('quantities'));
 			$decimal_point = $this->config->item('decimal_point');
-			$valid = preg_match("/^(\d+(?:\\" .$decimal_point."\d+)?,?)+$/", $quantities);
+			$valid = preg_match("/^(\-?\d+(?:\\" .$decimal_point."\d+)?,?)+$/", $quantities);
 		}
 		$this->form_validation->set_rules('price', 'lang:items_price', 'required|numeric');
 		$this->form_validation->set_rules('discount', 'lang:items_discount', 'required|numeric');

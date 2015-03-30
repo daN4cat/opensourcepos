@@ -483,7 +483,7 @@ class Items extends Secure_area implements iData_controller
 
             		if ($item_quantity->quantity != $location_detail['quantity'] || 
             			($convert && $item_quantity->initial_quantity != $location_detail['initial_quantity']) ||
-            			($convert && $item_quantity->margin != $location_detail['margin']) || $new_item)
+            			($convert && $unit_detail['inventory_check'] && $item_quantity->margin != $location_detail['margin']) || $new_item)
             		{
             			$success &= $this->Item_quantities->save($location_detail, $item_id, $location_id, $unit_id);
             		

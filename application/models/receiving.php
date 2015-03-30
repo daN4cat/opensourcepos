@@ -75,52 +75,60 @@ class Receiving extends CI_Model
 		{
 			$cur_item_info = $this->Item->get_info($item['item_id']);
 
-			$receivings_items_data = array
-			(
-				'receiving_id'=>$receiving_id,
-				'item_id'=>$item['item_id'],
-				'line'=>$item['line'],
-				'description'=>$item['description'],
-				'serialnumber'=>$item['serialnumber'],
-				'quantity_purchased'=>$item['quantity'],
-				'discount_percent'=>$item['discount'],
-				'item_cost_price' => $cur_item_info->cost_price,
-				'item_unit_price'=>$item['price'],
-				'item_location'=>$item['item_location']
-			);
 
-			$this->db->insert('receivings_items',$receivings_items_data);
-
-			$items_received = $item['receiving_quantity'] != 0 ? $item['quantity'] * $item['receiving_quantity'] : $item['quantity'];
-
-			// update cost price, if changed AND is set in config as wanted
-			if($cur_item_info->cost_price != $item['price']
-					AND	$this->config->item('receiving_calculate_average_price') == 'receiving_calculate_average_price')
+			foreach($item['unit_ids'] as $index => $unit_id)
 			{
-				$this->Item->change_cost_price($item['item_id'],
-												$items_received,
-												$item['price'],
-												$cur_item_info->cost_price);
+				$items_received = $item['receiving_quantity'] != 0 ? $item['quantities'][$index] * $item['receiving_quantity'] : $item['quantities'][$index];
+				
+				$receivings_items_data = array
+				(
+					'receiving_id'=>$receiving_id,
+					'item_id'=>$item['item_id'],
+					'line'=>$item['line'],
+					'description'=>$item['description'],
+					'serialnumber'=>$item['serialnumber'],
+					'quantity_purchased'=>$items_received,
+					'discount_percent'=>$item['discount'],
+					'item_cost_price' => $cur_item_info->cost_price,
+					'item_unit_price'=>$item['price'],
+					'item_location'=>$item['item_location'],
+					'unit_id'=>$unit_id
+				);
+	
+				$this->db->insert('receivings_items',$receivings_items_data);
+	
+				// update cost price, if changed AND is set in config as wanted
+				if($cur_item_info->cost_price != $item['price']
+						AND	$this->config->item('receiving_calculate_average_price') == 'receiving_calculate_average_price')
+				{
+					$this->Item->change_cost_price($item['item_id'],
+													$items_received,
+													$item['price'],
+													$cur_item_info->cost_price);
+				}
+				//Update stock quantity
+				$item_quantity = $this->Item_quantities->get_item_quantity($item['item_id'], $item['item_location'], $unit_id);
+				
+	            $this->Item_quantities->save(array('quantity'=>$item_quantity->quantity + $items_received,
+	                                              'item_id'=>$item['item_id'],
+	            								  'initial_quantity'=>$items_received,
+	                                              'location_id'=>$item['item_location'],
+	            								  'unit_id'=>$unit_id), $item['item_id'], $item['item_location'], $unit_id);
+				
+				
+				$recv_remarks ='RECV '.$receiving_id;
+				$inv_data = array
+				(
+					'trans_date'=>date('Y-m-d H:i:s'),
+					'trans_items'=>$item['item_id'],
+					'trans_user'=>$employee_id,
+					'trans_location'=>$item['item_location'],
+					'trans_comment'=>$recv_remarks,
+					'trans_inventory'=>$items_received,
+					'trans_unit'=>$unit_id
+				);
+				$this->Inventory->insert($inv_data);
 			}
-
-			//Update stock quantity
-			$item_quantity = $this->Item_quantities->get_item_quantity($item['item_id'], $item['item_location']);
-            $this->Item_quantities->save(array('quantity'=>$item_quantity->quantity + $items_received,
-                                              'item_id'=>$item['item_id'],
-                                              'location_id'=>$item['item_location']), $item['item_id'], $item['item_location']);
-			
-			
-			$recv_remarks ='RECV '.$receiving_id;
-			$inv_data = array
-			(
-				'trans_date'=>date('Y-m-d H:i:s'),
-				'trans_items'=>$item['item_id'],
-				'trans_user'=>$employee_id,
-				'trans_location'=>$item['item_location'],
-				'trans_comment'=>$recv_remarks,
-				'trans_inventory'=>$items_received
-			);
-			$this->Inventory->insert($inv_data);
 
 			$supplier = $this->Supplier->get_info($supplier_id);
 		}
@@ -151,26 +159,28 @@ class Receiving extends CI_Model
 			// defect, not all item deletions will be undone??
 			// get array with all the items involved in the sale to update the inventory tracking
 			$items = $this->get_receiving_items($receiving_id)->result_array();
-			foreach($items as $item) {
+			foreach($items as $item)
+			{
 				// create query to update inventory tracking
 				$inv_data = array
 				(
 						'trans_date'=>date('Y-m-d H:i:s'),
 						'trans_items'=>$item['item_id'],
 						'trans_user'=>$employee_id,
-						'trans_comment'=>'Deleting sale ' . $receiving_id,
+						'trans_comment'=>'Deleting receiving ' . $receiving_id,
 						'trans_location'=>$item['item_location'],
-						'trans_inventory'=>$item['quantity_purchased']*-1
-	
+						'trans_inventory'=>$item['quantity_purchased']*-1,
+						'trans_unit'=>$item['unit_id']
 				);
 				// update inventory
 				$this->Inventory->insert($inv_data);
-
+				
 				// update quantities
 				$this->Item_quantities->change_quantity($item['item_id'],
-														$item['item_location'],
-														$item['quantity_purchased']*-1);
-			}
+						$item['item_location'],
+						$item['unit_id'],
+						$item['quantity_purchased']*-1);
+			}				
 		}
 		// delete all items
 		$this->db->delete('receivings_items', array('receiving_id' => $receiving_id));
@@ -209,20 +219,20 @@ class Receiving extends CI_Model
 	}
 	
 	//We create a temp table that allows us to do easy report/receiving queries
-	public function create_receivings_items_temp_table()
+	function create_receivings_items_temp_table()
 	{
 		$this->db->query("CREATE TEMPORARY TABLE ".$this->db->dbprefix('receivings_items_temp')."
 		(SELECT date(receiving_time) as receiving_date, ".$this->db->dbprefix('receivings_items').".receiving_id, comment, invoice_number, payment_type, employee_id,
-		".$this->db->dbprefix('items_categories').".description AS category, 
+		category_name AS category, 
 		".$this->db->dbprefix('items').".item_id, ".$this->db->dbprefix('receivings').".supplier_id, quantity_purchased, item_cost_price, item_unit_price,
 		discount_percent, (item_unit_price*quantity_purchased-item_unit_price*quantity_purchased*discount_percent/100) as subtotal,
-		".$this->db->dbprefix('receivings_items').".line as line, serialnumber, ".$this->db->dbprefix('receivings_items').".description as description,
+		".$this->db->dbprefix('receivings_items').".line as line, serialnumber, ".$this->db->dbprefix('receivings_items').".description,
 		(item_unit_price*quantity_purchased-item_unit_price*quantity_purchased*discount_percent/100) as total,
 		(item_unit_price*quantity_purchased-item_unit_price*quantity_purchased*discount_percent/100) - (item_cost_price*quantity_purchased) as profit
 		FROM ".$this->db->dbprefix('receivings_items')."
 		INNER JOIN ".$this->db->dbprefix('receivings')." ON  ".$this->db->dbprefix('receivings_items').'.receiving_id='.$this->db->dbprefix('receivings').'.receiving_id'."
 		INNER JOIN ".$this->db->dbprefix('items')." ON  ".$this->db->dbprefix('receivings_items').'.item_id='.$this->db->dbprefix('items').'.item_id'."
-		LEFT OUTER JOIN ".$this->db->dbprefix('items_categories')." ON ". $this->db->dbprefix('items_categories').'.id='.$this->db->dbprefix('items').'.item_category_id'."
+		LEFT OUTER JOIN ".$this->db->dbprefix('items_categories')." ON ". $this->db->dbprefix('items_categories').'.category_id='.$this->db->dbprefix('items').'.category_id'."
 		GROUP BY receiving_id, item_id, line)");
 	}
    

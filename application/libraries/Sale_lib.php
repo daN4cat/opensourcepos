@@ -264,11 +264,32 @@ class Sale_lib
 		$updatekey=0;                    //Key to use to update(quantity)
 		
 		$item_info=$this->CI->Item->get_info($item_id,$item_location);
-		$item_units=$this->CI->Item_units->get_unit_details_by_category_id($item_info->category_id);
-		// set the correct unit id
-		if ($unit_id == null || !in_array($unit_id, $item_units))
+		$item_units = array();
+		if ($item_info->category_id != null)
 		{
-			$unit_id = key($item_units);
+			$item_units=$this->CI->Item_units->get_unit_details_by_category_id($item_info->category_id);
+			// set the correct unit id
+			if ($unit_id == null || !array_key_exists($unit_id, $item_units))
+			{
+				$unit_id = key($item_units);
+			}
+		}
+		else
+		{
+			$unit_id = $this->CI->Item_units->get_default_unit_id();
+		}
+		
+		$unit_ids = array($unit_id);
+		$quantities = array($quantity);
+		
+		// add default quantities for the remaining units
+		foreach($item_units as $item_unit_id => $item_unit_details)
+		{
+			if (!in_array($item_unit_id, $unit_ids))
+			{
+				array_push($unit_ids, $item_unit_id);
+				array_push($quantities, 0);
+			}
 		}
 
 		foreach ($items as $item)
@@ -281,7 +302,7 @@ class Sale_lib
 				$maxkey = $item['line'];
 			}
 
-			if($item['item_id']==$item_id && $item['item_location']==$item_location && $item['unit_id'] == $unit_id)
+			if($item['item_id']==$item_id && $item['item_location']==$item_location)
 			{
 				$itemalreadyinsale=TRUE;
 				$updatekey=$item['line'];
@@ -309,8 +330,8 @@ class Sale_lib
 			'unit_id'=>$unit_id,
 			'unit_name'=>$item_units[$unit_id]['unit_name'],
 			'quantity'=>$quantity,
-			'unit_ids'=>array($unit_id),
-			'quantities'=>array($quantity),
+			'unit_ids'=>$unit_ids,
+			'quantities'=>$quantities,
 			'unit_validation_required'=>$this->CI->Item_units->unit_validation_required($item_info->category_id),
             'discount'=>$discount,
 			'item_units'=>$item_units,
@@ -325,8 +346,15 @@ class Sale_lib
 		if($itemalreadyinsale && ($item_info->is_serialized ==0) )
 		{
 			$line = &$items[$updatekey];
-			$line['quantity'] = bcadd($line['quantity'], $quantity, PRECISION);
-			$line['quantities'] = array($line['quantity']);
+			$index = array_search($unit_id, $line['unit_ids']);
+			if ($unit_id == $line['unit_id'])
+			{
+				$line['quantity'] = bcadd($line['quantity'], $quantity, PRECISION);
+			}
+			else
+			{
+				$line['quantities'][$index] = $quantity;
+			}
 		}
 		else
 		{
@@ -367,7 +395,7 @@ class Sale_lib
 			{
 				// we need initial quantity
 				$initial_quantity = $item_quantity->initial_quantity;
-				$assumed_quantity = $item['quantities'][$index];
+				$actual_quantity = $item['quantities'][$index];
 				$margin = $item_quantity->margin;
 			}
 			else
@@ -376,12 +404,12 @@ class Sale_lib
 				$ref_quantity = $item['quantities'][$index];
 			}
 		}
-		$proportion = bcdiv($initial_ref_quantity, $initial_quantity, PRECISION);
-		$actual_quantity = bcmul($proportion, $ref_quantity, PRECISION);
+		$proportion = bcdiv($initial_quantity, $initial_ref_quantity, PRECISION);
+		$assumed_quantity = bcmul($proportion, $ref_quantity, PRECISION);
 		$pct_margin = bcdiv($margin, 100, PRECISION);
-		$max_deviation = bcmul($pct_margin, $actual_quantity, PRECISION);
-		$actual_deviation = abs(bcsub($assumed_quantity, $actual_quantity, PRECISION));
-		if (bcsub($max_deviation, $actual_deviation, PRECISION) <= 0)
+		$max_deviation = abs(bcmul($pct_margin, $assumed_quantity, PRECISION));
+		$actual_deviation = abs(bcsub($actual_quantity, $assumed_quantity, PRECISION));
+		if (bcsub($max_deviation, $actual_deviation, PRECISION) < 0)
 		{
 			return $this->CI->lang->line('sales_inventory_check_failed', $actual_deviation, $max_deviation);
 		}
@@ -515,7 +543,7 @@ class Sale_lib
 		$this->set_customer($this->CI->Sale->get_customer($sale_id)->person_id);
 	}
 	
-	function add_item_kit($external_item_kit_id,$item_location)
+	function add_item_kit($external_item_kit_id,$item_location,$unit_id)
 	{
 		//KIT #
 		$pieces = explode(' ',$external_item_kit_id);
@@ -523,7 +551,7 @@ class Sale_lib
 		
 		foreach ($this->CI->Item_kit_items->get_info($item_kit_id) as $item_kit_item)
 		{
-			$this->add_item($item_kit_item['item_id'],$item_location,$item_kit_item['quantity']);
+			$this->add_item($item_kit_item['item_id'],$item_location,$unit_id,$item_kit_item['quantity']);
 		}
 	}
 

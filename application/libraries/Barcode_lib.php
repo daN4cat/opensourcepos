@@ -40,8 +40,7 @@ class Barcode_lib
     function parse_barcode_fields(&$qty, &$unit_id, &$item_id_or_number_or_item_kit_or_receipt)
     {
     	$separator = $this->CI->config->item('barcode_separator');
-    	$qty = strstr($item_id_or_number_or_item_kit_or_receipt, $separator, true);
-    	if ($qty != false) {
+    	if (strstr($item_id_or_number_or_item_kit_or_receipt, $separator, true)) {
     		//we found one, let's exclude the quantity, unit_id and multiplier '@'
     		$barcode_fields = explode($separator, $item_id_or_number_or_item_kit_or_receipt);
     		$variables = array(&$unit_id, &$qty, &$item_id_or_number_or_item_kit_or_receipt);

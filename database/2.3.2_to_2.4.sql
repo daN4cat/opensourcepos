@@ -78,16 +78,24 @@ ALTER TABLE `ospos_item_quantities`
   
 ALTER TABLE `ospos_sales_items`
   ADD COLUMN `unit_id` int(10) NOT NULL,
-  ADD KEY `unit_id` (`unit_id`);
+  ADD KEY `unit_id` (`unit_id`),
+  DROP PRIMARY KEY,
+  ADD PRIMARY KEY (`sale_id`,`item_id`,`line`,`unit_id`);
   
 ALTER TABLE `ospos_receivings_items`
   ADD COLUMN `unit_id` int(10) NOT NULL,
   ADD KEY `unit_id` (`unit_id`),
-  ADD KEY `item_location` (`item_location`);
+  ADD KEY `item_location` (`item_location`),
+  DROP PRIMARY KEY,
+  ADD PRIMARY KEY (`receiving_id`,`item_id`,`line`,`unit_id`);
   
 ALTER TABLE `ospos_sales_suspended_items`
   ADD COLUMN `unit_id` int(10) NOT NULL,
   ADD KEY `unit_id` (`unit_id`);  
+    
+ALTER TABLE `ospos_item_kit_items`
+  ADD COLUMN `unit_id` int(10) NOT NULL,
+  ADD KEY `unit_id` (`unit_id`); 
   
 ALTER TABLE `ospos_items_sizes_categories`
   ADD CONSTRAINT `ospos_items_sizes_categories_ibfk_1` FOREIGN KEY (`category_id`) REFERENCES `ospos_items_categories` (`category_id`),
@@ -106,6 +114,9 @@ ALTER TABLE `ospos_sales_items`
 ALTER TABLE `ospos_receivings_items`
   ADD CONSTRAINT `ospos_receivings_items_ibfk_3` FOREIGN KEY (`item_location`) REFERENCES `ospos_stock_locations` (`location_id`),
   ADD CONSTRAINT `ospos_receivings_items_ibfk_4` FOREIGN KEY (`unit_id`) REFERENCES `ospos_unit_items` (`unit_id`);
+
+ALTER TABLE `ospos_item_kit_items`
+  ADD CONSTRAINT `ospos_item_kit_items_ibfk_3` FOREIGN KEY (`unit_id`) REFERENCES `ospos_item_units` (`unit_id`);
   
 ALTER TABLE `ospos_sales_suspended_items`
   ADD CONSTRAINT `ospos_sales_suspended_items_ibfk_4` FOREIGN KEY (`unit_id`) REFERENCES `ospos_unit_items` (`unit_id`);

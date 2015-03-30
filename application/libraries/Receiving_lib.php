@@ -140,7 +140,7 @@ class Receiving_lib
     	$this->CI->session->unset_userdata('recv_stock_destination');
     }
 
-	function add_item($item_id,$item_location,$quantity=1,$unit_id=null,$discount=0,$price=null,$description=null,$serialnumber=null)
+	function add_item($item_id,$item_location,$unit_id=null,$quantity=1,$discount=0,$price=null,$description=null,$serialnumber=null)
 	{
 		//make sure item exists in database.
 		if(!$this->CI->Item->exists($item_id))
@@ -166,11 +166,32 @@ class Receiving_lib
 		$updatekey=0;                    //Key to use to update(quantity)
 		
 		$item_info=$this->CI->Item->get_info($item_id,$item_location);
-		$item_units=$this->CI->Item_units->get_unit_details_by_category_id($item_info->category_id);
-		// set the correct unit id
-		if ($unit_id == null || !in_array($unit_id, $item_units))
+		$item_units = array();
+		if ($item_info->category_id != null)
 		{
-			$unit_id = key($item_units);
+			$item_units=$this->CI->Item_units->get_unit_details_by_category_id($item_info->category_id);
+			// set the correct unit id if invalid unit id was given
+			if ($unit_id == null || !array_key_exists($unit_id, $item_units))
+			{
+				$unit_id = key($item_units);
+			}
+		} 
+		else
+		{
+			$unit_id = $this->CI->Item_units->get_default_unit_id();
+		}
+		
+		$unit_ids = array($unit_id);
+		$quantities = array($quantity);
+		
+		// add default quantities for the remaining units 
+		foreach($item_units as $item_unit_id => $item_unit_details)
+		{
+			if (!in_array($item_unit_id, $unit_ids))
+			{
+				array_push($unit_ids, $item_unit_id);
+				array_push($quantities, 0);
+			}
 		}
 
 		foreach ($items as $item)
@@ -185,7 +206,7 @@ class Receiving_lib
 				$maxkey = $item['line'];
 			}
 
-			if($item['item_id']==$item_id && $item['item_location']==$item_location && $item['unit_id'] == $unit_id)
+			if($item['item_id']==$item_id && $item['item_location']==$item_location)
 			{
 				$itemalreadyinsale=TRUE;
 				$updatekey=$item['line'];
@@ -210,8 +231,8 @@ class Receiving_lib
 			'unit_id'=>$unit_id,
 			'unit_name'=>$item_units[$unit_id]['unit_name'],
 			'quantity'=>$quantity,
-			'unit_ids'=>array($unit_id),
-			'quantities'=>array($quantity),
+			'unit_ids'=>$unit_ids,
+			'quantities'=>$quantities,
 			'unit_validation_required'=>$this->CI->Item_units->unit_validation_required($item_info->category_id),
             'discount'=>$discount,
 			'item_units'=>$item_units,
@@ -226,8 +247,17 @@ class Receiving_lib
 		if($itemalreadyinsale)
 		{
 			$line = &$items[$updatekey];
-			$line['quantity'] = bcadd($line['quantity'], $quantity, PRECISION);
-			$line['quantities'] = array($line['quantity']);
+			$index = array_search($unit_id, $line['unit_ids']);
+			if ($unit_id == $line['unit_id'])
+			{
+				$line['quantity'] = bcadd($line['quantity'], $quantity, PRECISION);
+				// which quantity to update here??
+				$line['quantities'][$index] = $line['quantity'];
+			}
+			else 
+			{
+				$line['quantities'][$index] = $quantity;
+			}
 		}
 		else
 		{
@@ -255,16 +285,16 @@ class Receiving_lib
 			}
 			else
 			{
-				$line['quantity'] = $quantity;
-				$line['quantities'] = array($quantity);
 				$line['unit_id'] = $unit_id;
 				$line['unit_ids'] = array($unit_id);
+				$line['quantity'] = $quantity;
+				$line['quantities'] = array($quantity);
 			}
 			$line['description'] = $description;
 			$line['serialnumber'] = $serialnumber;
 			$line['discount'] = $discount;
 			$line['price'] = $price;
-			$line['total'] = $this->get_item_total($quantity, $price, $discount); 
+			$line['total'] = $this->get_item_total($line['quantity'], $price, $discount); 
 			$this->set_cart($items);
 		}
 
@@ -326,7 +356,7 @@ class Receiving_lib
 		$this->set_supplier($this->CI->Receiving->get_supplier($receiving_id)->person_id);
 	}
 	
-	function add_item_kit($external_item_kit_id,$item_location)
+	function add_item_kit($external_item_kit_id,$item_location,$unit_id)
 	{
 		//KIT #
 		$pieces = explode(' ',$external_item_kit_id);
@@ -334,7 +364,7 @@ class Receiving_lib
 		
 		foreach ($this->CI->Item_kit_items->get_info($item_kit_id) as $item_kit_item)
 		{
-			$this->add_item($item_kit_item['item_id'],$item_kit_item['quantity'],$item_location);
+			$this->add_item($item_kit_item['item_id'],$item_location,$unit_id,$item_kit_item['quantity']);
 		}
 	}
 
@@ -345,27 +375,13 @@ class Receiving_lib
 
 		foreach($this->CI->Receiving->get_receiving_items($receiving_id)->result() as $row)
 		{
-			$this->add_item($row->item_id,$row->quantity_purchased,$row->item_location,$row->discount_percent,$row->item_unit_price,$row->description,$row->serialnumber);
+			$this->add_item($row->item_id,$row->item_location,$row->unit_id,$row->quantity_purchased,$row->discount_percent,$row->item_unit_price,$row->description,$row->serialnumber);
 		}
 		$this->set_supplier($this->CI->Receiving->get_supplier($receiving_id)->person_id);
 		$receiving_info=$this->CI->Receiving->get_info($receiving_id);
 		//$this->set_invoice_number($receiving_info->row()->invoice_number);
 	}
 	
-	function copy_entire_requisition($requisition_id,$item_location)
-	{
-		$this->empty_cart();
-		$this->delete_supplier();
-	
-		foreach($this->CI->Receiving->get_requisition_items($requisition_id)->result() as $row)
-		{
-			$this->add_item_unit($row->item_id,$row->requisition_quantity,$item_location,$row->description);
-		}
-		$this->set_supplier($this->CI->Receiving->get_supplier($requisition_id)->person_id);
-		$receiving_info=$this->CI->Receiving->get_info($receiving_id);
-		//$this->set_invoice_number($receiving_info->row()->invoice_number);
-	}
-
 	function delete_item($line)
 	{
 		$items=$this->get_cart();

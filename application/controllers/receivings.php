@@ -75,7 +75,7 @@ class Receivings extends Secure_area
 	
 	function add()
 	{
-		$data=array();
+		$data = array();
 		$mode = $this->receiving_lib->get_mode();
 		$item_id_or_number_or_item_kit_or_receipt = $this->input->post("item");
 		// parse scanned barcode (if present)
@@ -89,11 +89,11 @@ class Receivings extends Secure_area
 		}
 		elseif($this->receiving_lib->is_valid_item_kit($item_id_or_number_or_item_kit_or_receipt))
 		{
-			$this->receiving_lib->add_item_kit($item_id_or_number_or_item_kit_or_receipt,$item_location);
+			$this->receiving_lib->add_item_kit($item_id_or_number_or_item_kit_or_receipt,$item_location,$unit_id);
 		}
 		else
 		{
-            if(!$this->receiving_lib->add_item($item_id_or_number_or_item_kit_or_receipt,$quantity,$item_location))
+            if(!$this->receiving_lib->add_item($item_id_or_number_or_item_kit_or_receipt, $item_location, $unit_id, $quantity))
                    $data['error']=$this->lang->line('recvs_unable_to_add_item');
 		}
 		$this->_reload($data);
@@ -235,7 +235,7 @@ class Receivings extends Secure_area
 			$data['invoice_number']=$invoice_number;
 			$data['payment_type']=$this->input->post('payment_type');
 			//SAVE receiving to database
-			$data['receiving_id']='RECV '.$this->Receiving->save($data['cart'], $supplier_id,$employee_id,$comment,$invoice_number,$payment_type,$data['stock_location']);
+			$data['receiving_id']='RECV '.$this->Receiving->save($data['cart'], $supplier_id,$employee_id,$comment,$invoice_number,$payment_type);
 			
 			if ($data['receiving_id'] == 'RECV -1')
 			{
@@ -306,8 +306,8 @@ class Receivings extends Secure_area
     		foreach($this->receiving_lib->get_cart() as $item)
     		{
     			$this->receiving_lib->delete_item($item['line']);
-    			$this->receiving_lib->add_item($item['item_id'],$item['quantity'],$this->receiving_lib->get_stock_destination());
-    			$this->receiving_lib->add_item($item['item_id'],-$item['quantity'],$this->receiving_lib->get_stock_source());
+    			$this->receiving_lib->add_item($item['item_id'],$this->receiving_lib->get_stock_destination(),$item['unit_id'],$item['quantity']);
+    			$this->receiving_lib->add_item($item['item_id'],$this->receiving_lib->get_stock_source(),$item['unit_id'],-$item['quantity']);
     		}
     		
 			$this->complete();

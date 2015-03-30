@@ -252,8 +252,10 @@ CREATE TABLE `ospos_item_kit_items` (
   `item_kit_id` int(10) NOT NULL,
   `item_id` int(10) NOT NULL,
   `quantity` decimal(15,2) NOT NULL,
+  `unit_id` int(10) NOT NULL,
   PRIMARY KEY (`item_kit_id`,`item_id`,`quantity`),
-  KEY `ospos_item_kit_items_ibfk_2` (`item_id`)
+  KEY `item_id` (`item_id`),
+  KEY `unit_id` (`unit_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
@@ -492,7 +494,7 @@ CREATE TABLE `ospos_receivings_items` (
   `discount_percent` decimal(15,2) NOT NULL DEFAULT '0',
   `item_location` int(10) NOT NULL,
   `unit_id` int(10) NOT NULL,
-  PRIMARY KEY (`receiving_id`,`item_id`,`line`),
+  PRIMARY KEY (`receiving_id`,`item_id`,`line`,`unit_id`),
   KEY `item_id` (`item_id`),
   KEY `item_location` (`item_location`),
   KEY `unit_id` (`unit_id`)
@@ -546,7 +548,7 @@ CREATE TABLE `ospos_sales_items` (
   `discount_percent` decimal(15,2) NOT NULL DEFAULT '0',
   `item_location` int(10) NOT NULL,
   `unit_id` int(10) NOT NULL,
-  PRIMARY KEY (`sale_id`,`item_id`,`line`),
+  PRIMARY KEY (`sale_id`,`item_id`,`line`,`unit_id`),
   KEY `sale_id` (`sale_id`),
   KEY `item_id` (`item_id`),
   KEY `item_location` (`item_location`),
@@ -868,7 +870,8 @@ ALTER TABLE `ospos_items_taxes`
 --
 ALTER TABLE `ospos_item_kit_items`
   ADD CONSTRAINT `ospos_item_kit_items_ibfk_1` FOREIGN KEY (`item_kit_id`) REFERENCES `ospos_item_kits` (`item_kit_id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `ospos_item_kit_items_ibfk_2` FOREIGN KEY (`item_id`) REFERENCES `ospos_items` (`item_id`)  ON DELETE CASCADE;
+  ADD CONSTRAINT `ospos_item_kit_items_ibfk_2` FOREIGN KEY (`item_id`) REFERENCES `ospos_items` (`item_id`)  ON DELETE CASCADE,
+  ADD CONSTRAINT `ospos_item_kit_items_ibfk_3` FOREIGN KEY (`unit_id`) REFERENCES `ospos_item_units` (`unit_id`);
 
 --
 -- Constraints for table `ospos_permissions`

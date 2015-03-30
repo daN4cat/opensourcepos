@@ -226,25 +226,25 @@ class Sale extends CI_Model
 		{
 			$cur_item_info = $this->Item->get_info($item['item_id']);
 
-			$sales_items_data = array
-			(
-				'sale_id'=>$sale_id,
-				'item_id'=>$item['item_id'],
-				'line'=>$item['line'],
-				'description'=>$item['description'],
-				'serialnumber'=>$item['serialnumber'],
-				'quantity_purchased'=>$item['quantity'],
-				'discount_percent'=>$item['discount'],
-				'item_cost_price' => $cur_item_info->cost_price,
-				'item_unit_price'=>$item['price'],
-				'item_location'=>$item['item_location'],
-				'unit_id'=>$item['unit_id']
-			);
-
-			$this->db->insert('sales_items',$sales_items_data);
-
 			foreach($item['unit_ids'] as $index => $unit_id)
 			{
+				$sales_items_data = array
+				(
+					'sale_id'=>$sale_id,
+					'item_id'=>$item['item_id'],
+					'line'=>$item['line'],
+					'description'=>$item['description'],
+					'serialnumber'=>$item['serialnumber'],
+					'quantity_purchased'=>$item['quantities'][$index],
+					'discount_percent'=>$item['discount'],
+					'item_cost_price' => $cur_item_info->cost_price,
+					'item_unit_price'=>$item['price'],
+					'item_location'=>$item['item_location'],
+					'unit_id'=>$unit_id
+				);
+				
+				$this->db->insert('sales_items',$sales_items_data);
+				
 				//Update stock quantity
 				$item_quantity = $this->Item_quantities->get_item_quantity($item['item_id'], $item['item_location'], $unit_id);
 				$this->Item_quantities->save(array('quantity'=>$item_quantity->quantity - $item['quantities'][$index],
@@ -318,7 +318,8 @@ class Sale extends CI_Model
 			// defect, not all item deletions will be undone??
 			// get array with all the items involved in the sale to update the inventory tracking
 			$items = $this->get_sale_items($sale_id)->result_array();
-			foreach($items as $item) {
+			foreach($items as $item) 
+			{
 				// create query to update inventory tracking
 				$inv_data = array
 				(
@@ -327,16 +328,17 @@ class Sale extends CI_Model
 						'trans_user'=>$employee_id,
 						'trans_comment'=>'Deleting sale ' . $sale_id,
 						'trans_location'=>$item['item_location'],
-						'trans_inventory'=>$item['quantity_purchased']
-	
+						'trans_inventory'=>$item['quantity_purchased'],
+						'trans_unit'=>$item['unit_id']
 				);
 				// update inventory
 				$this->Inventory->insert($inv_data);
-
+				
 				// update quantities
 				$this->Item_quantities->change_quantity($item['item_id'],
-														$item['item_location'],
-														$item['quantity_purchased']);
+						$item['item_location'],
+						$item['unit_id'],
+						$item['quantity_purchased']);
 			}
 		}
 		// execute transaction
@@ -384,7 +386,7 @@ class Sale extends CI_Model
 		$this->db->query("CREATE TEMPORARY TABLE ".$this->db->dbprefix('sales_items_temp')."
 		(SELECT date(sale_time) as sale_date, sale_time, ".$this->db->dbprefix('sales_items').".sale_id, comment,payments.payment_type, customer_id, employee_id, 
 		".$this->db->dbprefix('items').".item_id, ".$this->db->dbprefix('items').".supplier_id, quantity_purchased, item_cost_price, item_unit_price, SUM(percent) as item_tax_percent,
-		".$this->db->dbprefix('items_categories').".description AS category, 
+		category_name AS category, 
 		discount_percent, (item_unit_price*quantity_purchased-item_unit_price*quantity_purchased*discount_percent/100) as subtotal,
 		".$this->db->dbprefix('sales_items').".line as line, serialnumber, ".$this->db->dbprefix('sales_items').".description as description,
 		(item_unit_price*quantity_purchased-item_unit_price*quantity_purchased*discount_percent/100)*(1+(SUM(percent)/100)) as total,
@@ -393,7 +395,7 @@ class Sale extends CI_Model
 		FROM ".$this->db->dbprefix('sales_items')."
 		INNER JOIN ".$this->db->dbprefix('sales')." ON  ".$this->db->dbprefix('sales_items').'.sale_id='.$this->db->dbprefix('sales').'.sale_id'."
 		INNER JOIN ".$this->db->dbprefix('items')." ON  ".$this->db->dbprefix('sales_items').'.item_id='.$this->db->dbprefix('items').'.item_id'."
-		LEFT OUTER JOIN ".$this->db->dbprefix('items_categories')." ON ". $this->db->dbprefix('items_categories').'.id='.$this->db->dbprefix('items').'.item_category_id'."
+		LEFT OUTER JOIN ".$this->db->dbprefix('items_categories')." ON ". $this->db->dbprefix('items_categories').'.category_id='.$this->db->dbprefix('items').'.category_id'."
 		INNER JOIN (SELECT sale_id, SUM(payment_amount) AS sale_payment_amount, 
 		GROUP_CONCAT(payment_type SEPARATOR ', ') AS payment_type FROM " .$this->db->dbprefix('sales_payments') . " GROUP BY sale_id) AS payments 
 		ON " . $this->db->dbprefix('sales_items') . '.sale_id'. "=" . "payments.sale_id		

@@ -87,7 +87,7 @@ class Item_units extends CI_Model
 	    	$this->db->from('item_units');
     		$this->db->join('items_units_categories', 'items_units_categories.unit_id=item_units.unit_id');
 	    	$this->db->where('category_id', $category_id);
-	    	$this->db->order_by('inventory_check', 'desc');
+	    	$this->db->order_by('inventory_check');
     	}
     	return $this->db->get()->result_array();
     }
