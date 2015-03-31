@@ -459,9 +459,10 @@ class Items extends Secure_area implements iData_controller
             //Save item quantity
             $item_units = $this->Item_units->get_units_by_category_id($this->input->post('category_id'));
             $stock_locations = $this->Stock_locations->get_undeleted_all()->result_array();
-            $quantities = $this->input->post('quantities');
-            $initial_quantities = $this->input->post('initial_quantities');
-            $margins = $this->input->post('margins');
+            $empty_array = array_fill(0, count($item_units), 0);
+            $quantities = $this->input->post('quantities') ? $this->input->post('quantities') : $empty_array;
+            $initial_quantities = $this->input->post('initial_quantities') ? $this->input->post('initial_quantities') : $empty_array;
+            $margins = $this->input->post('margins') ? $this->input->post('margins') : $empty_array;
             foreach($stock_locations as $location_detail)
             {
             	$location_id = $location_detail['location_id'];

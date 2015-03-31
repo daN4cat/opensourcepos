@@ -56,6 +56,7 @@ $lang["items_none_selected"] = "Vous n\\\'avez sélectionné aucun élément";
 $lang["items_number_information"] = "Numbéro d\'Item";
 $lang["items_number_required"] = "UPC/EAN/ISBN is a required field";
 $lang["items_one_or_multiple"] = "item(s)";
+$lang["items_initial_quantity"] = "Initial Quantity";
 $lang["items_quantity"] = "Quantité";
 $lang["items_quantity_number"] = "La Quantité doit etre un nombre";
 $lang["items_quantity_required"] = "La Quantité est requise";

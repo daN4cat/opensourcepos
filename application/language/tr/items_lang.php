@@ -56,6 +56,7 @@ $lang["items_none_selected"] = "Düzenlemek için ürün seçmediniz";
 $lang["items_number_information"] = "Ürün No";
 $lang["items_number_required"] = "UPC/EAN/ISBN is a required field";
 $lang["items_one_or_multiple"] = "ürün";
+$lang["items_initial_quantity"] = "Initial Quantity";
 $lang["items_quantity"] = "Adet";
 $lang["items_quantity_number"] = "Adet sayı olmalıdır";
 $lang["items_quantity_required"] = "Adet zorunlu alandır";

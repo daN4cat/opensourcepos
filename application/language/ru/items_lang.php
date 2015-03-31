@@ -56,6 +56,7 @@ $lang["items_none_selected"] = "Вы не выбрали ни одной тов�
 $lang["items_number_information"] = "Номер Товара";
 $lang["items_number_required"] = "UPC/EAN/ISBN is a required field";
 $lang["items_one_or_multiple"] = "товар(а)";
+$lang["items_initial_quantity"] = "Initial Quantity";
 $lang["items_quantity"] = "Количество";
 $lang["items_quantity_number"] = "Количество должно быть число";
 $lang["items_quantity_required"] = "Количество обязательное пробелья";

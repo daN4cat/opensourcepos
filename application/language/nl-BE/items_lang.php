@@ -56,6 +56,7 @@ $lang["items_none_selected"] = "U hebt geen producten geselecteerd";
 $lang["items_number_information"] = "Productnummer";
 $lang["items_number_required"] = "UPC/EAN/ISBN moet ingevuld worden";
 $lang["items_one_or_multiple"] = "product(en) verwijderd";
+$lang["items_initial_quantity"] = "Initi‰le Stock";
 $lang["items_quantity"] = "Stock";
 $lang["items_quantity_number"] = "Hoeveelheid moet een cijfer zijn";
 $lang["items_quantity_required"] = "Hoeveelheid moet ingevuld worden";

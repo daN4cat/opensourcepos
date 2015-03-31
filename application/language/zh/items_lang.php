@@ -56,6 +56,7 @@ $lang["items_none_selected"] = "您還沒有選擇任何產品進行編輯";
 $lang["items_number_information"] = "產品編號";
 $lang["items_number_required"] = "UPC/EAN/ISBN is a required field";
 $lang["items_one_or_multiple"] = "產品";
+$lang["items_initial_quantity"] = "Initial Quantity";
 $lang["items_quantity"] = "數量";
 $lang["items_quantity_number"] = "數量必需是數值";
 $lang["items_quantity_required"] = "數量為必填欄位";

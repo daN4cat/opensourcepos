@@ -56,6 +56,7 @@ $lang["items_none_selected"] = "No has seleccionado artículos para editar";
 $lang["items_number_information"] = "Número del Artículo";
 $lang["items_number_required"] = "UPC/EAN/ISBN is a required field";
 $lang["items_one_or_multiple"] = "articulo(s)";
+$lang["items_initial_quantity"] = "Initial Quantity";
 $lang["items_quantity"] = "Cantidad en Stock";
 $lang["items_quantity_number"] = "Cantidad debe ser número";
 $lang["items_quantity_required"] = "Cantidad es requerido";

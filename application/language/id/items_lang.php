@@ -56,6 +56,7 @@ $lang["items_none_selected"] = "Anda belum memilih item untuk diubah";
 $lang["items_number_information"] = "Nomor Barang";
 $lang["items_number_required"] = "UPC/EAN/ISBN is a required field";
 $lang["items_one_or_multiple"] = "Item Barang";
+$lang["items_initial_quantity"] = "Initial Quantity";
 $lang["items_quantity"] = "Jumlah";
 $lang["items_quantity_number"] = "Jumlah harus angka";
 $lang["items_quantity_required"] = "Jumlah wajib diisi";

@@ -56,6 +56,7 @@ $lang["items_none_selected"] = "กรุณาเลือสินค้าท
 $lang["items_number_information"] = "หมายเลขสินค้า";
 $lang["items_number_required"] = "UPC/EAN/ISBN is a required field";
 $lang["items_one_or_multiple"] = "สินค้า(s)";
+$lang["items_initial_quantity"] = "Initial Quantity";
 $lang["items_quantity"] = "จำนวน";
 $lang["items_quantity_number"] = "จำนวนต้องเป็นตัวเลข";
 $lang["items_quantity_required"] = "จำนวนต้องกรอก";

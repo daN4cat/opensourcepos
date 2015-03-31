@@ -116,10 +116,11 @@ echo form_open('items/save/'.$item_info->item_id,array('id'=>'item_form', 'encty
 	</div>
 </div>
 
+<?php if ($item_info->item_id): ?>
 <div id="item_quantities">
 	<?php $this->load->view('partial/item_quantities', array('item_units' => $item_units, 'stock_locations' => $stock_locations)); ?>
 </div>
-
+<?php endif; ?>
 
 <div class="field_row clearfix">
 <?php echo form_label($this->lang->line('items_receiving_quantity').':', 'receiving_quantity',array('class'=>'wide')); ?>
@@ -207,21 +208,23 @@ echo form_open('items/save/'.$item_info->item_id,array('id'=>'item_form', 'encty
 <?php for ($i = 0; $i < 11; $i++) 
 { 
 ?>
-<div class="field_row clearfix">	
 	<?php
 	if($this->config->item('custom'.$i.'_name') != NULL)
 	{
 		$item_arr = (array)$item_info;
-		echo form_label($this->config->item('custom'.$i.'_name').':', 'custom'.$i,array('class'=>'wide')); ?>
-		<div class='form_field'>
-			<?php echo form_input(array(
-				'name'=>'custom'.$i,
-				'id'=>'custom'.$i,
-				'value'=>$item_arr['custom'.$i])
-			);?>
+		?>
+		<div class="field_row clearfix">
+			<?php 	
+			echo form_label($this->config->item('custom'.$i.'_name').':', 'custom'.$i,array('class'=>'wide')); ?>
+			<div class='form_field'>
+				<?php echo form_input(array(
+					'name'=>'custom'.$i,
+					'id'=>'custom'.$i,
+					'value'=>$item_arr['custom'.$i])
+				);?>
 			</div>
 		</div>
-	<?php 
+		<?php 
 	}
 }
 ?>
@@ -319,7 +322,7 @@ $(document).ready(function()
 				required:true,
 				number:true
 			},
-
+			margin: { number: true },
 			unit_price:
 			{
 				required:true,
