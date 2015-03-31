@@ -274,6 +274,13 @@ class Sales extends Secure_area
 			$data['error']=$this->lang->line('sales_error_editing_item');
 		}
 		
+		$inventory_check = $this->sale_lib->check_inventory();
+		if (count($inventory_check) > 0)
+		{
+			$data['error'] = implode("<br>", $inventory_check);
+			$this->_reload($data);
+		}
+		
 		$unit_id = is_array($unit_id) ? current($unit_id) : $unit_id;
 		if($this->sale_lib->out_of_stock($this->sale_lib->get_item_id($line),$item_location,$unit_id))
 		{
