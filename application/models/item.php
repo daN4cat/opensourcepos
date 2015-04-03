@@ -93,7 +93,7 @@ class Item extends CI_Model
 		{
 			$this->db->select('items.*, items_categories.*, item_quantities.*, items_sizes.*');
 			$this->db->select('GROUP_CONCAT(quantity, unit_name SEPARATOR \' \') AS quantity, 
-					GROUP_CONCAT(initial_quantity, unit_name SEPARATOR \' \') AS initial_quantity', FALSE);
+				GROUP_CONCAT(initial_quantity, unit_name SEPARATOR \' \') AS initial_quantity', FALSE); 
 			$this->db->join('item_quantities','item_quantities.item_id=items.item_id');
 			$this->db->join('item_units','item_units.unit_id=item_quantities.unit_id');
 			$this->db->where('location_id',$stock_location_id);

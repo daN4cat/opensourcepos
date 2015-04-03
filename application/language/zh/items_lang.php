@@ -19,6 +19,7 @@ $lang["items_change_all_to_unserialized"] = "全部更改序號至非序列化";
 $lang["items_color"] = "Color";
 $lang["items_confirm_bulk_edit"] = "您確定您要編輯的所有選定的產品嗎？";
 $lang["items_confirm_delete"] = "你確定你要刪除選定的產品嗎？";
+$lang["items_conversion_rate"] = "Conversion Rate";
 $lang["items_cost_price"] = "成本價";
 $lang["items_cost_price_number"] = "成本價必需是數值";
 $lang["items_cost_price_required"] = "成本價為必填攔位";

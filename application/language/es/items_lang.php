@@ -19,6 +19,7 @@ $lang["items_change_all_to_unserialized"] = "Cambiar Todo A Deserializado";
 $lang["items_color"] = "Color";
 $lang["items_confirm_bulk_edit"] = "¿Estás seguro(a) de querer editar los artículos seleccionados?";
 $lang["items_confirm_delete"] = "¿Estás seguro(a) de querer borrar los artículos seleccionados?";
+$lang["items_conversion_rate"] = "Conversion Rate";
 $lang["items_cost_price"] = "Precio de Compra";
 $lang["items_cost_price_number"] = "Precio de Compra debe ser número";
 $lang["items_cost_price_required"] = "Precio de Compra es requerido";

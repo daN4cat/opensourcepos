@@ -19,6 +19,7 @@ $lang["items_change_all_to_unserialized"] = "Niet genummerd";
 $lang["items_color"] = "Kleur";
 $lang["items_confirm_bulk_edit"] = "Bent u zeker dat u de geselecteerde producten wil aanpassen?";
 $lang["items_confirm_delete"] = "Bent u zeker dat u de geselecteerde producten wil verwijderen?";
+$lang["items_conversion_rate"] = "Verhouding Eenheden";
 $lang["items_cost_price"] = "Aankoopprijs";
 $lang["items_cost_price_number"] = "Kostprijs moet een cijfer zijn";
 $lang["items_cost_price_required"] = "Aankoopprijs moet ingevuld worden";

@@ -116,11 +116,12 @@ echo form_open('items/save/'.$item_info->item_id,array('id'=>'item_form', 'encty
 	</div>
 </div>
 
-<?php if ($item_info->item_id): ?>
 <div id="item_quantities">
-	<?php $this->load->view('partial/item_quantities', array('item_units' => $item_units, 'stock_locations' => $stock_locations)); ?>
+	<?php $this->load->view('partial/item_quantities', array(
+			'item_units' => $item_units, 
+			'stock_locations' => $stock_locations, 
+			'item_id' => $item_id)); ?>
 </div>
-<?php endif; ?>
 
 <div class="field_row clearfix">
 <?php echo form_label($this->lang->line('items_receiving_quantity').':', 'receiving_quantity',array('class'=>'wide')); ?>

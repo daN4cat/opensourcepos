@@ -19,6 +19,7 @@ $lang["items_change_all_to_unserialized"] = "Изменить все в несе
 $lang["items_color"] = "Color";
 $lang["items_confirm_bulk_edit"] = "Вы уверены, что хотите редактировать все товари выбраны?";
 $lang["items_confirm_delete"] = "Вы уверены, что хотите удалить выбранные товари?";
+$lang["items_conversion_rate"] = "Conversion Rate";
 $lang["items_cost_price"] = "Оптовая Цена";
 $lang["items_cost_price_number"] = "Оптовая цена должно быть число";
 $lang["items_cost_price_required"] = "Оптовая цена обязательное пробелья";

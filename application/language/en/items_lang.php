@@ -19,6 +19,7 @@ $lang["items_change_all_to_unserialized"] = "Change All To Unserialized";
 $lang["items_color"] = "Color";
 $lang["items_confirm_bulk_edit"] = "Are you sure you want to edit all the items selected?";
 $lang["items_confirm_delete"] = "Are you sure you want to delete the selected items?";
+$lang["items_conversion_rate"] = "Conversion Rate";
 $lang["items_cost_price"] = "Cost Price";
 $lang["items_cost_price_number"] = "Cost price must be a number";
 $lang["items_cost_price_required"] = "Cost Price is a required field";

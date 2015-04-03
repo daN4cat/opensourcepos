@@ -3,7 +3,7 @@
 --
 -- Host: localhost
 -- Generation Time: Apr 08, 2011 at 04:27 PM
--- Server version: 5.1.54
+-- Server version: 5.1.54	
 -- PHP Version: 5.3.3
 
 --
@@ -271,10 +271,11 @@ CREATE TABLE `ospos_item_kit_items` (
 CREATE TABLE `ospos_item_quantities` (
   `item_id` int(10) NOT NULL,
   `location_id` int(10) NOT NULL,
-  `unit_id` int(10) DEFAULT NULL,
+  `unit_id` int(10) NOT NULL,
   `initial_quantity` decimal(15,2) DEFAULT NULL,
   `quantity` decimal(15,2) DEFAULT '0',
-  `margin` int(8) DEFAULT NULL,
+  `conversion_rate` decimal(15,3) DEFAULT NULL,
+  `conversion_margin` decimal(3,2) DEFAULT NULL,
   PRIMARY KEY (`item_id`,`location_id`,`unit_id`),
   KEY `item_id` (`item_id`),
   KEY `location_id` (`location_id`),
@@ -814,7 +815,6 @@ CREATE TABLE `ospos_items_sizes_categories` (
 CREATE TABLE `ospos_items_units_categories` (
   `category_id` int(10) NOT NULL,
   `unit_id` int(10) NOT NULL,
-  `inventory_check` int(1) NOT NULL DEFAULT '0',
   `unit_conversion` int(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`category_id`, `unit_id`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 ;

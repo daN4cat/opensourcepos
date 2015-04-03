@@ -392,25 +392,23 @@ class Sale_lib
 		{
 			$item_quantity = $this->CI->Item_quantities->get_item_quantity($item['item_id'], $item['item_location'], $unit_id);
 			$index = array_search($unit_id, $item['unit_ids']);
-			if ($unit_detail['inventory_check'])
+			if ($unit_detail['unit_conversion'])
 			{
 				// we need initial quantity
-				$initial_quantity = $item_quantity->initial_quantity;
-				$actual_quantity = $item['quantities'][$index];
-				$margin = $item_quantity->margin;
+				$ref_quantity = $item['quantities'][$index];
+				$conversion_rate = $item_quantity->conversion_rate;
+				$conversion_margin = $item_quantity->conversion_margin;
 			}
 			else
 			{
-				$initial_ref_quantity = $item_quantity->initial_quantity;
-				$ref_quantity = $item['quantities'][$index];
+				$actual_quantity = $item['quantities'][$index];
 			}
 		}
-		$proportion = bcdiv($initial_quantity, $initial_ref_quantity, PRECISION);
-		$assumed_quantity = bcmul($proportion, $ref_quantity, PRECISION);
-		$pct_margin = bcdiv($margin, 100, PRECISION);
-		$max_deviation = abs(bcmul($pct_margin, $assumed_quantity, PRECISION));
-		$actual_deviation = bcsub($actual_quantity, $assumed_quantity, PRECISION);
-		if (bcsub($max_deviation, abs($actual_deviation), PRECISION) < 0)
+		$assumed_quantity = bcmul($conversion_rate, $ref_quantity, CONVERSION_PRECISION);
+		$pct_margin = bcdiv($conversion_margin, 100, CONVERSION_PRECISION);
+		$max_deviation = abs(bcmul($pct_margin, $assumed_quantity, CONVERSION_PRECISION));
+		$actual_deviation = bcsub($actual_quantity, $assumed_quantity, CONVERSION_PRECISION);
+		if (bcsub($max_deviation, abs($actual_deviation), CONVERSION_PRECISION) < 0)
 		{
 			return $this->CI->lang->line('sales_inventory_check_failed', $actual_deviation, $max_deviation);
 		}
@@ -426,7 +424,7 @@ class Sale_lib
         }
 
 		$item_quantity = $this->CI->Item_quantities->get_item_quantity($item_id,$item_location,$unit_id)->quantity; 
-		$quanity_added = $this->get_quantity_already_added($item_id,$item_location);
+		$quanity_added = $this->get_quantity_already_added($item_id,$item_location,$unit_id);
 		
 		if ($item_quantity - $quanity_added < 0)
 		{
@@ -435,15 +433,15 @@ class Sale_lib
 		return false;
 	}
 	
-	function get_quantity_already_added($item_id,$item_location)
+	function get_quantity_already_added($item_id,$item_location,$unit_id)
 	{
 		$items = $this->get_cart();
 		$quanity_already_added = 0;
 		foreach ($items as $item)
 		{
-			if($item['item_id']==$item_id && $item['item_location']==$item_location)
+			if($item['item_id']==$item_id && $item['item_location']==$item_location && $item['unit_id']==$unit_id)
 			{
-				$quanity_already_added+=$item['quantity'];
+				$quanity_already_added = bcadd($item['quantity'], $quanity_already_added, PRECISION);
 			}
 		}
 		

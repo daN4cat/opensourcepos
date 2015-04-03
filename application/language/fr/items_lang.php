@@ -19,6 +19,7 @@ $lang["items_change_all_to_unserialized"] = "Tout désérialiser";
 $lang["items_color"] = "Color";
 $lang["items_confirm_bulk_edit"] = "Etes vous sûre de vouloir éditer toute la sélection?";
 $lang["items_confirm_delete"] = "Etes vous sûre de vouloir supprimer la sélection?";
+$lang["items_conversion_rate"] = "Conversion Rate";
 $lang["items_cost_price"] = "Prix de Gros";
 $lang["items_cost_price_number"] = "Le Prix d\'achat doit etre un nombre";
 $lang["items_cost_price_required"] = "Le Prix de gros est requis";

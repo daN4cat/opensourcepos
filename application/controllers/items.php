@@ -220,12 +220,15 @@ class Items extends Secure_area implements iData_controller
 		$item_info = $this->Item->get_info($item_id);
 		$stock_location = $this->item_lib->get_item_location();
 		$item_quantities = $this->Item_quantities->get_item_quantities($item_id,$stock_location);
-		$qty = array();
+		$quantities = array();
+		$initial_quantities = array();
 		foreach($item_quantities as $item_quantity => $quantity_detail)
 		{
-			$qty[] = $quantity_detail['quantity']. $quantity_detail['unit_name'];
+			$quantities[] = $quantity_detail['quantity']. $quantity_detail['unit_name'];
+			$initial_quantities[] = $quantity_detail['initial_quantity']. $quantity_detail['unit_name'];
 		}
-		$item_info->quantity = join(" ", $qty);
+		$item_info->quantity = join(" ", $quantities);
+		$item_info->initial_quantity = join(" ", $initial_quantities);
 		$data_row=get_item_data_row($item_info,$this);
 		
 		echo $data_row;
@@ -274,7 +277,9 @@ class Items extends Secure_area implements iData_controller
 		{
 			$item_units[$unit_detail['unit_id']] = $unit_detail;
 		}
-		
+		// see whether conversion is applicable
+		$unit_validation_required = $this->Item_units->get_unit_details_by_category_id($category_id);
+				
 		$stock_locations = $this->Stock_locations->get_undeleted_all()->result_array();
 		foreach($stock_locations as $stock_location)
 		{
@@ -286,17 +291,19 @@ class Items extends Secure_area implements iData_controller
 						'quantity' => null,
 						'initial_quantity' => null,
 						'unit_name' => null,
-						'margin' => null);
+						'conversion_rate' => null,
+						'conversion_margin' => null);
 				$item_quantity = (array) $this->Item_quantities->get_item_quantity($item_id,$location_id,$unit_id);
 				$merged_array = array_replace_recursive($location_array[$location_id][$unit_id], array(
 						'quantity'=>$item_quantity['quantity'],
 						'initial_quantity'=>$item_quantity['initial_quantity'],
 						'unit_name'=>$unit_detail['unit_name'],
-						'margin'=>$item_quantity['margin']));
+						'conversion_rate'=>$item_quantity['conversion_rate'],
+						'conversion_margin'=>$item_quantity['conversion_margin']));
 				$location_array[$location_id][$unit_id] = $merged_array;
 			}
 		}
-		return array('item_units' => $item_units, 'stock_locations' => $location_array, 'item_id' => $item_id);
+		return array('item_units' => $item_units, 'stock_locations' => $location_array, 'item_id' => $item_id, 'unit_validation_required' => $unit_validation_required);
 	}
     
 	//Ramel Inventory Tracking
@@ -460,9 +467,10 @@ class Items extends Secure_area implements iData_controller
             $item_units = $this->Item_units->get_units_by_category_id($this->input->post('category_id'));
             $stock_locations = $this->Stock_locations->get_undeleted_all()->result_array();
             $empty_array = array_fill(0, count($item_units), 0);
+            $conversion_rate = $this->input->post('conversion_rate');
+            $conversion_margin = $this->input->post('conversion_margin');
             $quantities = $this->input->post('quantities') ? $this->input->post('quantities') : $empty_array;
             $initial_quantities = $this->input->post('initial_quantities') ? $this->input->post('initial_quantities') : $empty_array;
-            $margins = $this->input->post('margins') ? $this->input->post('margins') : $empty_array;
             foreach($stock_locations as $location_detail)
             {
             	$location_id = $location_detail['location_id'];
@@ -471,20 +479,18 @@ class Items extends Secure_area implements iData_controller
            			$unit_id = $unit_detail['unit_id'];
            			$convert = $unit_detail['unit_conversion'];
             		$location_detail = array(
-            				'item_id'=>$item_id,
-            				'location_id'=>$location_id,
-            				'unit_id'=>$unit_id,
-            				'quantity'=>array_shift($quantities));
-            		if ($convert) 
-            		{
-            			$location_detail['initial_quantity'] = array_shift($initial_quantities);
-            			$unit_detail['inventory_check'] && $location_detail['margin'] = array_shift($margins);
-            		}
+            			'item_id'=>$item_id,
+            			'location_id'=>$location_id,
+            			'unit_id'=>$unit_id,
+            			'initial_quantity'=>array_shift($initial_quantities),
+            			'conversion_rate'=>$conversion_rate!=''?$conversion_rate:null,
+            			'conversion_margin'=>$conversion_margin!=''?$conversion_margin:null,
+            			'quantity'=>array_shift($quantities));
             		$item_quantity = (object) $this->Item_quantities->get_item_quantity($item_id, $location_id, $unit_id);
 
-            		if ($item_quantity->quantity != $location_detail['quantity'] || 
-            			($convert && $item_quantity->initial_quantity != $location_detail['initial_quantity']) ||
-            			($convert && $unit_detail['inventory_check'] && $item_quantity->margin != $location_detail['margin']) || $new_item)
+            		if ($item_quantity->quantity != $location_detail['quantity'] || ($convert &&  
+            			($item_quantity->conversion_rate != $location_detail['conversion_rate']) ||
+            			($item_quantity->conversion_margin != $location_detail['conversion_margin'])) || $new_item)
             		{
             			$success &= $this->Item_quantities->save($location_detail, $item_id, $location_id, $unit_id);
             		

@@ -64,7 +64,7 @@ CREATE TABLE `ospos_items_sizes_categories` (
 CREATE TABLE `ospos_items_units_categories` (
   `category_id` int(10) NOT NULL,
   `unit_id` int(10) NOT NULL,
-  `inventory_check` int(1) DEFAULT '0',
+  `unit_conversion` int(1) DEFAULT '0',
   PRIMARY KEY (`category_id`, `unit_id`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 ;
 
@@ -72,9 +72,10 @@ INSERT INTO `ospos_items_units_categories` (`category_id`, `unit_id`) VALUES (1,
 
 ALTER TABLE `ospos_item_quantities` 
   ADD COLUMN `unit_id` int(10) NOT NULL,
+  ADD COLUMN `conversion_rate` decimal(15,3) DEFAULT NULL,
+  ADD COLUMN `conversion_margin` int(8) DEFAULT NULL,
   ADD COLUMN `initial_quantity` decimal(15,2) DEFAULT NULL,
-  ADD_COLUMN `margin` int(8) DEFAULT NULL,
-  MODIFY quantity decimal(15,2) DEFAULT 0; 
+  MODIFY quantity decimal(15,2) DEFAULT 0.00; 
   
 ALTER TABLE `ospos_sales_items`
   ADD COLUMN `unit_id` int(10) NOT NULL,

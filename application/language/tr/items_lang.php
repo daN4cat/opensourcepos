@@ -19,6 +19,7 @@ $lang["items_change_all_to_unserialized"] = "Tümünü seri numarasız yap";
 $lang["items_color"] = "Color";
 $lang["items_confirm_bulk_edit"] = "Seçili tüm ürünleri düzenlemek istediğinize emin misiniz?";
 $lang["items_confirm_delete"] = "Seçili ürünleri silmek istediğinize emin misiniz?";
+$lang["items_conversion_rate"] = "Conversion Rate";
 $lang["items_cost_price"] = "Maliyet Fiyatı";
 $lang["items_cost_price_number"] = "Fiyat sayı olmalıdır (9.90)";
 $lang["items_cost_price_required"] = "Maliyet Fiyatı zorunlu alandır";

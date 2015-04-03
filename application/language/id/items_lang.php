@@ -19,6 +19,7 @@ $lang["items_change_all_to_unserialized"] = "Ubah semua tanpa nomor serial";
 $lang["items_color"] = "Color";
 $lang["items_confirm_bulk_edit"] = "Apakah Anda yakin ingin merubah semua item yang dipilih?";
 $lang["items_confirm_delete"] = "Apakah Anda yakin ingin menghapus item yang dipilih?";
+$lang["items_conversion_rate"] = "Conversion Rate";
 $lang["items_cost_price"] = "Harga Pokok";
 $lang["items_cost_price_number"] = "Biaya Item harus angka";
 $lang["items_cost_price_required"] = "Biaya Item wajib diisi";

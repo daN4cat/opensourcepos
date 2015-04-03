@@ -44,7 +44,7 @@ class Item_units extends CI_Model
     	$this->db->where('unit_conversion', '1');
 		$this->db->where('category_id', $category_id);    
 
-		return $this->db->get()->num_rows() == 2;
+		return $this->db->get()->num_rows() == 1;
    } 
     
     function get_default_unit_id() 
@@ -87,7 +87,7 @@ class Item_units extends CI_Model
 	    	$this->db->from('item_units');
     		$this->db->join('items_units_categories', 'items_units_categories.unit_id=item_units.unit_id');
 	    	$this->db->where('category_id', $category_id);
-	    	$this->db->order_by('inventory_check');
+	    	$this->db->order_by('unit_conversion');
     	}
     	return $this->db->get()->result_array();
     }
