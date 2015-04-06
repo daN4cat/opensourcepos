@@ -342,6 +342,16 @@ class Employee extends Person
 		return $result->num_rows() == 0;
 	}
 	
+	function is_superuser($password)
+	{
+		$this->db->from('employees');
+		$this->db->join('grants', 'grants.person_id = employees.person_id');
+		$this->db->where('password', md5($password));
+		$this->db->where('deleted', 0);
+		$this->db->where('permission_id', 'config');
+		return $this->db->get()->num_rows() == 1;
+	}
+	
 	/*
 	Determines whether the employee specified employee has access the specific module.
 	*/

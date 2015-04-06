@@ -42,6 +42,28 @@ class Employees extends Person_controller
 		echo implode("\n",$suggestions);
 	}
 	
+	function superuser_do()
+	{
+		$password = $this->input->post('password', TRUE);
+		if ($password)
+		{
+			$is_superuser = $this->Employee->is_superuser($password);
+			$this->session->set_flashdata('superuser', $is_superuser);
+			$this->_reload();
+		}
+		else
+		{
+			$this->load->view('partial/superuser_do');
+		}
+	}
+	
+	function check_password()
+	{
+		$password=$this->input->post('password', TRUE);
+		$exists=!empty($password) && $this->Employee->is_superuser($password);
+		echo json_encode(array('success'=>$exists,'message'=>$this->lang->line('employees_password_must_match')));
+	}
+	
 	/*
 	Loads the employee edit form
 	*/

@@ -3,7 +3,7 @@ foreach($stock_locations as $location_id=>$location_detail)
 {
 	foreach($item_units as $unit_id => $unit_detail)
 	{
-	if ($item_id) : ?>
+	if ($item_id > -1) : ?>
     <div class="field_row clearfix">
     <?php echo form_label($this->lang->line('items_quantity').' '.$location_detail[$unit_id]['location_name'] .':', 'quantities[]',
                             array('class'=>'required wide')); ?>
@@ -18,7 +18,7 @@ foreach($stock_locations as $location_id=>$location_detail)
     	</div>
     </div>
     <?php endif; ?>
-	<?php if ($unit_validation_required) :?>
+	<?php if ($unit_validation_required && $item_id > -1) : ?>
  	<div class="field_row clearfix">
     <?php echo form_label($this->lang->line('items_initial_quantity').' '.$location_detail[$unit_id]['location_name'] .':', 
                             'initial_quantities[]',
@@ -45,7 +45,7 @@ foreach($stock_locations as $location_id=>$location_detail)
     		'class'=>'quantity',
     		'value'=>$location_detail[$unit_id]['conversion_rate'])
     	);?>
-    	<?php echo $last_unit.'/'.$unit_detail['unit_name'];?>
+    	<?php echo $unit_detail['unit_name'] . '/' . $last_unit;?>
     	</div>
     	<div class='form_field'>
     	<?php echo form_input(array(

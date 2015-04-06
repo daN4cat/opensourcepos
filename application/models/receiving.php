@@ -110,6 +110,7 @@ class Receiving extends CI_Model
 				$item_quantity = $this->Item_quantities->get_item_quantity($item['item_id'], $item['item_location'], $unit_id);
 				
 	            $this->Item_quantities->save(array('quantity'=>$item_quantity->quantity + $items_received,
+	                                              'initial_quantity'=>$items_received,	            						
 	                                              'item_id'=>$item['item_id'],
 	                                              'location_id'=>$item['item_location'],
 	            								  'unit_id'=>$unit_id), $item['item_id'], $item['item_location'], $unit_id);

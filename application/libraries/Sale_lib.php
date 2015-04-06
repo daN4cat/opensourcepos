@@ -394,20 +394,19 @@ class Sale_lib
 			$index = array_search($unit_id, $item['unit_ids']);
 			if ($unit_detail['unit_conversion'])
 			{
-				// we need initial quantity
 				$ref_quantity = $item['quantities'][$index];
 				$conversion_rate = $item_quantity->conversion_rate;
 				$conversion_margin = $item_quantity->conversion_margin;
 			}
 			else
 			{
-				$actual_quantity = $item['quantities'][$index];
+				$assumed_quantity = $item['quantities'][$index];
 			}
 		}
-		$assumed_quantity = bcmul($conversion_rate, $ref_quantity, CONVERSION_PRECISION);
+		$assumed_quantity = bcmul($conversion_rate, $assumed_quantity, CONVERSION_PRECISION);
 		$pct_margin = bcdiv($conversion_margin, 100, CONVERSION_PRECISION);
-		$max_deviation = abs(bcmul($pct_margin, $assumed_quantity, CONVERSION_PRECISION));
-		$actual_deviation = bcsub($actual_quantity, $assumed_quantity, CONVERSION_PRECISION);
+		$max_deviation = abs(bcmul($pct_margin, $ref_quantity, CONVERSION_PRECISION));
+		$actual_deviation = bcsub($ref_quantity, $assumed_quantity, CONVERSION_PRECISION);
 		if (bcsub($max_deviation, abs($actual_deviation), CONVERSION_PRECISION) < 0)
 		{
 			return $this->CI->lang->line('sales_inventory_check_failed', $actual_deviation, $max_deviation);

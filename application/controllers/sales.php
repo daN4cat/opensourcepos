@@ -278,7 +278,6 @@ class Sales extends Secure_area
 		if (count($inventory_check) > 0)
 		{
 			$data['error'] = implode("<br>", $inventory_check);
-			$this->_reload($data);
 		}
 		
 		$unit_id = is_array($unit_id) ? current($unit_id) : $unit_id;
@@ -353,7 +352,7 @@ class Sales extends Secure_area
 			$data['error']=$this->lang->line('sales_invoice_number_duplicate');
 			$this->_reload($data);
 		}
-		else if (count($inventory_check) > 0)
+		else if (!$this->session->flashdata('superuser') && count($inventory_check) > 0)
 		{
 			$data['error'] = implode("<br>", $inventory_check);
 			$this->_reload($data);

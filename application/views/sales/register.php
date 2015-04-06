@@ -414,6 +414,12 @@ else
 <script type="text/javascript" language="javascript">
 $(document).ready(function()
 {
+
+	$(window).jkey('f9', function() 
+	{
+		tb_show('<?php echo $this->lang->line('employees_password_required');?>','<?php echo site_url("employees/superuser_do/width:200");?>');
+	});
+			
     $("#item").autocomplete('<?php echo site_url("sales/item_search"); ?>',
     {
     	minChars:0,
