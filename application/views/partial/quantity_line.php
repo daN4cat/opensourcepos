@@ -16,15 +16,15 @@
 						{
 							$index = array_search($unit_id, $item['unit_ids']);
 				            echo form_input(array('name'=>'quantities[]','value'=>$item['quantities'][$index],'size'=>'2'));
-				            echo $unit_details['unit_name'];
 				            echo form_hidden('unit_ids[]',$unit_id);
+				            echo $unit_details['unit_name'];
 						}
         			}
         			else
         			{
+	        			echo form_dropdown('unit_id',$item['item_units'],$item['unit_id'],'id="unit_id" onchange="$(this).parents("form").submit();"');
         				echo form_input(array('name'=>'quantity','value'=>$item['quantity'],'size'=>'2'));
         				echo $item['unit_name'];
-	        			echo form_dropdown('unit_id',$item['item_units'],$item['unit_id'],'id="unit_id" onchange="$(this).parents("form").submit();"');
         			}
         		}
         		else

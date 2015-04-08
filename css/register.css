@@ -162,3 +162,9 @@
 	top:3px;
 	right:99px;
 }
+
+#register td.quantity
+{
+	text-align: left;	
+}
+}

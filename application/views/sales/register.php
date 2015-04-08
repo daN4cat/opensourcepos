@@ -54,14 +54,14 @@ echo $this->lang->line('sales_find_or_scan_item_or_receipt');
 	<table id="register">
 		<thead>
 			<tr>
-				<th style="width: 10%;"><?php echo $this->lang->line('common_delete'); ?></th>
-				<th style="width: 25%;"><?php echo $this->lang->line('sales_item_number'); ?></th>
-				<th style="width: 25%;"><?php echo $this->lang->line('sales_item_name'); ?></th>
-				<th style="width: 8%;"><?php echo $this->lang->line('sales_price'); ?></th>
-				<th style="width: 30%;"><?php echo $this->lang->line('sales_quantity'); ?></th>
-				<th style="width: 5%;"><?php echo $this->lang->line('sales_discount'); ?></th>
-				<th style="width: 12%;"><?php echo $this->lang->line('sales_total'); ?></th>
-				<th style="width: 10%;"><?php echo $this->lang->line('sales_edit'); ?></th>
+				<th style="width: 11%;"><?php echo $this->lang->line('common_delete'); ?></th>
+				<th style="width: 30%;"><?php echo $this->lang->line('sales_item_number'); ?></th>
+				<th style="width: 30%;"><?php echo $this->lang->line('sales_item_name'); ?></th>
+				<th style="width: 11%;"><?php echo $this->lang->line('sales_price'); ?></th>
+				<th style="width: 11%;"><?php echo $this->lang->line('sales_quantity'); ?></th>
+				<th style="width: 11%;"><?php echo $this->lang->line('sales_discount'); ?></th>
+				<th style="width: 15%;"><?php echo $this->lang->line('sales_total'); ?></th>
+				<th style="width: 11%;"><?php echo $this->lang->line('sales_edit'); ?></th>
 			</tr>
 		</thead>
 		<tbody id="cart_contents">
@@ -106,7 +106,7 @@ else
 		}
 		?>
 
-		<td>
+		<td class="quantity">
 		<?php $this->load->view('partial/quantity_line', array('item' => $item)); ?>
 		</td>
 			<td><?php echo form_input(array('name'=>'discount','value'=>$item['discount'],'size'=>'2'));?></td>

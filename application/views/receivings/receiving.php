@@ -61,14 +61,14 @@ if(isset($error))
 <table id="register">
 <thead>
 <tr>
-	<th style="width:10%;"><?php echo $this->lang->line('common_delete'); ?></th>
-	<th style="width:25%;"><?php echo $this->lang->line('recvs_item_name'); ?></th>
-	<th style="width:20%;"><?php echo $this->lang->line('recvs_cost'); ?></th>
-	<th style="width:22%;"><?php echo $this->lang->line('recvs_quantity'); ?></th>
+	<th style="width:11%;"><?php echo $this->lang->line('common_delete'); ?></th>
+	<th style="width:30%;"><?php echo $this->lang->line('recvs_item_name'); ?></th>
+	<th style="width:11%;"><?php echo $this->lang->line('recvs_cost'); ?></th>
+	<th style="width:10%;"><?php echo $this->lang->line('recvs_quantity'); ?></th>
 	<th style="width:6%;"></th>
-	<th style="width:10%;"><?php echo $this->lang->line('recvs_discount'); ?></th>
+	<th style="width:11%;"><?php echo $this->lang->line('recvs_discount'); ?></th>
 	<th style="width:15%;"><?php echo $this->lang->line('recvs_total'); ?></th>
-	<th style="width:10%;"><?php echo $this->lang->line('recvs_edit'); ?></th>
+	<th style="width:11%;"><?php echo $this->lang->line('recvs_edit'); ?></th>
 </tr>
 </thead>
 <tbody id="cart_contents">
@@ -108,7 +108,7 @@ else
 		}
 		?>
 		
-		<td>
+		<td class="quantity">
 		<?php
             $this->load->view('partial/quantity_line', array('item' => $item));
             if ($item['receiving_quantity'] > 1) 
