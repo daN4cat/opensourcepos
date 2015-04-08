@@ -405,7 +405,7 @@ class Sale_lib
 		}
 		$assumed_quantity = bcmul($conversion_rate, $assumed_quantity, CONVERSION_PRECISION);
 		$pct_margin = bcdiv($conversion_margin, 100, CONVERSION_PRECISION);
-		$max_deviation = abs(bcmul($pct_margin, $ref_quantity, CONVERSION_PRECISION));
+		$max_deviation = abs(bcmul($pct_margin, $assumed_quantity, CONVERSION_PRECISION));
 		$actual_deviation = bcsub($ref_quantity, $assumed_quantity, CONVERSION_PRECISION);
 		if (bcsub($max_deviation, abs($actual_deviation), CONVERSION_PRECISION) < 0)
 		{
