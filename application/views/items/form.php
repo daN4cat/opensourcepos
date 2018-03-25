@@ -46,6 +46,52 @@
 			</div>
 		</div>
 
+		<div class="form-group form-group-sm">
+			<?php echo form_label($this->lang->line('items_season'), 'season', array('class'=>'required control-label col-xs-3')); ?>
+			<div class='col-xs-8'>
+				<div class="input-group">
+					<span class="input-group-addon input-sm"><span class="glyphicon glyphicon-tag"></span></span>
+					<?php echo form_input(array(
+							'name'=>'season',
+							'id'=>'season',
+							'class'=>'form-control input-sm',
+							'value'=>$item_info->season)
+							);?>
+				</div>
+			</div>
+		</div>
+
+
+		<div class="form-group form-group-sm">
+			<?php echo form_label($this->lang->line('items_color'), 'color', array('class'=>'control-label col-xs-3')); ?>
+			<div class='col-xs-8'>
+				<div class="input-group">
+					<span class="input-group-addon input-sm"><span class="glyphicon glyphicon-tag"></span></span>
+					<?php echo form_input(array(
+							'name'=>'color',
+							'id'=>'color',
+							'class'=>'form-control input-sm',
+							'value'=>$item_info->color)
+							);?>
+				</div>
+			</div>
+		</div>
+
+		<div class="form-group form-group-sm">
+			<?php echo form_label($this->lang->line('items_size'), 'size', array('class'=>'control-label col-xs-3')); ?>
+			<div class='col-xs-8'>
+				<div class="input-group">
+					<span class="input-group-addon input-sm"><span class="glyphicon glyphicon-tag"></span></span>
+					<?php echo form_input(array(
+							'name'=>'size',
+							'id'=>'size',
+							'class'=>'form-control input-sm',
+							'value'=>$item_info->size)
+							);?>
+				</div>
+			</div>
+		</div>
+
 		<?php if ($item_kits_enabled == '1'): ?>
 		<div class="form-group form-group-sm">
 			<?php echo form_label($this->lang->line('items_stock_type'), 'stock_type', !empty($basic_version) ? array('class'=>'required control-label col-xs-3') : array('class'=>'control-label col-xs-3')); ?>
@@ -368,7 +414,14 @@ $(document).ready(function()
 	});
 
 	var no_op = function(event, data, formatted){};
-	$("#category").autocomplete({source: "<?php echo site_url('items/suggest_category');?>",delay:10,appendTo: '.modal-content'});
+
+	$("#category").autocomplete({source: "<?php echo site_url('items/suggest_category');?>", delay:10, appendTo: '.modal-content'});
+
+	$("#season").autocomplete({source: "<?php echo site_url('items/suggest_season');?>", delay:10, appendTo: '.modal-content'});
+
+	$("#color").autocomplete({source: "<?php echo site_url('items/suggest_color');?>", delay:10, appendTo: '.modal-content'});
+
+	$("#size").autocomplete({source: "<?php echo site_url('items/suggest_size');?>", delay:10, appendTo: '.modal-content'});
 
 	<?php for ($i = 1; $i <= 10; ++$i)
 	{
@@ -432,6 +485,7 @@ $(document).ready(function()
 		{
 			name: "required",
 			category: "required",
+			season: "required",
 			item_number:
 			{
 				required: false,
@@ -493,6 +547,7 @@ $(document).ready(function()
 			name: "<?php echo $this->lang->line('items_name_required'); ?>",
 			item_number: "<?php echo $this->lang->line('items_item_number_duplicate'); ?>",
 			category: "<?php echo $this->lang->line('items_category_required'); ?>",
+			season: "<?php echo $this->lang->line('items_season_required'); ?>",
 			cost_price:
 			{
 				required: "<?php echo $this->lang->line('items_cost_price_required'); ?>",

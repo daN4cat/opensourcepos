@@ -143,6 +143,36 @@ class Items extends Secure_Controller
 	}
 
 	/*
+	Gives search suggestions based on what is being searched for
+	*/
+	public function suggest_season()
+	{
+		$suggestions = $this->xss_clean($this->Item->get_season_suggestions($this->input->get('term')));
+
+		echo json_encode($suggestions);
+	}
+
+	/*
+	Gives search suggestions based on what is being searched for
+	*/
+	public function suggest_color()
+	{
+		$suggestions = $this->xss_clean($this->Item->get_color_suggestions($this->input->get('term')));
+
+		echo json_encode($suggestions);
+	}
+
+	/*
+	Gives search suggestions based on what is being searched for
+	*/
+	public function suggest_size()
+	{
+		$suggestions = $this->xss_clean($this->Item->get_size_suggestions($this->input->get('term')));
+
+		echo json_encode($suggestions);
+	}
+
+	/*
 	 Gives search suggestions based on what is being searched for
 	*/
 	public function suggest_location()
@@ -369,6 +399,9 @@ class Items extends Secure_Controller
 			'name' => $this->input->post('name'),
 			'description' => $this->input->post('description'),
 			'category' => $this->input->post('category'),
+			'season' => $this->input->post('season'),
+			'color' => $this->input->post('color'),
+			'size' => $this->input->post('size'),
 			'item_type' => $this->input->post('item_type') == NULL ? ITEM : $this->input->post('item_type'),
 			'stock_type' => $this->input->post('stock_type') == NULL ? HAS_STOCK : $this->input->post('stock_type'),
 			'supplier_id' => $this->input->post('supplier_id') == '' ? NULL : $this->input->post('supplier_id'),
@@ -676,24 +709,27 @@ class Items extends Secure_Controller
 					{
 						$item_data = array(
 							'name'					=> $data[1],
-							'description'			=> $data[11],
+							'description'			=> $data[14],
 							'category'				=> $data[2],
-							'cost_price'			=> $data[4],
-							'unit_price'			=> $data[5],
-							'reorder_level'			=> $data[10],
-							'supplier_id'			=> $this->Supplier->exists($data[3]) ? $data[3] : NULL,
-							'allow_alt_description'	=> $data[12] != '' ? '1' : '0',
-							'is_serialized'			=> $data[13] != '' ? '1' : '0',
-							'custom1'				=> $data[14],
-							'custom2'				=> $data[15],
-							'custom3'				=> $data[16],
-							'custom4'				=> $data[17],
-							'custom5'				=> $data[18],
-							'custom6'				=> $data[19],
-							'custom7'				=> $data[20],
-							'custom8'				=> $data[21],
-							'custom9'				=> $data[22],
-							'custom10'				=> $data[23]
+							'season'				=> $data[3],
+							'color'					=> $data[4],
+							'size'					=> $data[5],
+							'cost_price'			=> $data[7],
+							'unit_price'			=> $data[8],
+							'reorder_level'			=> $data[13],
+							'supplier_id'			=> $this->Supplier->exists($data[6]) ? $data[6] : NULL,
+							'allow_alt_description'	=> $data[15] != '' ? '1' : '0',
+							'is_serialized'			=> $data[16] != '' ? '1' : '0',
+							'custom1'				=> $data[17],
+							'custom2'				=> $data[18],
+							'custom3'				=> $data[19],
+							'custom4'				=> $data[20],
+							'custom5'				=> $data[21],
+							'custom6'				=> $data[22],
+							'custom7'				=> $data[23],
+							'custom8'				=> $data[24],
+							'custom9'				=> $data[25],
+							'custom10'				=> $data[26]
 						);
 
 						/* we could do something like this, however, the effectiveness of
@@ -701,7 +737,7 @@ class Items extends Secure_Controller
 						  into that directory, so you really can do whatever you want, this probably
 						  needs further discussion  */
 
-						$pic_file = $data[24];
+						$pic_file = $data[27];
 						/*if(strcmp('.htaccess', $pic_file)==0)
 						{
 							$pic_file='';
@@ -725,13 +761,13 @@ class Items extends Secure_Controller
 					{
 						$items_taxes_data = NULL;
 						//tax 1
-						if(is_numeric($data[7]) && $data[6] != '')
+						if(is_numeric($data[10]) && $data[9] != '')
 						{
 							$items_taxes_data[] = array('name' => $data[6], 'percent' => $data[7] );
 						}
 
 						//tax 2
-						if(is_numeric($data[9]) && $data[8] != '')
+						if(is_numeric($data[12]) && $data[11] != '')
 						{
 							$items_taxes_data[] = array('name' => $data[8], 'percent' => $data[9] );
 						}
@@ -751,7 +787,7 @@ class Items extends Secure_Controller
 
 						// array to store information if location got a quantity
 						$allowed_locations = $this->Stock_location->get_allowed_locations();
-						for($col = 25; $col < $cols; $col = $col + 2)
+						for($col = 28; $col < $cols; $col = $col + 2)
 						{
 							$location_id = $data[$col];
 							if(array_key_exists($location_id, $allowed_locations))

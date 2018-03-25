@@ -831,7 +831,8 @@ class Sale_lib
 					'print_option' => $print_option_selected,
 					'stock_type' => $stock_type,
 					'item_type' => $item_type,
-					'tax_category_id' => $item_info->tax_category_id
+					'tax_category_id' => $item_info->tax_category_id,
+					'season' => $item_info->season
 				)
 			);
 			//add to existing array

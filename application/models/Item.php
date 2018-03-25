@@ -115,6 +115,9 @@ class Item extends CI_Model
 			$this->db->select('items.item_id as item_id');
 			$this->db->select('MAX(items.name) as name');
 			$this->db->select('MAX(items.category) as category');
+			$this->db->select('MAX(items.season) as season');
+			$this->db->select('MAX(items.size) as size');
+			$this->db->select('MAX(items.color) as color');
 			$this->db->select('MAX(items.supplier_id) as supplier_id');
 			$this->db->select('MAX(items.item_number) as item_number');
 			$this->db->select('MAX(items.description) as description');
@@ -188,6 +191,9 @@ class Item extends CI_Model
 					$this->db->or_like('items.item_id', $search);
 					$this->db->or_like('company_name', $search);
 					$this->db->or_like('category', $search);
+					$this->db->or_like('season', $search);
+					$this->db->or_like('size', $search);
+					$this->db->or_like('color', $search);
 				$this->db->group_end();
 			}
 			else
@@ -560,6 +566,19 @@ class Item extends CI_Model
 				$suggestions[] = array('label' => $row->company_name);
 			}
 
+			//Search by season
+			$this->db->select('season');
+			$this->db->from('items');
+			$this->db->where('deleted', $filters['is_deleted']);
+			$this->db->where("item_type = " . ITEM); // standard, exclude kit items since kits will be picked up later
+			$this->db->distinct();
+			$this->db->like('season', $search);
+			$this->db->order_by('season', 'asc');
+			foreach($this->db->get()->result() as $row)
+			{
+				$suggestions[] = array('label' => $row->season);
+			}
+
 			//Search by description
 			$this->db->select($this->get_search_suggestion_format('item_id, name, description'));
 			$this->db->from('items');
@@ -669,6 +688,19 @@ class Item extends CI_Model
 				$suggestions[] = array('label' => $row->company_name);
 			}
 
+			//Search by season
+			$this->db->select('season');
+			$this->db->from('items');
+			$this->db->where('deleted', $filters['is_deleted']);
+			$this->db->where("item_type = " . ITEM); // standard, exclude kit items since kits will be picked up later
+			$this->db->distinct();
+			$this->db->like('season', $search);
+			$this->db->order_by('season', 'asc');
+			foreach($this->db->get()->result() as $row)
+			{
+				$suggestions[] = array('label' => $row->season);
+			}
+
 			//Search by description
 			$this->db->select($this->get_search_suggestion_format('item_id, name, description'));
 			$this->db->from('items');
@@ -774,6 +806,19 @@ class Item extends CI_Model
 				$suggestions[] = array('label' => $row->company_name);
 			}
 
+			//Search by season
+			$this->db->select('season');
+			$this->db->from('items');
+			$this->db->where('deleted', $filters['is_deleted']);
+			$this->db->where("item_type = " . ITEM); // standard, exclude kit items since kits will be picked up later
+			$this->db->distinct();
+			$this->db->like('season', $search);
+			$this->db->order_by('season', 'asc');
+			foreach($this->db->get()->result() as $row)
+			{
+				$suggestions[] = array('label' => $row->season);
+			}
+
 			//Search by description
 			$this->db->select('item_id, name, description');
 			$this->db->from('items');
@@ -834,6 +879,57 @@ class Item extends CI_Model
 		foreach($this->db->get()->result() as $row)
 		{
 			$suggestions[] = array('label' => $row->category);
+		}
+
+		return $suggestions;
+	}
+
+	public function get_season_suggestions($search)
+	{
+		$suggestions = array();
+		$this->db->distinct();
+		$this->db->select('season');
+		$this->db->from('items');
+		$this->db->like('season', $search);
+		$this->db->where('deleted', 0);
+		$this->db->order_by('season', 'asc');
+		foreach($this->db->get()->result() as $row)
+		{
+			$suggestions[] = array('label' => $row->season);
+		}
+
+		return $suggestions;
+	}
+
+	public function get_color_suggestions($search)
+	{
+		$suggestions = array();
+		$this->db->distinct();
+		$this->db->select('color');
+		$this->db->from('items');
+		$this->db->like('color', $search);
+		$this->db->where('deleted', 0);
+		$this->db->order_by('color', 'asc');
+		foreach($this->db->get()->result() as $row)
+		{
+			$suggestions[] = array('label' => $row->color);
+		}
+
+		return $suggestions;
+	}
+
+	public function get_size_suggestions($search)
+	{
+		$suggestions = array();
+		$this->db->distinct();
+		$this->db->select('size');
+		$this->db->from('items');
+		$this->db->like('size', $search);
+		$this->db->where('deleted', 0);
+		$this->db->order_by('size', 'asc');
+		foreach($this->db->get()->result() as $row)
+		{
+			$suggestions[] = array('label' => $row->size);
 		}
 
 		return $suggestions;

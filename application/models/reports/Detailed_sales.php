@@ -30,7 +30,10 @@ class Detailed_sales extends Report
 			'details' => array(
 				$this->lang->line('reports_name'),
 				$this->lang->line('reports_category'),
-				$this->lang->line('reports_serial_number'),
+				$this->lang->line('reports_season'),
+				$this->lang->line('reports_color'),
+				$this->lang->line('reports_size'),
+				$this->lang->line('reports_item_number'),
 				$this->lang->line('reports_description'),
 				$this->lang->line('reports_quantity'),
 				$this->lang->line('reports_subtotal'),
@@ -144,7 +147,7 @@ class Detailed_sales extends Report
 
 		foreach($data['summary'] as $key=>$value)
 		{
-			$this->db->select('name, category, quantity_purchased, item_location, serialnumber, description, subtotal, tax, total, cost, profit, discount_percent, sale_status');
+			$this->db->select('name, category, season, color, size, quantity_purchased, item_location, item_number, description, subtotal, tax, total, cost, profit, discount_percent, sale_status');
 			$this->db->from('sales_items_temp');
 			$this->db->where('sale_id', $value['sale_id']);
 			$data['details'][$key] = $this->db->get()->result_array();
