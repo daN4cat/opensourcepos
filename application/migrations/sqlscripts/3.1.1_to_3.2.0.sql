@@ -54,6 +54,7 @@ WHERE `quote_number` IS NOT NULL;
 -- WHERE quote_number IS NOT NULL;
 
 -- Identify invoices
+
 UPDATE `ospos_sales`
   SET `sale_type` = 1
 WHERE `invoice_number` IS NOT NULL;
@@ -142,9 +143,6 @@ CREATE TABLE IF NOT EXISTS `ospos_expense_categories` (
   `deleted` int(1) NOT NULL DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-INSERT INTO `ospos_expense_categories` (`expense_category_id`, `category_name`, `category_description`) VALUES
-(1, 'Utilities', 'Water');
-
 
 -- Table structure for table `ospos_expenses`
 
@@ -158,12 +156,6 @@ CREATE TABLE IF NOT EXISTS `ospos_expenses` (
   `employee_id` int(10) NOT NULL,
   `deleted` int(1) NOT NULL DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-
--- Dumping data for table `ospos_expenses`
-
-INSERT INTO `ospos_expenses` (`expense_id`, `date`, `amount`, `expense_category_id`, `description`, `employee_id`) VALUES
-(1, '2017-04-20 07:00:00', '15.00', 1, 'Water', 1);
 
 
 -- Indexes for table `ospos_expense_categories`
@@ -230,3 +222,51 @@ INSERT INTO `ospos_app_config` (`key`, `value`) VALUES
 
 INSERT INTO `ospos_app_config` (`key`, `value`) VALUES
 ('quote_default_comments', 'This is a default quote comment');
+
+
+--
+-- Add support for module cashups
+--
+
+INSERT INTO `ospos_modules` (`name_lang_key`, `desc_lang_key`, `sort`, `module_id`) VALUES
+('module_cashups', 'module_cashups_desc', 107, 'cashups');
+
+INSERT INTO `ospos_permissions` (`permission_id`, `module_id`) VALUES
+('cashups', 'cashups');
+
+INSERT INTO `ospos_grants` (`permission_id`, `person_id`) VALUES 
+('cashups', 1);
+
+
+-- Table structure for table `ospos_cash_up`
+
+CREATE TABLE `ospos_cash_up` (
+  `cashup_id` int(10) NOT NULL,
+  `open_date` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `close_date` timestamp NULL,
+  `open_amount_cash` decimal(15,2) NOT NULL,
+  `transfer_amount_cash` decimal(15,2) NOT NULL,
+  `note` int(1) NOT NULL,
+  `closed_amount_cash` decimal(15,2) NOT NULL,
+  `closed_amount_card` decimal(15,2) NOT NULL,
+  `closed_amount_check` decimal(15,2) NOT NULL,
+  `closed_amount_total` decimal(15,2) NOT NULL,
+  `description` varchar(255) NOT NULL,
+  `open_employee_id` int(10) NOT NULL,
+  `close_employee_id` int(10) NOT NULL,
+  `deleted` int(1) NOT NULL DEFAULT '0'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+-- Indexes for table `ospos_cash_up`
+
+ALTER TABLE `ospos_cash_up`
+  ADD PRIMARY KEY (`cashup_id`),
+  ADD KEY `open_employee_id` (`open_employee_id`),
+  ADD KEY `close_employee_id` (`close_employee_id`);
+
+
+-- AUTO_INCREMENT for table `ospos_cash_up`
+
+ALTER TABLE `ospos_cash_up`
+  MODIFY `cashup_id` int(10) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1;
