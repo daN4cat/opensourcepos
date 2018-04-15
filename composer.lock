@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "b2409bf432f1299f214a189451e901bc",
-    "content-hash": "f6ad939a9d4ea5cb3f83d213ea2a299b",
+    "hash": "d4a97214e0103fb22f007031c93033a0",
+    "content-hash": "34c44777ba79bfcf5852551feaa090b8",
     "packages": [
         {
             "name": "codeigniter/framework",
@@ -13,12 +13,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/bcit-ci/CodeIgniter.git",
-                "reference": "02a0518e1c56ba3506f370362ac5ebdb8a138312"
+                "reference": "71e647782764184e3aab4faffe6d99176758979f"
             },
             "dist": {
                 "type": "zip",
                 "url": "https://api.github.com/repos/bcit-ci/CodeIgniter/zipball/71e647782764184e3aab4faffe6d99176758979f",
-                "reference": "02a0518e1c56ba3506f370362ac5ebdb8a138312",
+                "reference": "71e647782764184e3aab4faffe6d99176758979f",
                 "shasum": ""
             },
             "require": {
@@ -38,7 +38,49 @@
             ],
             "description": "The CodeIgniter framework",
             "homepage": "https://codeigniter.com",
-            "time": "2018-01-13 11:57:11"
+            "time": "2018-03-22 14:48:55"
+        },
+        {
+            "name": "dan4cat/codeigniter-reportico",
+            "version": "1.0.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/daN4cat/codeigniter-reportico.git",
+                "reference": "15427f52b6b65629f9316e32c40f6f649d998286"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/daN4cat/codeigniter-reportico/zipball/15427f52b6b65629f9316e32c40f6f649d998286",
+                "reference": "15427f52b6b65629f9316e32c40f6f649d998286",
+                "shasum": ""
+            },
+            "require": {
+                "codeigniter/framework": "^3.1",
+                "php": "^5.5 || ^7.0",
+                "reportico-web/reportico": "^4.6"
+            },
+            "type": "library",
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "GPL-2.0"
+            ],
+            "authors": [
+                {
+                    "name": "jsam9"
+                },
+                {
+                    "name": "FrancescoUK"
+                }
+            ],
+            "description": "Reportico Module for CodeIgniter 3.x",
+            "homepage": "https://github.com/daN4cat/codeigniter-reportico",
+            "keywords": [
+                "Reportico",
+                "codeigniter",
+                "reporting",
+                "reports"
+            ],
+            "time": "2017-02-18 17:44:13"
         },
         {
             "name": "dompdf/dompdf",
@@ -103,16 +145,16 @@
         },
         {
             "name": "paragonie/random_compat",
-            "version": "v2.0.11",
+            "version": "v2.0.12",
             "source": {
                 "type": "git",
                 "url": "https://github.com/paragonie/random_compat.git",
-                "reference": "5da4d3c796c275c55f057af5a643ae297d96b4d8"
+                "reference": "258c89a6b97de7dfaf5b8c7607d0478e236b04fb"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/paragonie/random_compat/zipball/5da4d3c796c275c55f057af5a643ae297d96b4d8",
-                "reference": "5da4d3c796c275c55f057af5a643ae297d96b4d8",
+                "url": "https://api.github.com/repos/paragonie/random_compat/zipball/258c89a6b97de7dfaf5b8c7607d0478e236b04fb",
+                "reference": "258c89a6b97de7dfaf5b8c7607d0478e236b04fb",
                 "shasum": ""
             },
             "require": {
@@ -147,7 +189,7 @@
                 "pseudorandom",
                 "random"
             ],
-            "time": "2017-09-27 21:40:39"
+            "time": "2018-04-04 21:24:14"
         },
         {
             "name": "phenx/php-font-lib",
@@ -216,6 +258,50 @@
             "description": "A library to read, parse and export to PDF SVG files.",
             "homepage": "https://github.com/PhenX/php-svg-lib",
             "time": "2015-05-06 18:49:49"
+        },
+        {
+            "name": "reportico-web/reportico",
+            "version": "4.6.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/reportico-web/reportico.git",
+                "reference": "90957af91a2855eaa7d3ea8a32df60e9e8f926eb"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/reportico-web/reportico/zipball/90957af91a2855eaa7d3ea8a32df60e9e8f926eb",
+                "reference": "90957af91a2855eaa7d3ea8a32df60e9e8f926eb",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.4.0"
+            },
+            "type": "project",
+            "autoload": {
+                "classmap": [
+                    "reportico.php"
+                ],
+                "psr-0": {
+                    "Reportico\\Reportico": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "GPL-3.0"
+            ],
+            "authors": [
+                {
+                    "name": "Reportico",
+                    "email": "info@reportico.org"
+                }
+            ],
+            "description": "Reportico Open Source PHP report Designer",
+            "homepage": "http://www.reportico.org/",
+            "keywords": [
+                "report",
+                "reporting"
+            ],
+            "time": "2017-02-15 23:24:24"
         },
         {
             "name": "tamtamchik/namecase",

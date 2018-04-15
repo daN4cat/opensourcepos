@@ -21,7 +21,8 @@
 		"codeigniter/framework": "^3.1",
 		"dompdf/dompdf": "^0.7",
 		"tamtamchik/namecase": "^1.0",
-		"paragonie/random_compat": "^2.0"
+		"paragonie/random_compat": "^2.0",
+		"dan4cat/codeigniter-reportico": "^1.0"
 	},
 	"require-dev": {
 		"mikey179/vfsStream": "1.1.*",
