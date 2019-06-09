@@ -157,8 +157,38 @@ class Items extends Secure_Controller
 	}
 
 	/*
-	 Gives search suggestions based on what is being searched for
+	Gives search suggestions based on what is being searched for
 	 */
+	public function suggest_season()
+	{
+		$suggestions = $this->xss_clean($this->Item->get_season_suggestions($this->input->get('term')));
+
+		echo json_encode($suggestions);
+	}
+
+	/*
+	Gives search suggestions based on what is being searched for
+	*/
+	public function suggest_color()
+	{
+		$suggestions = $this->xss_clean($this->Item->get_color_suggestions($this->input->get('term')));
+
+		echo json_encode($suggestions);
+	}
+
+	/*
+	Gives search suggestions based on what is being searched for
+	*/
+	public function suggest_size()
+	{
+		$suggestions = $this->xss_clean($this->Item->get_size_suggestions($this->input->get('term')));
+
+		echo json_encode($suggestions);
+	}
+
+	/*
+	 Gives search suggestions based on what is being searched for
+	*/
 	public function suggest_location()
 	{
 		$suggestions = $this->xss_clean($this->Item->get_location_suggestions($this->input->get('term')));
@@ -506,6 +536,9 @@ class Items extends Secure_Controller
 			'name' => $this->input->post('name'),
 			'description' => $this->input->post('description'),
 			'category' => $this->input->post('category'),
+			'season' => $this->input->post('season'),
+			'color' => $this->input->post('color'),
+			'size' => $this->input->post('size'),
 			'item_type' => $item_type,
 			'stock_type' => $this->input->post('stock_type') == NULL ? HAS_STOCK : $this->input->post('stock_type'),
 			'supplier_id' => $this->input->post('supplier_id') == '' ? NULL : $this->input->post('supplier_id'),
@@ -845,6 +878,9 @@ class Items extends Secure_Controller
 						'name'					=> $line['Item Name'],
 						'description'			=> $line['Description'],
 						'category'				=> $line['Category'],
+							'season'				=> $line['Season'],
+							'color'					=> $line['Color'],
+							'size'					=> $line['Size'],
 						'cost_price'			=> $line['Cost Price'],
 						'unit_price'			=> $line['Unit Price'],
 						'reorder_level'			=> $line['Reorder Level'],
