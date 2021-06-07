@@ -22,7 +22,7 @@ env:
   global:
   - DOCKER_COMPOSE_VERSION=1.21.1
   - TAG=$(echo ${TRAVIS_BRANCH} | sed s/feature\\///)
-  - TRAVIS_TAG=$(echo $TRAVIS_BRANCH).$(date +%Y%m%d%H%M%S)
+  - TRAVIS_TAG=$(echo $TAG).$(date +%Y%m%d%H%M%S)
 after_success:
   - docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD" && docker tag "ospos:latest"
     "jekkos/opensourcepos:$TAG" && docker push "jekkos/opensourcepos:$TAG"
@@ -35,6 +35,6 @@ deploy:
   skip_cleanup: true
   user: jekkos
   api_key:
-    secure: Ax25mMRDfHVf/HjRwqxYJe2oMnWC4sc2aKIiUxAOviVJJSCl4GMWhcFlUNnFsDcKIg2ofEGMVD6b9cTBuOwPDvymUDFnLNCCgDWve+vRDdWaTkTipn77Qk4c9UO9VvuzlPSKopChefPHlQ0n1rEmAMiKIXuqjUlNGqybW4FLP4E=
+    secure: ${GITHUB_TOKEN}
   on:
     all_branches: true
