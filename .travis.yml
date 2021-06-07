@@ -27,6 +27,7 @@ after_success:
 before_deploy:
   - date=`date +%Y%m%d%H%M%S` && branch=${TRAVIS_BRANCH} && rev=`git rev-parse --short=6 HEAD` 
   - TRAVIS_TAG=$(echo $branch.$date.$rev)
+  - git tag $TRAVIS_TAG
 deploy:
   provider: releases
   file: dist/opensourcepos.zip
@@ -37,5 +38,7 @@ deploy:
   user: jekkos
   api_key:
     secure: Ax25mMRDfHVf/HjRwqxYJe2oMnWC4sc2aKIiUxAOviVJJSCl4GMWhcFlUNnFsDcKIg2ofEGMVD6b9cTBuOwPDvymUDFnLNCCgDWve+vRDdWaTkTipn77Qk4c9UO9VvuzlPSKopChefPHlQ0n1rEmAMiKIXuqjUlNGqybW4FLP4E=
-  branches:
-    except: /^$branch/
+  on:
+    all_branches: true
+after_deploy:
+  - git tag -d $TRAVIS_TAG
