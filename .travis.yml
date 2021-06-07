@@ -8,7 +8,6 @@ before_install:
   - curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
   - chmod +x docker-compose
   - sudo mv docker-compose /usr/local/bin
-  - date=`date +%Y%m%d%H%M%S` && branch=${TRAVIS_BRANCH} && rev=`git rev-parse --short=6 HEAD` 
 script:
   - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
   - docker run --rm -v $(pwd):/app jekkos/composer composer install
@@ -22,10 +21,12 @@ env:
   global:
   - DOCKER_COMPOSE_VERSION=1.21.1
   - TAG=$(echo ${TRAVIS_BRANCH} | sed s/feature\\///)
-  - TRAVIS_TAG=$(echo $TAG).$(date +%Y%m%d%H%M%S)
 after_success:
   - docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD" && docker tag "ospos:latest"
     "jekkos/opensourcepos:$TAG" && docker push "jekkos/opensourcepos:$TAG"
+before_deploy:
+  - date=`date +%Y%m%d%H%M%S` && branch=${TRAVIS_BRANCH} && rev=`git rev-parse --short=6 HEAD` 
+  - TRAVIS_TAG=$(echo $branch.$date.$rev)
 deploy:
   provider: releases
   file: dist/opensourcepos.zip
@@ -36,5 +37,5 @@ deploy:
   user: jekkos
   api_key:
     secure: Ax25mMRDfHVf/HjRwqxYJe2oMnWC4sc2aKIiUxAOviVJJSCl4GMWhcFlUNnFsDcKIg2ofEGMVD6b9cTBuOwPDvymUDFnLNCCgDWve+vRDdWaTkTipn77Qk4c9UO9VvuzlPSKopChefPHlQ0n1rEmAMiKIXuqjUlNGqybW4FLP4E=
-  on:
-    all_branches: true
+  branches:
+    except: /^$branch/
