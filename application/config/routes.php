@@ -61,12 +61,17 @@ $route['sales/index/([^/]+)/([^/]+)/([^/]+)'] = 'sales/manage/$1/$2/$3';
 $route['reports/(summary_:any)/([^/]+)/([^/]+)'] = 'reports/$1/$2/$3/$4';
 $route['reports/summary_expenses_categories'] = 'reports/date_input_only';
 $route['reports/summary_payments'] = 'reports/date_input_only';
+$route['reports/summary_cost_sales'] = 'reports/date_input_only';
 $route['reports/summary_discounts'] = 'reports/summary_discounts_input';
+$route['reports/summary_cost_sales_by_supplier'] = 'reports/summary_cost_sales_by_supplier_input';
 $route['reports/summary_:any'] = 'reports/date_input';
 
 $route['reports/(graphical_:any)/([^/]+)/([^/]+)'] = 'reports/$1/$2/$3/$4';
 $route['reports/graphical_summary_expenses_categories'] = 'reports/date_input_only';
+$route['reports/graphical_summary_payments'] = 'reports/date_input_only';
+$route['reports/graphical_summary_cost_sales'] = 'reports/date_input_only';
 $route['reports/graphical_summary_discounts'] = 'reports/summary_discounts_input';
+$route['reports/graphical_summary_cost_sales_by_supplier'] = 'reports/summary_cost_sales_by_supplier_input';
 $route['reports/graphical_:any'] = 'reports/date_input';
 
 $route['reports/(inventory_:any)/([^/]+)'] = 'reports/$1/$2';

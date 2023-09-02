@@ -462,6 +462,98 @@ class Reports extends Secure_Controller
 		$this->load->view('reports/tabular', $data);
 	}
 
+	//Summary Total Cost and Sales report
+	public function summary_cost_sales($start_date, $end_date, $sale_type, $location_id = 'all')
+	{
+		$inputs = array('start_date' => $start_date, 'end_date' => $end_date, 'sale_type' => $sale_type, 'location_id' => $location_id);
+
+		$this->load->model('reports/Summary_cost_sales');
+		$model = $this->Summary_cost_sales;
+
+		$report_data = $model->getData($inputs);
+		$summary = $this->xss_clean($model->getSummaryData($inputs));
+
+		$tabular_data = array();
+		foreach($report_data as $row)
+		{
+			$tabular_data[] = $this->xss_clean(array(
+				'season' => $row['season'],
+				'stock_cost' => to_currency($row['stock_cost']),
+				'cost_of_sale' => to_currency($row['cost_of_sale']),
+				'total_cost' => to_currency($row['total_cost']),
+				'revenue' => to_currency($row['revenue']),
+				'mark_up' => to_decimals($row['mark_up'])
+			));
+		}
+
+		$data = array(
+			'title' => $this->lang->line('reports_cost_sales_summary_report'),
+			'subtitle' => $this->_get_subtitle_report(array('start_date' => $start_date, 'end_date' => $end_date)),
+			'headers' => $this->xss_clean($model->getDataColumns()),
+			'data' => $tabular_data,
+			'summary_data' => $summary
+		);
+
+		$this->load->view('reports/tabular', $data);
+	}
+
+	public function summary_cost_sales_by_supplier_input()
+	{
+		$data = array();
+		$stock_locations = $data = $this->xss_clean($this->Stock_location->get_allowed_locations('sales'));
+		$stock_locations['all'] = $this->lang->line('reports_all');
+		$data['stock_locations'] = array_reverse($stock_locations, TRUE);
+		$data['mode'] = 'sale';
+		$seasons = $this->xss_clean($this->Item->get_seasons()->result_array());
+
+		$season_type = array();
+		foreach($seasons as $season)
+		{
+			$season_type[$season['season']] = $season['season'];
+		}
+
+		$data['season_type_options'] = $season_type;
+		$data['sale_type_options'] = $this->get_sale_type_options();
+
+		$this->load->view('reports/date_input', $data);
+	}
+
+	//Summary Total Cost and Sales by Supplier report
+	public function summary_cost_sales_by_supplier($start_date, $end_date, $sale_type, $location_id = 'all', $season = '')
+	{
+		$inputs = array('start_date' => $start_date, 'end_date' => $end_date, 'sale_type' => $sale_type, 'location_id' => $location_id, 'season' => $season);
+
+		$this->load->model('reports/Summary_cost_sales_by_supplier');
+		$model = $this->Summary_cost_sales_by_supplier;
+
+		$report_data = $model->getData($inputs);
+		$summary = $this->xss_clean($model->getSummaryData($inputs));
+
+		$tabular_data = array();
+		foreach($report_data as $row)
+		{
+			$tabular_data[] = $this->xss_clean(array(
+				'season' => $row['season'],
+				'supplier' => $row['supplier'],
+				'stock_cost' => to_currency($row['stock_cost']),
+				'cost_of_sale' => to_currency($row['cost_of_sale']),
+				'total_cost' => to_currency($row['total_cost']),
+				'revenue' => to_currency($row['revenue']),
+				'mark_up' => to_decimals($row['mark_up'])
+			));
+		}
+
+		$data = array(
+			'title' => $this->lang->line('reports_cost_sales_by_supplier_summary_report'),
+			'subtitle' => $this->_get_subtitle_report(array('start_date' => $start_date, 'end_date' => $end_date)),
+			'headers' => $this->xss_clean($model->getDataColumns()),
+			'data' => $tabular_data,
+			'summary_data' => $summary
+		);
+
+		$this->load->view('reports/tabular', $data);
+	}
+
 	//Input for reports that require only a date range. (see routes.php to see that all graphical summary reports route here)
 	public function date_input()
 	{
@@ -887,6 +979,78 @@ class Reports extends Secure_Controller
 			'labels_1' => $labels,
 			'series_data_1' => $series,
 			'summary_data_1' => $summary,
+			'show_currency' => TRUE
+		);
+
+		$this->load->view('reports/graphical', $data);
+	}
+
+	//Graphical summary Total Cost and Sales report
+	public function graphical_summary_cost_sales($start_date, $end_date, $sale_type, $location_id = 'all')
+	{
+		$inputs = array('start_date' => $start_date, 'end_date' => $end_date, 'sale_type' => $sale_type, 'location_id' => $location_id);
+
+		$this->load->model('reports/Summary_cost_sales');
+		$model = $this->Summary_cost_sales;
+
+		$report_data = $model->getData($inputs);
+		$summary = $this->xss_clean($model->getSummaryData($inputs));
+
+		$labels = array();
+		$series = array();
+		foreach($report_data as $row)
+		{
+			$row = $this->xss_clean($row);
+
+			$labels[] = $row['season'];
+			$series[] = $row['revenue'];
+		}
+
+		$data = array(
+			'title' => $this->lang->line('reports_cost_sales_summary_report'),
+			'subtitle' => $this->_get_subtitle_report(array('start_date' => $start_date, 'end_date' => $end_date)),
+			'chart_type' => 'reports/graphs/bar',
+			'labels_1' => $labels,
+			'series_data_1' => $series,
+			'summary_data_1' => $summary,
+			'yaxis_title' => $this->lang->line('reports_revenue'),
+			'xaxis_title' => $this->lang->line('reports_season'),
+			'show_currency' => TRUE
+		);
+
+		$this->load->view('reports/graphical', $data);
+	}
+
+	//Graphical summary Total Cost and Sales by Supplier report
+	public function graphical_summary_cost_sales_by_supplier($start_date, $end_date, $sale_type, $location_id = 'all', $season = '')
+	{
+		$inputs = array('start_date' => $start_date, 'end_date' => $end_date, 'sale_type' => $sale_type, 'location_id' => $location_id, 'season' => $season);
+
+		$this->load->model('reports/Summary_cost_sales_by_supplier');
+		$model = $this->Summary_cost_sales_by_supplier;
+
+		$report_data = $model->getData($inputs);
+		$summary = $this->xss_clean($model->getSummaryData($inputs));
+
+		$labels = array();
+		$series = array();
+		foreach($report_data as $row)
+		{
+			$row = $this->xss_clean($row);
+
+			$labels[] = $row['supplier'];
+			$series[] = $row['revenue'];
+		}
+
+		$data = array(
+			'title' => $this->lang->line('reports_cost_sales_summary_report'),
+			'subtitle' => $this->_get_subtitle_report(array('start_date' => $start_date, 'end_date' => $end_date)),
+			'chart_type' => 'reports/graphs/bar',
+			'labels_1' => $labels,
+			'series_data_1' => $series,
+			'summary_data_1' => $summary,
+			'yaxis_title' => $this->lang->line('reports_revenue'),
+			'xaxis_title' => $this->lang->line('reports_supplier'),
 			'show_currency' => TRUE
 		);
 
