@@ -30,6 +30,48 @@
 		</div>
 
 		<div class="form-group form-group-sm">
+			<?php echo form_label($this->lang->line('items_season'), 'season', array('class'=>'control-label col-xs-3')); ?>
+			<div class='col-xs-8'>
+				<div class="input-group">
+					<span class="input-group-addon input-sm"><span class="glyphicon glyphicon-tag"></span></span>
+					<?php echo form_input(array(
+							'name'=>'season',
+							'id'=>'season',
+							'class'=>'form-control input-sm')
+							);?>
+				</div>
+			</div>
+		</div>
+
+		<div class="form-group form-group-sm">
+			<?php echo form_label($this->lang->line('items_color'), 'color', array('class'=>'control-label col-xs-3')); ?>
+			<div class='col-xs-8'>
+				<div class="input-group">
+					<span class="input-group-addon input-sm"><span class="glyphicon glyphicon-tag"></span></span>
+					<?php echo form_input(array(
+							'name'=>'color',
+							'id'=>'color',
+							'class'=>'form-control input-sm')
+							);?>
+				</div>
+			</div>
+		</div>
+
+		<div class="form-group form-group-sm">
+			<?php echo form_label($this->lang->line('items_size'), 'size', array('class'=>'control-label col-xs-3')); ?>
+			<div class='col-xs-8'>
+				<div class="input-group">
+					<span class="input-group-addon input-sm"><span class="glyphicon glyphicon-tag"></span></span>
+					<?php echo form_input(array(
+							'name'=>'size',
+							'id'=>'size',
+							'class'=>'form-control input-sm')
+							);?>
+				</div>
+			</div>
+		</div>
+
+		<div class="form-group form-group-sm">	
 			<?php echo form_label($this->lang->line('items_supplier'), 'supplier', array('class'=>'control-label col-xs-3')); ?>
 			<div class='col-xs-8'>
 				<?php echo form_dropdown('supplier_id', $suppliers, '', array('class'=>'form-control'));?>
@@ -164,6 +206,24 @@ $(document).ready(function()
 {
 	$('#category').autocomplete({
 		source: "<?php echo site_url('items/suggest_category');?>",
+		appendTo: '.modal-content',
+		delay: 10
+	});
+
+	$('#season').autocomplete({
+		source: "<?php echo site_url('items/suggest_season'); ?>",
+		appendTo: '.modal-content',
+		delay: 10
+	});
+
+	$('#color').autocomplete({
+		source: "<?php echo site_url('items/suggest_color'); ?>",
+		appendTo: '.modal-content',
+		delay: 10
+	});
+
+	$('#size').autocomplete({
+		source: "<?php echo site_url('items/suggest_size'); ?>",
 		appendTo: '.modal-content',
 		delay: 10
 	});

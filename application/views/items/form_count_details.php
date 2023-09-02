@@ -46,6 +46,22 @@
 		</div>
 
 		<div class="form-group form-group-sm">
+			<?php echo form_label($this->lang->line('items_season'), 'season', array('class'=>'control-label col-xs-3')); ?>
+			<div class='col-xs-8'>
+				<div class="input-group">
+					<span class="input-group-addon input-sm"><span class="glyphicon glyphicon-tag"></span></span>
+					<?php echo form_input(array(
+							'name'=>'season',
+							'id'=>'season',
+							'class'=>'form-control input-sm',
+							'disabled'=>'',
+							'value'=>$item_info->season)
+							);?>
+				</div>
+			</div>
+		</div>
+
+		<div class="form-group form-group-sm">
 			<?php echo form_label($this->lang->line('items_stock_location'), 'stock_location', array('class'=>'control-label col-xs-3')); ?>
 			<div class='col-xs-8'>
 				<?php echo form_dropdown('stock_location', $stock_locations, current($stock_locations), array('onchange'=>'display_stock(this.value);', 'class'=>'form-control'));	?>

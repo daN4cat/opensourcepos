@@ -678,7 +678,8 @@ class Sale extends CI_Model
 				'item_cost_price'	=> $item['cost_price'],
 				'item_unit_price'	=> $item['price'],
 				'item_location'		=> $item['item_location'],
-				'print_option'		=> $item['print_option']
+				'print_option'		=> $item['print_option'],
+				'season'			=> $item['season']
 			);
 
 			$this->db->insert('sales_items', $sales_items_data);
@@ -1186,6 +1187,9 @@ class Sale extends CI_Model
 					MAX(' . $this->Item->get_item_name() . ') AS name,
 					MAX(items.item_number) AS item_number,
 					MAX(items.category) AS category,
+					MAX(items.season) AS season,
+					MAX(items.color) AS color,
+					MAX(items.size) AS size,
 					MAX(items.supplier_id) AS supplier_id,
 					MAX(sales_items.quantity_purchased) AS quantity_purchased,
 					MAX(sales_items.item_cost_price) AS item_cost_price,

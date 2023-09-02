@@ -88,3 +88,4 @@ git-svn-diff.py
 *.~
 .env
 auth.json
+bin/tmp/develop.zip

@@ -29,6 +29,9 @@ class Specific_employee extends Report
 			'details' => array(
 				$this->lang->line('reports_name'),
 				$this->lang->line('reports_category'),
+				$this->lang->line('reports_season'),
+				$this->lang->line('reports_color'),
+				$this->lang->line('reports_size'),
 				$this->lang->line('reports_item_number'),
 				$this->lang->line('reports_description'),
 				$this->lang->line('reports_quantity'),
@@ -118,7 +121,7 @@ class Specific_employee extends Report
 
 		foreach($data['summary'] as $key=>$value)
 		{
-			$this->db->select('name, category, item_number, description, quantity_purchased, subtotal, tax, total, cost, profit, discount, discount_type');
+			$this->db->select('name, category, season, color, size, item_number, description, quantity_purchased, subtotal, tax, total, cost, profit, discount, discount_type');
 			$this->db->from('sales_items_temp');
 			$this->db->where('sale_id', $value['sale_id']);
 			$data['details'][$key] = $this->db->get()->result_array();
