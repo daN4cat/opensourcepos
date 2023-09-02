@@ -999,6 +999,17 @@ class Item extends CI_Model
 		return $this->db->get();
 	}
 
+	public function get_seasons()
+	{
+		$this->db->select('season');
+		$this->db->from('items');
+		//$this->db->where('deleted', 0);
+		$this->db->distinct();
+		$this->db->order_by('season', 'asc');
+
+		return $this->db->get();
+	}
+
 	/*
 	 * changes the cost price of a given item
 	 * calculates the average price between received items and items on stock

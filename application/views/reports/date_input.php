@@ -70,6 +70,20 @@ if(isset($error))
 	?>
 
 	<?php	
+	if (isset($season_type_options))
+	{
+	?>
+		<div class="form-group form-group-sm">
+			<?php echo form_label($this->lang->line('reports_season'), 'reports_season_type_label', array('class'=>'required control-label col-xs-2')); ?>
+			<div id='report_season_type' class="col-xs-3">
+				<?php echo form_dropdown('season_type', $season_type_options, $this->config->item('default_sales_season_type'), array('id'=>'season_type_id', 'class'=>'form-control')); ?>
+			</div>
+		</div>
+	<?php
+	}
+	?>
+
+	<?php	
 	if (!empty($stock_locations) && count($stock_locations) > 2)
 	{
 	?>
@@ -102,7 +116,7 @@ $(document).ready(function()
 
 	$("#generate_report").click(function()
 	{		
-		window.location = [window.location, start_date, end_date, $("#input_type").val() || 0, $("#location_id").val() || 'all', $("#discount_type_id").val() || 0 ].join("/");
+		window.location = [window.location, start_date, end_date, $("#input_type").val() || 0, $("#location_id").val() || 'all', $("#discount_type_id").val() || $("#season_type_id").val() || 0 ].join("/");
 	});
 });
 </script>
