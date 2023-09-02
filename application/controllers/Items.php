@@ -161,8 +161,38 @@ class Items extends Secure_Controller
 	}
 
 	/*
-	 Gives search suggestions based on what is being searched for
+	Gives search suggestions based on what is being searched for
 	 */
+	public function suggest_season()
+	{
+		$suggestions = $this->xss_clean($this->Item->get_season_suggestions($this->input->get('term')));
+
+		echo json_encode($suggestions);
+	}
+
+	/*
+	Gives search suggestions based on what is being searched for
+	*/
+	public function suggest_color()
+	{
+		$suggestions = $this->xss_clean($this->Item->get_color_suggestions($this->input->get('term')));
+
+		echo json_encode($suggestions);
+	}
+
+	/*
+	Gives search suggestions based on what is being searched for
+	*/
+	public function suggest_size()
+	{
+		$suggestions = $this->xss_clean($this->Item->get_size_suggestions($this->input->get('term')));
+
+		echo json_encode($suggestions);
+	}
+
+	/*
+	 Gives search suggestions based on what is being searched for
+	*/
 	public function suggest_location()
 	{
 		$suggestions = $this->xss_clean($this->Item->get_location_suggestions($this->input->get('term')));
@@ -516,6 +546,9 @@ class Items extends Secure_Controller
 			'name' => $this->input->post('name'),
 			'description' => $this->input->post('description'),
 			'category' => $this->input->post('category'),
+			'season' => $this->input->post('season'),
+			'color' => $this->input->post('color'),
+			'size' => $this->input->post('size'),
 			'item_type' => $item_type,
 			'stock_type' => $this->input->post('stock_type') === NULL ? HAS_STOCK : intval($this->input->post('stock_type')),
 			'supplier_id' => empty($this->input->post('supplier_id')) ? NULL : intval($this->input->post('supplier_id')),
@@ -879,6 +912,9 @@ class Items extends Secure_Controller
 						'name' => $row['Item Name'],
 						'description' => $row['Description'],
 						'category' => $row['Category'],
+						'season' => $row['Season'],
+						'color' => $row['Color'],
+						'size' => $row['Size'],
 						'cost_price' => $row['Cost Price'],
 						'unit_price' => $row['Unit Price'],
 						'reorder_level' => $row['Reorder Level'],
