@@ -51,7 +51,7 @@ class Detailed_sales extends Report
 	public function getDataBySaleId($sale_id)
 	{
 		$this->db->select('sale_id,
-			sale_time as sale_time,
+			MAX(sale_time) as sale_time,
 			SUM(quantity_purchased) AS items_purchased,
 			MAX(employee_name) AS employee_name,
 			MAX(customer_name) AS customer_name,
@@ -62,7 +62,7 @@ class Detailed_sales extends Report
 			SUM(profit) AS profit,
 			MAX(payment_type) AS payment_type,
 			MAX(sale_status) AS sale_status,
-			comment');
+			MAX(comment) AS comment');
 		$this->db->from('sales_items_temp');
 		$this->db->where('sale_id', $sale_id);
 

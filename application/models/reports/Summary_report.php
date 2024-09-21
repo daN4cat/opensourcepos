@@ -32,7 +32,6 @@ abstract class Summary_report extends Report
 
 		$cash_adjustment = 'IFNULL(SUM(payments.sale_cash_adjustment), 0)';
 
-
 		if($this->config->item('tax_included'))
 		{
 			$sale_total = "ROUND(SUM($sale_price), $decimals) + $cash_adjustment";
@@ -97,7 +96,6 @@ abstract class Summary_report extends Report
 			'sales_items.sale_id = sales_items_taxes.sale_id AND sales_items.item_id = sales_items_taxes.item_id AND sales_items.line = sales_items_taxes.line',
 			'left outer');
 		$this->db->join('sales_payments_temp AS payments', 'sales.sale_id = payments.sale_id', 'LEFT OUTER');
-
 	}
 
 	private function __common_where(array $inputs)

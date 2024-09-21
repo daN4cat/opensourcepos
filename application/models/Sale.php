@@ -524,7 +524,7 @@ class Sale extends CI_Model
 				$payment_type = $payment['payment_type'];
 				$payment_amount = $payment['payment_amount'];
 				$cash_refund = $payment['cash_refund'];
-				$cash_adjustment = $payment['cash_adjustment'];
+				$cash_adjustment = $payment['cash_adjustment'] == NULL ? CASH_ADJUSTMENT_FALSE : $payment['cash_adjustment'];
 				$employee_id = $payment['employee_id'];
 
 				if($payment_id == -1 && $payment_amount != 0)
@@ -566,6 +566,7 @@ class Sale extends CI_Model
 
 			$success &= $this->db->trans_status();
 		}
+
 		return $success;
 	}
 
@@ -633,28 +634,24 @@ class Sale extends CI_Model
 				$total_amount_used = floatval($total_amount_used) + floatval($payment['payment_amount']);
 			}
 
-			if($payment['cash_adjustment'] == NULL)
-			{
-				$payment['cash_adjustment'] = CASH_ADJUSTMENT_FALSE;
-			}
+			$cash_adjustment = $payment['cash_adjustment'] == NULL ? CASH_ADJUSTMENT_FALSE : $payment['cash_adjustment'];
 			
 			$sales_payments_data = array(
 				'sale_id'		  => $sale_id,
 				'payment_type'	  => $payment['payment_type'],
 				'payment_amount'  => $payment['payment_amount'],
 				'cash_refund'     => $payment['cash_refund'],
-				'cash_adjustment' => $payment['cash_adjustment'],
+				'cash_adjustment' => $cash_adjustment,
 				'employee_id'	  => $employee_id
 			);
 
 			$this->db->insert('sales_payments', $sales_payments_data);
 
 			$total_amount = floatval($total_amount) + floatval($payment['payment_amount']) - floatval($payment['cash_refund']);
-
 		}
-		
+
 		$this->save_customer_rewards($customer_id, $sale_id, $total_amount, $total_amount_used);
-		
+
 		$customer = $this->Customer->get_info($customer_id);
 
 		foreach($items as $line=>$item)
@@ -1416,7 +1413,7 @@ class Sale extends CI_Model
 		$this->db->from('sales');
 		$this->db->where('sale_id', $sale_id);
 		$this->db->join('people', 'people.person_id = sales.customer_id', 'LEFT');
-		$this->db-where('sale_status', SUSPENDED);
+		$this->db->where('sale_status', SUSPENDED);
 
 		return $this->db->get();
 	}
@@ -1447,6 +1444,5 @@ class Sale extends CI_Model
 			}
 		}
 	}
-
 }
 ?>
