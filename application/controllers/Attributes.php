@@ -83,7 +83,7 @@ class Attributes extends Secure_Controller
 			'definition_fk' => $this->input->post('definition_group') != '' ? $this->input->post('definition_group') : NULL
 		);
 
-		if ($this->input->post('definition_type') != null)
+		if ($this->input->post('definition_type') != null && isset(DEFINITION_TYPES[$this->input->post('definition_type')]))
 		{
 			$definition_data['definition_type'] = DEFINITION_TYPES[$this->input->post('definition_type')];
 		}
@@ -97,9 +97,12 @@ class Attributes extends Secure_Controller
 			{
 				$definition_values = json_decode($this->input->post('definition_values'));
 
-				foreach($definition_values as $definition_value)
+				if(is_array($definition_values) || is_object($definition_values))
 				{
-					$this->Attribute->save_value($definition_value, $definition_data['definition_id']);
+					foreach($definition_values as $definition_value)
+					{
+						$this->Attribute->save_value($definition_value, $definition_data['definition_id']);
+					}
 				}
 
 				echo json_encode(array('success' => TRUE, 'message' => $this->lang->line('attributes_definition_successful_adding').' '.
@@ -170,9 +173,9 @@ class Attributes extends Secure_Controller
 		$this->load->view('attributes/form', $data);
 	}
 
-	public function delete_value($attribute_id)
+	public function delete_value($attribute_value, $definition_id = FALSE)
 	{
-		return $this->Attribute->delete_value($attribute_id);
+		return $this->Attribute->delete_value($attribute_value, $definition_id);
 	}
 
 	public function delete()

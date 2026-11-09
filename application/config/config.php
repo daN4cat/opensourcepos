@@ -67,7 +67,8 @@ $config['db_log_enabled'] = FALSE;
 */
 $config['https_on'] = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on') || (isset($_ENV['FORCE_HTTPS']) && $_ENV['FORCE_HTTPS'] == 'true');
 $config['base_url'] = $config['https_on'] ? 'https' : 'http';
-$config['base_url'] .= '://' . ((isset($_SERVER['HTTP_HOST'])) ? $_SERVER['HTTP_HOST'] : 'localhost') ;
+$http_host = (isset($_SERVER['HTTP_HOST']) && preg_match('/^[a-zA-Z0-9.-]+(:[0-9]+)?$/', $_SERVER['HTTP_HOST'])) ? $_SERVER['HTTP_HOST'] : 'localhost';
+$config['base_url'] .= '://' . $http_host;
 $config['base_url'] .= str_replace(basename($_SERVER['SCRIPT_NAME']), '', $_SERVER['SCRIPT_NAME']);
 
 /*
@@ -258,7 +259,7 @@ $config['directory_trigger'] = 'd';
 | your log files will fill up very fast.
 |
 */
-$config['log_threshold'] = 0;
+$config['log_threshold'] = getenv('LOG_THRESHOLD') !== FALSE ? (int)getenv('LOG_THRESHOLD') : 1;
 
 /*
 |--------------------------------------------------------------------------
@@ -435,7 +436,7 @@ $config['sess_regenerate_destroy'] = FALSE;
 |       'cookie_httponly') will also affect sessions.
 |
 */
-$config['cookie_prefix'] = '';
+$config['cookie_prefix'] = 'ospos3';
 $config['cookie_domain'] = '';
 $config['cookie_path'] = '/';
 $config['cookie_secure'] = $config['https_on'];

@@ -62,7 +62,7 @@ class Attribute extends CI_Model
 			case DATE:
 				$data_type				= 'date';
 				$attribute_date_value	= DateTime::createFromFormat($this->Appconfig->get('dateformat'), $attribute_value);
-				$attribute_value		= $attribute_date_value->format('Y-m-d');
+				$attribute_value		= $attribute_date_value ? $attribute_date_value->format('Y-m-d') : $attribute_value;
 				break;
 			case DECIMAL:
 				$data_type = 'decimal';
@@ -130,7 +130,10 @@ class Attribute extends CI_Model
 		$this->db->group_end();
 
 		$this->db->where('definition.deleted', 0);
-		$this->db->order_by($sort, $order);
+		if(preg_match('/^[a-zA-Z0-9_]+(\.[a-zA-Z0-9_]+)?$/', (string)$sort))
+		{
+			$this->db->order_by($sort, $order);
+		}
 
 		if($rows > 0)
 		{
@@ -425,7 +428,7 @@ class Attribute extends CI_Model
 		{
 			if($this->exists($definition_id,TRUE))
 			{
-				$success = $this->undelete_definition($definition_id);
+				$success = $this->undelete($definition_id);
 			}
 			else
 			{
@@ -632,7 +635,7 @@ class Attribute extends CI_Model
 					case DATE:
 						$data_type				= 'date';
 						$attribute_date_value	= DateTime::createFromFormat($locale_date_format, $attribute_value);
-						$attribute_value		= $attribute_date_value->format('Y-m-d');
+						$attribute_value		= $attribute_date_value ? $attribute_date_value->format('Y-m-d') : $attribute_value;
 						break;
 					case DECIMAL:
 						$data_type	= 'decimal';
@@ -660,7 +663,7 @@ class Attribute extends CI_Model
 				case DATE:
 					$data_type				= 'date';
 					$attribute_date_value	= DateTime::createFromFormat($locale_date_format, $attribute_value);
-					$attribute_value		= $attribute_date_value->format('Y-m-d');
+					$attribute_value		= $attribute_date_value ? $attribute_date_value->format('Y-m-d') : $attribute_value;
 					break;
 				case DECIMAL:
 					$data_type	= 'decimal';

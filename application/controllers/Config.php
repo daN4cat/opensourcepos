@@ -219,7 +219,7 @@ class Config extends Secure_Controller
 		$data['themes'] = $this->_themes();
 
 		//Load General related fields
-		$image_allowed_types 		= array('jpg','jpeg','gif','svg','webp','bmp','png','tif','tiff');
+		$image_allowed_types 		= array('jpg','jpeg','gif','webp','bmp','png','tif','tiff');
 		$data['image_allowed_types']	= array_combine($image_allowed_types,$image_allowed_types);
 
 		$data['selected_image_allowed_types'] 	= explode('|',$this->config->item('image_allowed_types'));
@@ -240,6 +240,33 @@ class Config extends Secure_Controller
 
 		// load mailchimp lists associated to the given api key, already XSS cleaned in the private function
 		$data['mailchimp']['lists'] = $this->_mailchimp();
+
+		$data['shopify'] = array();
+
+		if($this->_check_encryption())
+		{
+			$data['shopify']['shop_url'] = $this->encryption->decrypt($this->config->item('shopify_shop_url'));
+			if($data['shopify']['shop_url'] === FALSE)
+			{
+				$data['shopify']['shop_url'] = $this->config->item('shopify_shop_url');
+			}
+			$data['shopify']['api_key'] = $this->encryption->decrypt($this->config->item('shopify_api_key'));
+			if($data['shopify']['api_key'] === FALSE)
+			{
+				$data['shopify']['api_key'] = $this->config->item('shopify_api_key');
+			}
+			$data['shopify']['api_secret_key'] = $this->encryption->decrypt($this->config->item('shopify_api_secret_key'));
+			if($data['shopify']['api_secret_key'] === FALSE)
+			{
+				$data['shopify']['api_secret_key'] = $this->config->item('shopify_api_secret_key');
+			}
+		}
+		else
+		{
+			$data['shopify']['shop_url'] = '';
+			$data['shopify']['api_key'] = '';
+			$data['shopify']['api_secret_key'] = '';
+		}
 
 		$this->load->view("configs/manage", $data);
 	}
@@ -262,9 +289,13 @@ class Config extends Secure_Controller
 		if(!empty($upload_data['orig_name']))
 		{
 			// XSS file image sanity check
-			if($this->xss_clean($upload_data['raw_name'], TRUE) === TRUE)
+			if(!empty($upload_data['full_path']) && file_exists($upload_data['full_path']) && $this->xss_clean(file_get_contents($upload_data['full_path']), TRUE) === TRUE)
 			{
 				$batch_save_data['company_logo'] = $upload_data['raw_name'] . $upload_data['file_ext'];
+			}
+			elseif(!empty($upload_data['full_path']) && file_exists($upload_data['full_path']))
+			{
+				@unlink($upload_data['full_path']);
 			}
 		}
 
@@ -281,6 +312,10 @@ class Config extends Secure_Controller
 
 	public function save_general()
 	{
+		$allowed_image_types = array('jpg', 'jpeg', 'gif', 'webp', 'bmp', 'png', 'tif', 'tiff');
+		$posted_image_types = $this->input->post('image_allowed_types');
+		$filtered_image_types = is_array($posted_image_types) ? array_intersect($posted_image_types, $allowed_image_types) : array('jpg', 'jpeg', 'gif', 'png');
+
 		$batch_save_data = array(
 			'theme' => $this->input->post('theme'),
 			'login_form' => $this->input->post('login_form'),
@@ -296,7 +331,7 @@ class Config extends Secure_Controller
 			'image_max_width' => $this->input->post('image_max_width'),
 			'image_max_height' => $this->input->post('image_max_height'),
 			'image_max_size' => $this->input->post('image_max_size'),
-			'image_allowed_types' => implode('|', $this->input->post('image_allowed_types')),
+			'image_allowed_types' => implode('|', $filtered_image_types),
 			'gcaptcha_enable' => $this->input->post('gcaptcha_enable') != NULL,
 			'gcaptcha_secret_key' => $this->input->post('gcaptcha_secret_key'),
 			'gcaptcha_site_key' => $this->input->post('gcaptcha_site_key'),
@@ -512,6 +547,74 @@ class Config extends Secure_Controller
 		$batch_save_data = array(
 			'mailchimp_api_key' => $api_key,
 			'mailchimp_list_id' => $list_id
+		);
+
+		$result = $this->Appconfig->batch_save($batch_save_data);
+		$success = $result ? TRUE : FALSE;
+
+		echo json_encode(array(
+			'success' => $success,
+			'message' => $this->lang->line('config_saved_' . ($success ? '' : 'un') . 'successfully')
+		));
+	}
+
+	/*
+	 AJAX call from shopify config form to check Shopify connection when a valid API key is inserted
+	 */
+
+	public function ajax_check_shopify_api_key()
+	{
+		// authenticate shopify with the given api keys, already XSS cleaned in the private function
+		$shop_url = trim($this->input->post('shopify_shop_url'));
+		$api_key = trim($this->input->post('shopify_api_key'));
+		$api_secret_key = trim($this->input->post('shopify_api_secret_key'));
+
+		$this->load->library('shopify_lib');
+		$this->shopify_lib->resetConfig($shop_url, $api_key, $api_secret_key);
+
+		$success = $this->shopify_lib->authenticate() ? TRUE : FALSE;
+
+		echo json_encode(array(
+			'success' => $success,
+			'message' => $this->lang->line('config_shopify_key_' . ($success ? '' : 'un') . 'successfully'),
+		));
+	}
+
+	public function save_shopify()
+	{
+		$shop_url = trim($this->input->post('shopify_shop_url'));
+		$api_key = trim($this->input->post('shopify_api_key'));
+		$api_secret_key = trim($this->input->post('shopify_api_secret_key'));
+
+		if(!empty($shop_url))
+		{
+			$this->load->library('shopify_lib');
+			$this->shopify_lib->resetConfig($shop_url, $api_key, $api_secret_key);
+			$normalized_shop = $this->shopify_lib->getShopUrl();
+
+			if(empty($normalized_shop))
+			{
+				echo json_encode(array(
+					'success' => FALSE,
+					'message' => $this->lang->line('config_shopify_key_unsuccessfully')
+				));
+				return;
+			}
+
+			$shop_url = $normalized_shop;
+		}
+
+		if($this->_check_encryption())
+		{
+			$shop_url = !empty($shop_url) ? $this->encryption->encrypt($shop_url) : '';
+			$api_key = !empty($api_key) ? $this->encryption->encrypt($api_key) : '';
+			$api_secret_key = !empty($api_secret_key) ? $this->encryption->encrypt($api_secret_key) : '';
+		}
+
+		$batch_save_data = array(
+			'shopify_shop_url' => $shop_url,
+			'shopify_api_key' => $api_key,
+			'shopify_api_secret_key' => $api_secret_key
 		);
 
 		$result = $this->Appconfig->batch_save($batch_save_data);
@@ -784,8 +887,15 @@ class Config extends Secure_Controller
 
 	public function save_receipt()
 	{
+		$allowed_receipt_templates = array('receipt_default', 'receipt_short');
+		$receipt_template = $this->input->post('receipt_template');
+		if(!in_array($receipt_template, $allowed_receipt_templates, TRUE))
+		{
+			$receipt_template = 'receipt_default';
+		}
+
 		$batch_save_data = array (
-			'receipt_template' => $this->input->post('receipt_template'),
+			'receipt_template' => $receipt_template,
 			'receipt_font_size' => $this->input->post('receipt_font_size'),
 			'print_delay_autoreturn' => $this->input->post('print_delay_autoreturn'),
 			'email_receipt_check_behaviour' => $this->input->post('email_receipt_check_behaviour'),
@@ -816,6 +926,13 @@ class Config extends Secure_Controller
 
 	public function save_invoice()
 	{
+		$allowed_invoice_types = array_keys($this->sale_lib->get_invoice_type_options());
+		$invoice_type = $this->input->post('invoice_type');
+		if(!in_array($invoice_type, $allowed_invoice_types, TRUE))
+		{
+			$invoice_type = 'invoice';
+		}
+
 		$batch_save_data = array (
 			'invoice_enable' => $this->input->post('invoice_enable') != NULL,
 			'sales_invoice_format' => $this->input->post('sales_invoice_format'),
@@ -830,7 +947,7 @@ class Config extends Secure_Controller
 			'work_order_enable' => $this->input->post('work_order_enable') != NULL,
 			'work_order_format' => $this->input->post('work_order_format'),
 			'last_used_work_order_number' => $this->input->post('last_used_work_order_number'),
-			'invoice_type' => $this->input->post('invoice_type')
+			'invoice_type' => $invoice_type
 		);
 
 		$result = $this->Appconfig->batch_save($batch_save_data);
@@ -840,9 +957,9 @@ class Config extends Secure_Controller
 		// switches immediately back to the register the mode reflects the change
 		if($success == TRUE)
 		{
-			if($this->config->item('invoice_enable') == '1')
+			if($batch_save_data['invoice_enable'])
 			{
-				$this->sale_lib->set_mode($batch_save_data['default_register_mode']);
+				$this->sale_lib->set_mode($this->config->item('default_register_mode'));
 			}
 			else
 			{

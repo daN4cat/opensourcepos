@@ -252,7 +252,10 @@ class Sale extends CI_Model
 		$this->db->group_by('sales.sale_id');
 
 		// order by sale time by default
-		$this->db->order_by($sort, $order);
+		if(preg_match('/^[a-zA-Z0-9_]+(\.[a-zA-Z0-9_]+)?$/', (string)$sort))
+		{
+			$this->db->order_by($sort, $order);
+		}
 
 		if($rows > 0)
 		{
@@ -577,11 +580,6 @@ class Sale extends CI_Model
 	public function save($sale_id, &$sale_status, &$items, $customer_id, $employee_id, $comment, $invoice_number,
 							$work_order_number, $quote_number, $sale_type, $payments, $dinner_table, &$sales_taxes)
 	{
-		if($sale_id != -1)
-		{
-			$this->clear_suspended_sale_detail($sale_id);
-		}
-
 		$tax_decimals = tax_decimals();
 
 		if(count($items) == 0)
@@ -606,6 +604,11 @@ class Sale extends CI_Model
 		// Run these queries as a transaction, we want to make sure we do all or nothing
 		$this->db->trans_start();
 
+		if($sale_id != -1)
+		{
+			$this->clear_suspended_sale_detail($sale_id);
+		}
+
 		if($sale_id == -1)
 		{
 			$this->db->insert('sales', $sales_data);
@@ -622,16 +625,22 @@ class Sale extends CI_Model
 		{
 			if(!empty(strstr($payment['payment_type'], $this->lang->line('sales_giftcard'))))
 			{
-				// We have a gift card and we have to deduct the used value from the total value of the card.
-				$splitpayment = explode( ':', $payment['payment_type'] );
-				$cur_giftcard_value = $this->Giftcard->get_giftcard_value( $splitpayment[1] );
-				$this->Giftcard->update_giftcard_value( $splitpayment[1], $cur_giftcard_value - $payment['payment_amount'] );
+				if($sale_status == COMPLETED)
+				{
+					// We have a gift card and we have to deduct the used value from the total value of the card.
+					$splitpayment = explode( ':', $payment['payment_type'] );
+					$cur_giftcard_value = $this->Giftcard->get_giftcard_value( $splitpayment[1] );
+					$this->Giftcard->update_giftcard_value( $splitpayment[1], $cur_giftcard_value - $payment['payment_amount'] );
+				}
 			}
 			elseif(!empty(strstr($payment['payment_type'], $this->lang->line('sales_rewards'))))
 			{
-				$cur_rewards_value = $this->Customer->get_info($customer_id)->points;
-				$this->Customer->update_reward_points_value($customer_id, $cur_rewards_value - $payment['payment_amount'] );
-				$total_amount_used = floatval($total_amount_used) + floatval($payment['payment_amount']);
+				if($sale_status == COMPLETED)
+				{
+					$cur_rewards_value = $this->Customer->get_info($customer_id)->points;
+					$this->Customer->update_reward_points_value($customer_id, $cur_rewards_value - $payment['payment_amount'] );
+					$total_amount_used = floatval($total_amount_used) + floatval($payment['payment_amount']);
+				}
 			}
 
 			$cash_adjustment = $payment['cash_adjustment'] == NULL ? CASH_ADJUSTMENT_FALSE : $payment['cash_adjustment'];
@@ -1234,7 +1243,7 @@ class Sale extends CI_Model
 	 */
 	public function get_all_suspended($customer_id = NULL)
 	{
-		if($customer_id == -1)
+		if($customer_id == -1 || $customer_id === NULL)
 		{
 			$query = $this->db->query("SELECT sale_id, case when sale_type = '".SALE_TYPE_QUOTE."' THEN quote_number WHEN sale_type = '".SALE_TYPE_WORK_ORDER."' THEN work_order_number else sale_id end as doc_id, sale_id as suspended_sale_id, sale_status, sale_time, dinner_table_id, customer_id, employee_id, comment FROM "
 				. $this->db->dbprefix('sales') . ' where sale_status = ' . SUSPENDED);
@@ -1242,7 +1251,7 @@ class Sale extends CI_Model
 		else
 		{
 			$query = $this->db->query("SELECT sale_id, case when sale_type = '".SALE_TYPE_QUOTE."' THEN quote_number WHEN sale_type = '".SALE_TYPE_WORK_ORDER."' THEN work_order_number else sale_id end as doc_id, sale_status, sale_time, dinner_table_id, customer_id, employee_id, comment FROM "
-				. $this->db->dbprefix('sales') . ' where sale_status = '. SUSPENDED .' AND customer_id = ' . $customer_id);
+				. $this->db->dbprefix('sales') . ' where sale_status = '. SUSPENDED .' AND customer_id = ' . $this->db->escape((int)$customer_id));
 		}
 
 		return $query->result_array();

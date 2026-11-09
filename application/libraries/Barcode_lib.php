@@ -202,7 +202,7 @@ class Barcode_lib
 			$result = $barcode_config['barcode_content'] !== "id" && isset($item['item_number']) ? $item['item_number'] : $item['item_id'];
 		}
 
-		return character_limiter($result, 40);
+		return htmlspecialchars(character_limiter($result, 40), ENT_QUOTES, 'UTF-8');
 	}
 
 	public function listfonts($folder)

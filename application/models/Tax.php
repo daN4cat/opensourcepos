@@ -174,7 +174,7 @@ class Tax extends CI_Model
 	 */
 	public function delete($tax_rate_id)
 	{
-		return $this->db->delete('tax_tax_rates', array('tax_rate_id' => $tax_rate_id));
+		return $this->db->delete('tax_rates', array('tax_rate_id' => $tax_rate_id));
 	}
 
 	/**
@@ -228,7 +228,7 @@ class Tax extends CI_Model
 
 		if(!empty($search))
 		{
-			$this->db->like('rate_tax_code', $search);
+			$this->db->like('tax_code', $search);
 			$this->db->or_like('tax_code_name', $search);
 		}
 
@@ -238,7 +238,10 @@ class Tax extends CI_Model
 			return $this->db->get()->row()->count;
 		}
 
-		$this->db->order_by($sort, $order);
+		if(preg_match('/^[a-zA-Z0-9_]+(\.[a-zA-Z0-9_]+)?$/', (string)$sort))
+		{
+			$this->db->order_by($sort, $order);
+		}
 
 		if($rows > 0)
 		{
@@ -281,6 +284,7 @@ class Tax extends CI_Model
 	{
 		$this->db->select('tax_category_id');
 		$this->db->from('tax_categories');
+		$this->db->where('tax_category', $tax_category);
 
 		return $this->db->get()->row()->tax_category_id;
 	}

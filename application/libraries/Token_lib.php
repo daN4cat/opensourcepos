@@ -140,7 +140,7 @@ class Token_lib
 		foreach($used_tokens as $token_code => $token_info)
 		{
 			// Generate value here based on the key value
-			$token_value = $this->resolve_token($token_code, array(), $save);
+			$token_value = $this->resolve_token($token_code, $tokens, $save);
 
 			foreach($token_info as $length => $token_spec)
 			{

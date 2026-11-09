@@ -57,7 +57,7 @@ function _load_language_files($CI, $path, $language, $fallback)
 
         if(!is_array($file) && substr(strrchr($file, '.'), 1) == 'php')
 		{
-            $filename = strtr($file, '', '_lang.php');
+            $filename = str_replace('_lang.php', '', $file);
             if ($fallback) {
                 $CI->lang->load($filename, 'en-US');
 

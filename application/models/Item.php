@@ -12,7 +12,7 @@ class Item extends CI_Model
 	{
 		// check if $item_id is a number and not a string starting with 0
 		// because cases like 00012345 will be seen as a number where it is a barcode
-		if(ctype_digit($item_id) && substr($item_id, 0, 1) !== '0')
+		if(ctype_digit((string)$item_id) && substr((string)$item_id, 0, 1) !== '0')
 		{
 			$this->db->where('item_id', intval($item_id));
 			if($ignore_deleted === FALSE)
@@ -39,7 +39,7 @@ class Item extends CI_Model
 		$this->db->where('item_number', (string) $item_number);
 		// check if $item_id is a number and not a string starting with 0
 		// because cases like 00012345 will be seen as a number where it is a barcode
-		if(ctype_digit($item_id) && substr($item_id, 0, 1) != '0')
+		if(ctype_digit((string)$item_id) && substr((string)$item_id, 0, 1) != '0')
 		{
 			$this->db->where('item_id !=', intval($item_id));
 		}
@@ -138,13 +138,16 @@ class Item extends CI_Model
 			$this->db->where('location_id', $filters['stock_location_id']);
 		}
 
-		if(empty($this->config->item('date_or_time_format')))
+		if(!empty($filters['start_date']) && !empty($filters['end_date']))
 		{
-			$this->db->where('DATE_FORMAT(trans_date, "%Y-%m-%d") BETWEEN ' . $this->db->escape($filters['start_date']) . ' AND ' . $this->db->escape($filters['end_date']));
-		}
-		else
-		{
-			$this->db->where('trans_date BETWEEN ' . $this->db->escape(rawurldecode($filters['start_date'])) . ' AND ' . $this->db->escape(rawurldecode($filters['end_date'])));
+			if(empty($this->config->item('date_or_time_format')))
+			{
+				$this->db->where('DATE_FORMAT(trans_date, "%Y-%m-%d") BETWEEN ' . $this->db->escape($filters['start_date']) . ' AND ' . $this->db->escape($filters['end_date']));
+			}
+			else
+			{
+				$this->db->where('trans_date BETWEEN ' . $this->db->escape(rawurldecode($filters['start_date'])) . ' AND ' . $this->db->escape(rawurldecode($filters['end_date'])));
+			}
 		}
 
 		$attributes_enabled = count($filters['definition_ids']) > 0;
@@ -153,9 +156,10 @@ class Item extends CI_Model
 		{
 			if ($attributes_enabled && $filters['search_custom'])
 			{
-				$this->db->having("attribute_values LIKE '%$search%'");
-				$this->db->or_having("attribute_dtvalues LIKE '%$search%'");
-				$this->db->or_having("attribute_dvalues LIKE '%$search%'");
+				$escaped_search = $this->db->escape_like_str($search);
+				$this->db->having("attribute_values LIKE '%" . $escaped_search . "%' ESCAPE '!'");
+				$this->db->or_having("attribute_dtvalues LIKE '%" . $escaped_search . "%' ESCAPE '!'");
+				$this->db->or_having("attribute_dvalues LIKE '%" . $escaped_search . "%' ESCAPE '!'");
 			}
 			else
 			{
@@ -179,7 +183,7 @@ class Item extends CI_Model
 			$this->db->select('GROUP_CONCAT(DISTINCT CONCAT_WS(\'_\', definition_id, attribute_value) ORDER BY definition_id SEPARATOR \'|\') AS attribute_values');
 			$this->db->select("GROUP_CONCAT(DISTINCT CONCAT_WS('_', definition_id, DATE_FORMAT(attribute_date, $format)) SEPARATOR '|') AS attribute_dtvalues");
 			$this->db->select('GROUP_CONCAT(DISTINCT CONCAT_WS(\'_\', definition_id, attribute_decimal) SEPARATOR \'|\') AS attribute_dvalues');
-			$this->db->join('attribute_links', 'attribute_links.item_id = items.item_id AND attribute_links.receiving_id IS NULL AND attribute_links.sale_id IS NULL AND definition_id IN (' . implode(',', $filters['definition_ids']) . ')', 'left');
+			$this->db->join('attribute_links', 'attribute_links.item_id = items.item_id AND attribute_links.receiving_id IS NULL AND attribute_links.sale_id IS NULL AND definition_id IN (' . implode(',', array_map('intval', $filters['definition_ids'])) . ')', 'left');
 			$this->db->join('attribute_values', 'attribute_values.attribute_id = attribute_links.attribute_id', 'left');
 		}
 
@@ -221,7 +225,10 @@ class Item extends CI_Model
 		$this->db->group_by('items.item_id');
 
 		// order by name of item by default
-		$this->db->order_by($sort, $order);
+		if(preg_match('/^[a-zA-Z0-9_]+(\.[a-zA-Z0-9_]+)?$/', (string)$sort))
+		{
+			$this->db->order_by($sort, $order);
+		}
 
 		if($rows > 0)
 		{
@@ -302,7 +309,7 @@ class Item extends CI_Model
 
 		// check if $item_id is a number and not a string starting with 0
 		// because cases like 00012345 will be seen as a number where it is a barcode
-		if(ctype_digit($item_id) && substr($item_id, 0, 1) != '0')
+		if(ctype_digit((string)$item_id) && substr((string)$item_id, 0, 1) != '0')
 		{
 			$this->db->or_where('items.item_id', intval($item_id));
 		}
@@ -1038,7 +1045,7 @@ class Item extends CI_Model
 		$old_total_quantity = $this->db->get()->row()->quantity;
 
 		$total_quantity = $old_total_quantity + $items_received;
-		$average_price = bcdiv(bcadd(bcmul($items_received, $new_price), bcmul($old_total_quantity, $old_price)), $total_quantity);
+		$average_price = $total_quantity != 0 ? bcdiv(bcadd(bcmul($items_received, $new_price), bcmul($old_total_quantity, $old_price)), $total_quantity) : $new_price;
 
 		$data = array('cost_price' => $average_price);
 

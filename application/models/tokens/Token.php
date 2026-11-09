@@ -47,7 +47,7 @@ abstract class Token
 
 	function matches($token_id)
 	{
-		return token_id() == $token_id;
+		return $this->token_id() == $token_id;
 	}
 
 	function replace($text)

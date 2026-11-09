@@ -62,7 +62,7 @@ class Tax_jurisdictions extends Secure_Controller
 			'reporting_authority' => $this->input->post('reporting_authority')
 		);
 
-		if($this->Tax_jurisdiction->save($tax_jurisdiction_data))
+		if($this->Tax_jurisdiction->save($tax_jurisdiction_data, $jurisdiction_id))
 		{
 			$tax_jurisdiction_data = $this->xss_clean($tax_jurisdiction_data);
 
@@ -77,6 +77,7 @@ class Tax_jurisdictions extends Secure_Controller
 		}
 		else
 		{
+			$tax_jurisdiction_data = $this->xss_clean($tax_jurisdiction_data);
 			echo json_encode(array('success' => FALSE, 'message' => $this->lang->line('taxes_jurisdictions_error_adding_updating') . ' ' . $tax_jurisdiction_data['jurisdiction_name'], 'id' => -1));
 		}
 	}
