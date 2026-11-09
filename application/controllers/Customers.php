@@ -11,6 +11,7 @@ class Customers extends Persons
 		parent::__construct('customers');
 
 		$this->load->library('mailchimp_lib');
+		$this->load->library('shopify_lib');
 
 		$CI =& get_instance();
 
@@ -220,6 +221,16 @@ class Customers extends Persons
 			}
 		}
 
+		// retrieve the info from Shopify if email or phone is assigned
+		if(!empty($info->email) || !empty($info->phone_number))
+		{
+			if(($shopify_info = $this->shopify_lib->getCustomerInfo($info->email, $info->phone_number, $info->country)) !== FALSE)
+			{
+				$shopify_info['shop_url'] = $this->shopify_lib->getShopUrl();
+				$data['shopify_info'] = $this->xss_clean($shopify_info);
+			}
+		}
+
 		$this->load->view("customers/form", $data);
 	}
 
@@ -262,7 +273,7 @@ class Customers extends Persons
 			'discount_type' => $this->input->post('discount_type') == NULL ? PERCENT : $this->input->post('discount_type'),
 			'package_id' => $this->input->post('package_id') == '' ? NULL : $this->input->post('package_id'),
 			'taxable' => $this->input->post('taxable') != NULL,
-			'date' => $date_formatter->format('Y-m-d H:i:s'),
+			'date' => $date_formatter ? $date_formatter->format('Y-m-d H:i:s') : date('Y-m-d H:i:s'),
 			'employee_id' => $this->input->post('employee_id'),
 			'sales_tax_code_id' => $this->input->post('sales_tax_code_id') == '' ? NULL : $this->input->post('sales_tax_code_id')
 		);
@@ -272,17 +283,32 @@ class Customers extends Persons
 			// save customer to Mailchimp selected list
 			$this->mailchimp_lib->addOrUpdateMember($this->_list_id, $email, $first_name, $last_name, $this->input->post('mailchimp_status'), array('vip' => $this->input->post('mailchimp_vip') != NULL));
 
+			$warning_message = '';
+			// save customer to Shopify
+			if($this->shopify_lib->isConfigured())
+			{
+				$shopify_result = $this->shopify_lib->addOrUpdateCustomer($person_data, $customer_data);
+				if($shopify_result === FALSE)
+				{
+					log_message('error', 'Shopify customer sync failed for ' . $email . ': ' . $this->shopify_lib->getLastError());
+				}
+				elseif(!empty($this->shopify_lib->getLastWarning()))
+				{
+					$warning_message = ' - ' . $this->shopify_lib->getLastWarning();
+				}
+			}
+
 			// New customer
 			if($customer_id == -1)
 			{
 				echo json_encode(array('success' => TRUE,
-								'message' => $this->lang->line('customers_successful_adding') . ' ' . $first_name . ' ' . $last_name,
+								'message' => $this->lang->line('customers_successful_adding') . ' ' . $first_name . ' ' . $last_name . $warning_message,
 								'id' => $this->xss_clean($customer_data['person_id'])));
 			}
 			else // Existing customer
 			{
 				echo json_encode(array('success' => TRUE,
-								'message' => $this->lang->line('customers_successful_updating') . ' ' . $first_name . ' ' . $last_name,
+								'message' => $this->lang->line('customers_successful_updating') . ' ' . $first_name . ' ' . $last_name . $warning_message,
 								'id' => $customer_id));
 			}
 		}
@@ -330,6 +356,10 @@ class Customers extends Persons
 			{
 				// remove customer from Mailchimp selected list
 				$this->mailchimp_lib->removeMember($this->_list_id, $info->email);
+
+				// remove customer from Shopify
+				$shopify_identifier = !empty($info->email) ? $info->email : $info->phone_number;
+				$this->shopify_lib->removeCustomer($shopify_identifier);
 
 				$count++;
 			}
@@ -435,6 +465,12 @@ class Customers extends Persons
 					{
 						// save customer to Mailchimp selected list
 						$this->mailchimp_lib->addOrUpdateMember($this->_list_id, $person_data['email'], $person_data['first_name'], '', $person_data['last_name']);
+
+						// save customer to Shopify
+						if($this->shopify_lib->isConfigured())
+						{
+							$this->shopify_lib->addOrUpdateCustomer($person_data, $customer_data);
+						}
 					}
 					else
 					{

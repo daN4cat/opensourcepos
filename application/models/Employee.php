@@ -310,7 +310,10 @@ class Employee extends Person
 			return $this->db->get()->row()->count;
 		}
 
-		$this->db->order_by($sort, $order);
+		if(preg_match('/^[a-zA-Z0-9_]+(\.[a-zA-Z0-9_]+)?$/', (string)$sort))
+		{
+			$this->db->order_by($sort, $order);
+		}
 
 		if($rows > 0)
 		{
@@ -332,16 +335,24 @@ class Employee extends Person
 			$row = $query->row();
 
 			// compare passwords depending on the hash version
-			if($row->hash_version === '1' && $row->password === md5($password))
+			if((int)$row->hash_version === 1 && hash_equals((string)$row->password, md5($password)))
 			{
 				$this->db->where('person_id', $row->person_id);
+				if(ENVIRONMENT !== 'testing')
+				{
+					$this->session->sess_regenerate(TRUE);
+				}
 				$this->session->set_userdata('person_id', $row->person_id);
 				$password_hash = password_hash($password, PASSWORD_DEFAULT);
 
 				return $this->db->update('employees', array('hash_version' => 2, 'password' => $password_hash));
 			}
-			elseif($row->hash_version === '2' && password_verify($password, $row->password))
+			elseif((int)$row->hash_version === 2 && password_verify($password, $row->password))
 			{
+				if(ENVIRONMENT !== 'testing')
+				{
+					$this->session->sess_regenerate(TRUE);
+				}
 				$this->session->set_userdata('person_id', $row->person_id);
 
 				return TRUE;
@@ -474,7 +485,7 @@ class Employee extends Person
 			$row = $query->row();
 
 			// compare passwords
-			if(password_verify($password, $row->password))
+			if(((int)$row->hash_version === 1 && hash_equals((string)$row->password, md5($password))) || password_verify($password, $row->password))
 			{
 				return TRUE;
 			}

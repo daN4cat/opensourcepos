@@ -14,9 +14,10 @@
 		<tr>
 			<?php
 			$count = 0;
+			$num_in_row = max(1, (int)$barcode_config['barcode_num_in_row']);
 			foreach($items as $item)
 			{
-				if ($count % $barcode_config['barcode_num_in_row'] == 0 and $count != 0)
+				if ($count % $num_in_row == 0 and $count != 0)
 				{
 					echo '</tr><tr>';
 				}

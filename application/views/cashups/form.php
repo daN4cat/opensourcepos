@@ -119,7 +119,7 @@
 				<?php echo form_checkbox(array(
 					'name'=>'note',
 					'id'=>'note',
-					'value'=>0,
+					'value'=>1,
 					'checked'=>($cash_ups_info->note) ? 1 : 0)
 				);?>
 			</div>

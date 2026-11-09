@@ -100,13 +100,16 @@ class Expense extends CI_Model
 
 		$this->db->where('expenses.deleted', $filters['is_deleted']);
 
-		if(empty($this->config->item('date_or_time_format')))
+		if(!empty($filters['start_date']) && !empty($filters['end_date']))
 		{
-			$this->db->where('DATE_FORMAT(expenses.date, "%Y-%m-%d") BETWEEN ' . $this->db->escape($filters['start_date']) . ' AND ' . $this->db->escape($filters['end_date']));
-		}
-		else
-		{
-			$this->db->where('expenses.date BETWEEN ' . $this->db->escape(rawurldecode($filters['start_date'])) . ' AND ' . $this->db->escape(rawurldecode($filters['end_date'])));
+			if(empty($this->config->item('date_or_time_format')))
+			{
+				$this->db->where('DATE_FORMAT(expenses.date, "%Y-%m-%d") BETWEEN ' . $this->db->escape($filters['start_date']) . ' AND ' . $this->db->escape($filters['end_date']));
+			}
+			else
+			{
+				$this->db->where('expenses.date BETWEEN ' . $this->db->escape(rawurldecode($filters['start_date'])) . ' AND ' . $this->db->escape(rawurldecode($filters['end_date'])));
+			}
 		}
 
 		if($filters['only_debit'] != FALSE)
@@ -145,7 +148,10 @@ class Expense extends CI_Model
 
 		$this->db->group_by('expense_id');
 
-		$this->db->order_by($sort, $order);
+		if(preg_match('/^[a-zA-Z0-9_]+(\.[a-zA-Z0-9_]+)?$/', (string)$sort))
+		{
+			$this->db->order_by($sort, $order);
+		}
 
 		if($rows > 0)
 		{

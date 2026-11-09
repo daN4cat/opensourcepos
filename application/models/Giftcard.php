@@ -115,8 +115,12 @@ class Giftcard extends CI_Model
 		{
 			if($this->db->insert('giftcards', $giftcard_data))
 			{
-				$giftcard_data['giftcard_number'] = $this->db->insert_id();
-				$giftcard_data['giftcard_id'] = $this->db->insert_id();
+				$insert_id = $this->db->insert_id();
+				if(empty($giftcard_data['giftcard_number']))
+				{
+					$giftcard_data['giftcard_number'] = $insert_id;
+				}
+				$giftcard_data['giftcard_id'] = $insert_id;
 
 				return TRUE;
 			}
@@ -234,7 +238,10 @@ class Giftcard extends CI_Model
 			return $this->db->get()->row()->count;
 		}
 
-		$this->db->order_by($sort, $order);
+		if(preg_match('/^[a-zA-Z0-9_]+(\.[a-zA-Z0-9_]+)?$/', (string)$sort))
+		{
+			$this->db->order_by($sort, $order);
+		}
 
 		if($rows > 0)
 		{
@@ -292,7 +299,7 @@ class Giftcard extends CI_Model
 		$giftcard_name = (string)$random . '-' . $value;
 		if($this->exists_gitcard_name($giftcard_name))
 		{
-			$this->generate_unique_giftcard_name($value);
+			return $this->generate_unique_giftcard_name($value);
 		}
 
 		return strtoupper($giftcard_name);

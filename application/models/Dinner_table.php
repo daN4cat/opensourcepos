@@ -34,8 +34,10 @@ class Dinner_table extends CI_Model
 	public function get_empty_tables($current_dinner_table_id)
 	{
 		$this->db->from('dinner_tables');
-		$this->db->where('status', 0);
-		$this->db->or_where('dinner_table_id', $current_dinner_table_id);
+		$this->db->group_start();
+			$this->db->where('status', 0);
+			$this->db->or_where('dinner_table_id', $current_dinner_table_id);
+		$this->db->group_end();
 		$this->db->where('deleted', 0);
 
 		$empty_tables = $this->db->get()->result_array();

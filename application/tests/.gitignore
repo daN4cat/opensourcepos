@@ -1,1 +1,11 @@
-_ci_phpunit_test/tmp/
+_ci_phpunit_test/
+build/
+Bootstrap.php
+DbTestCase.php
+TestCase.php
+UnitTestCase.php
+phpunit.xml
+controllers/Welcome_test.php
+hooks/
+mocks/
+*.gitkeep

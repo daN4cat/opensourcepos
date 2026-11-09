@@ -27,6 +27,16 @@
 		<?php
 		}
 		?>
+		<?php
+		if(!empty($shopify_info))
+		{
+		?>
+			<li role="presentation">
+				<a data-toggle="tab" href="#customer_shopify_info"><?php echo $this->lang->line("customers_shopify_info"); ?></a>
+			</li>
+		<?php
+		}
+		?>
 	</ul>
 
 	<div class="tab-content">
@@ -434,6 +444,108 @@
 									'name'=>'mailchimp_email_client',
 									'class'=>'form-control input-sm',
 									'value'=>$mailchimp_info['email_client'],
+									'disabled'=>'')
+									); ?>
+						</div>
+					</div>
+				</fieldset>
+			</div>
+		<?php
+		}
+		?>
+
+		<?php
+		if(!empty($shopify_info))
+		{
+		?>
+			<div class="tab-pane" id="customer_shopify_info">
+				<fieldset>
+					<div class="form-group form-group-sm">
+						<?php echo form_label($this->lang->line('customers_shopify_id'), 'shopify_id', array('class' => 'control-label col-xs-3')); ?>
+						<div class='col-xs-4'>
+							<?php echo form_input(array(
+									'name'=>'shopify_id',
+									'class'=>'form-control input-sm',
+									'value'=>isset($shopify_info['id']) ? $shopify_info['id'] : '',
+									'disabled'=>'')
+									); ?>
+						</div>
+						<?php if(!empty($shopify_info['shop_url']) && !empty($shopify_info['id'])): ?>
+						<div class='col-xs-2'>
+							<a href="<?php echo 'https://' . htmlspecialchars($shopify_info['shop_url']) . '/admin/customers/' . htmlspecialchars($shopify_info['id']); ?>" target="_blank" rel="noopener noreferrer" class="btn btn-default btn-xs" style="margin-top: 3px;">
+								<span class="glyphicon glyphicon-new-window"></span> <?php echo $this->lang->line('customers_shopify_view'); ?>
+							</a>
+						</div>
+						<?php endif; ?>
+					</div>
+
+					<div class="form-group form-group-sm">
+						<?php echo form_label($this->lang->line('customers_shopify_account_state'), 'shopify_account_state', array('class' => 'control-label col-xs-3')); ?>
+						<div class='col-xs-4'>
+							<?php echo form_input(array(
+									'name'=>'shopify_account_state',
+									'class'=>'form-control input-sm',
+									'value'=>isset($shopify_info['state']) ? ucfirst($shopify_info['state']) : '',
+									'disabled'=>'')
+									); ?>
+						</div>
+					</div>
+
+					<div class="form-group form-group-sm">
+						<?php echo form_label($this->lang->line('customers_shopify_email_marketing_state'), 'shopify_email_marketing_state', array('class' => 'control-label col-xs-3')); ?>
+						<div class='col-xs-4'>
+							<?php echo form_input(array(
+									'name'=>'shopify_email_marketing_state',
+									'class'=>'form-control input-sm',
+									'value'=>isset($shopify_info['email_marketing_consent']['state']) ? ucfirst(str_replace('_', ' ', $shopify_info['email_marketing_consent']['state'])) : 'Not Subscribed',
+									'disabled'=>'')
+									); ?>
+						</div>
+					</div>
+
+					<div class="form-group form-group-sm">
+						<?php echo form_label($this->lang->line('customers_shopify_sms_marketing_state'), 'shopify_sms_marketing_state', array('class' => 'control-label col-xs-3')); ?>
+						<div class='col-xs-4'>
+							<?php echo form_input(array(
+									'name'=>'shopify_sms_marketing_state',
+									'class'=>'form-control input-sm',
+									'value'=>isset($shopify_info['sms_marketing_consent']['state']) ? ucfirst(str_replace('_', ' ', $shopify_info['sms_marketing_consent']['state'])) : 'Not Subscribed',
+									'disabled'=>'')
+									); ?>
+						</div>
+					</div>
+
+					<div class="form-group form-group-sm">
+						<?php echo form_label($this->lang->line('customers_shopify_orders_count'), 'shopify_orders_count', array('class' => 'control-label col-xs-3')); ?>
+						<div class='col-xs-4'>
+							<?php echo form_input(array(
+									'name'=>'shopify_orders_count',
+									'class'=>'form-control input-sm',
+									'value'=>isset($shopify_info['orders_count']) ? $shopify_info['orders_count'] : '0',
+									'disabled'=>'')
+									); ?>
+						</div>
+					</div>
+
+					<div class="form-group form-group-sm">
+						<?php echo form_label($this->lang->line('customers_shopify_total_spent'), 'shopify_total_spent', array('class' => 'control-label col-xs-3')); ?>
+						<div class='col-xs-4'>
+							<?php echo form_input(array(
+									'name'=>'shopify_total_spent',
+									'class'=>'form-control input-sm',
+									'value'=>to_currency(isset($shopify_info['total_spent']) ? $shopify_info['total_spent'] : 0),
+									'disabled'=>'')
+									); ?>
+						</div>
+					</div>
+
+					<div class="form-group form-group-sm">
+						<?php echo form_label($this->lang->line('customers_shopify_tags'), 'shopify_tags', array('class' => 'control-label col-xs-3')); ?>
+						<div class='col-xs-4'>
+							<?php echo form_input(array(
+									'name'=>'shopify_tags',
+									'class'=>'form-control input-sm',
+									'value'=>isset($shopify_info['tags']) ? $shopify_info['tags'] : '',
 									'disabled'=>'')
 									); ?>
 						</div>

@@ -79,6 +79,7 @@ class Tax_categories extends Secure_Controller
 		}
 		else
 		{
+			$tax_category_data = $this->xss_clean($tax_category_data);
 			echo json_encode(array('success' => FALSE, 'message' => $this->lang->line('taxes_categories_error_adding_updating') . ' ' . $tax_category_data['tax_category'], 'id' => -1));
 		}
 	}

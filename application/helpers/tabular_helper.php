@@ -13,7 +13,7 @@ function transform_headers_readonly($array)
 
 	foreach($array as $key => $value)
 	{
-		$result[] = array('field' => $key, 'title' => $value, 'sortable' => $value != '', 'switchable' => !preg_match('(^$|&nbsp)', $value));
+		$result[] = array('field' => $key, 'title' => $value, 'sortable' => $value != '', 'switchable' => !preg_match('(^$|&nbsp)', $value), 'escape' => TRUE);
 	}
 
 	return json_encode($result);
@@ -42,7 +42,7 @@ function transform_headers($array, $readonly = FALSE, $editable = TRUE)
 		$result[] = array('field' => key($element),
 			'title' => current($element),
 			'switchable' => isset($element['switchable']) ? $element['switchable'] : !preg_match('(^$|&nbsp)', current($element)),
-			'escape' => !preg_match("/(edit|phone_number|email|messages|item_pic)/", key($element)) && !(isset($element['escape']) && !$element['escape']),
+			'escape' => !preg_match("/^(edit|email|messages|item_pic)$/", key($element)) && !(isset($element['escape']) && !$element['escape']),
 			'sortable' => isset($element['sortable']) ? $element['sortable'] : current($element) != '',
 			'checkbox' => isset($element['checkbox']) ? $element['checkbox'] : FALSE,
 			'class' => isset($element['checkbox']) || preg_match('(^$|&nbsp)', current($element)) ? 'print_hide' : '',
@@ -203,7 +203,7 @@ function get_person_data_row($person)
 		'people.person_id' => $person->person_id,
 		'last_name' => $person->last_name,
 		'first_name' => $person->first_name,
-		'email' => empty($person->email) ? '' : mailto($person->email, $person->email),
+		'email' => empty($person->email) ? '' : mailto(htmlspecialchars($person->email, ENT_QUOTES, 'UTF-8'), htmlspecialchars($person->email, ENT_QUOTES, 'UTF-8')),
 		'phone_number' => $person->phone_number,
 		'messages' => empty($person->phone_number) ? '' : anchor("Messages/view/$person->person_id", '<span class="glyphicon glyphicon-phone"></span>',
 			array('class'=>'modal-dlg', 'data-btn-submit' => $CI->lang->line('common_submit'), 'title'=>$CI->lang->line('messages_sms_send'))),
@@ -251,7 +251,7 @@ function get_customer_data_row($person, $stats)
 		'people.person_id' => $person->person_id,
 		'last_name' => $person->last_name,
 		'first_name' => $person->first_name,
-		'email' => empty($person->email) ? '' : mailto($person->email, $person->email),
+		'email' => empty($person->email) ? '' : mailto(htmlspecialchars($person->email, ENT_QUOTES, 'UTF-8'), htmlspecialchars($person->email, ENT_QUOTES, 'UTF-8')),
 		'phone_number' => $person->phone_number,
 		'total' => to_currency($stats->total),
 		'messages' => empty($person->phone_number) ? '' : anchor("Messages/view/$person->person_id", '<span class="glyphicon glyphicon-phone"></span>',
@@ -304,7 +304,7 @@ function get_supplier_data_row($supplier)
 		'category' => $supplier->category,
 		'last_name' => $supplier->last_name,
 		'first_name' => $supplier->first_name,
-		'email' => empty($supplier->email) ? '' : mailto($supplier->email, $supplier->email),
+		'email' => empty($supplier->email) ? '' : mailto(htmlspecialchars($supplier->email, ENT_QUOTES, 'UTF-8'), htmlspecialchars($supplier->email, ENT_QUOTES, 'UTF-8')),
 		'phone_number' => $supplier->phone_number,
 		'messages' => empty($supplier->phone_number) ? '' : anchor("Messages/view/$supplier->person_id", '<span class="glyphicon glyphicon-phone"></span>',
 			array('class'=>"modal-dlg", 'data-btn-submit' => $CI->lang->line('common_submit'), 'title'=>$CI->lang->line('messages_sms_send'))),
