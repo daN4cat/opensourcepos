@@ -307,7 +307,7 @@ class ItemsControllerTest extends CIUnitTestCase
         $csv = generate_import_items_csv($stockLocations, $attributes);
 
         $this->assertStringContainsString('Id,Barcode,"Item Name"', $csv);
-        $this->assertStringContainsString('Category,"Supplier ID"', $csv);
+        $this->assertStringContainsString('Category,Season,Color,Size,"Supplier ID"', $csv);
         $this->assertStringContainsString('"Cost Price","Unit Price"', $csv);
         $this->assertStringContainsString('"Tax 1 Name","Tax 1 Percent"', $csv);
         $this->assertStringContainsString('"Tax 2 Name","Tax 2 Percent"', $csv);
@@ -430,8 +430,8 @@ class ItemsControllerTest extends CIUnitTestCase
 
     public function testRequiredHeadersDetectedForTemplate(): void
     {
-        $csvContent = 'Id,Barcode,"Item Name",Category,"Supplier ID","Cost Price","Unit Price","Tax 1 Name","Tax 1 Percent","Tax 2 Name","Tax 2 Percent","Reorder Level",Description,"Allow Alt Description","Item has Serial Number",Image,HSN' . "\n";
-        $csvContent .= ",ITEM001,Test Item,Electronics,1,10.00,15.00,,,,,5,Test Description,0,0,,HSN001\n";
+        $csvContent = 'Id,Barcode,"Item Name",Category,Season,Color,Size,"Supplier ID","Cost Price","Unit Price","Tax 1 Name","Tax 1 Percent","Tax 2 Name","Tax 2 Percent","Reorder Level",Description,"Allow Alt Description","Item has Serial Number",Image,HSN' . "\n";
+        $csvContent .= ",ITEM001,Test Item,Electronics,SS26,Blue,M,1,10.00,15.00,,,,,5,Test Description,0,0,,HSN001\n";
 
         $tempFile = tempnam(sys_get_temp_dir(), 'csv_test_headers_ok_');
         file_put_contents($tempFile, $csvContent);
@@ -1455,6 +1455,59 @@ class ItemsControllerTest extends CIUnitTestCase
         ]);
         $responseNoTaxes->assertStatus(200);
         $this->assertTrue(json_decode($responseNoTaxes->getJSON(), true)['success']);
+    }
+
+    public function testPostSave_SavesBoutiqueSeasonColorAndSizeFields(): void
+    {
+        $employeeId = $this->createItemsEmployee();
+        $this->loginAsItemsEmployee($employeeId);
+
+        $itemData = [
+            'name'       => 'Boutique Dress ' . uniqid(),
+            'category'   => 'Dresses',
+            'season'     => 'SS26',
+            'color'      => 'Emerald',
+            'size'       => 'M',
+            'cost_price' => 45.00,
+            'unit_price' => 120.00,
+            'deleted'    => 0,
+        ];
+        $this->assertTrue($this->item->save_value($itemData));
+        $itemId    = (int) $itemData['item_id'];
+        $savedItem = $this->item->getInfo($itemId);
+
+        $this->assertSame('SS26', $savedItem->season);
+        $this->assertSame('Emerald', $savedItem->color);
+        $this->assertSame('M', $savedItem->size);
+
+        $seasons = $this->item->get_seasons();
+        $this->assertArrayHasKey('SS26', $seasons);
+    }
+
+    public function testGetSuggestSeasonColorSize_ReturnsSuggestionsForBoutiqueFields(): void
+    {
+        $employeeId = $this->createItemsEmployee();
+        $this->loginAsItemsEmployee($employeeId);
+
+        $itemData = [
+            'name'       => 'Boutique Coat ' . uniqid(),
+            'category'   => 'Coats',
+            'season'     => 'AW26',
+            'color'      => 'Burgundy',
+            'size'       => 'XL',
+            'cost_price' => 80.00,
+            'unit_price' => 220.00,
+            'deleted'    => 0,
+        ];
+        $this->assertTrue($this->item->save_value($itemData));
+
+        $seasonSuggestions = $this->item->get_season_suggestions('AW26');
+        $colorSuggestions  = $this->item->get_color_suggestions('Burgundy');
+        $sizeSuggestions   = $this->item->get_size_suggestions('XL');
+
+        $this->assertNotEmpty($seasonSuggestions);
+        $this->assertNotEmpty($colorSuggestions);
+        $this->assertNotEmpty($sizeSuggestions);
     }
 }
 

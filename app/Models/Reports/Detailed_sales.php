@@ -37,6 +37,9 @@ class Detailed_sales extends Report
             'details' => [
                 lang('Reports.name'),
                 lang('Reports.category'),
+                lang('Reports.season'),
+                lang('Reports.color'),
+                lang('Reports.size'),
                 lang('Reports.item_number'),
                 lang('Reports.description'),
                 lang('Reports.quantity'),
@@ -157,6 +160,9 @@ class Detailed_sales extends Report
             $builder->select('
                 MAX(name) AS name,
                 MAX(category) AS category,
+                MAX(season) AS season,
+                MAX(color) AS color,
+                MAX(size) AS size,
                 MAX(quantity_purchased) AS quantity_purchased,
                 MAX(item_location) AS item_location,
                 MAX(item_number) AS item_number,

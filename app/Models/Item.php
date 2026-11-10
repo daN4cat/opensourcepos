@@ -32,6 +32,9 @@ class Item extends Model
     public const ALLOWED_BULK_EDIT_FIELDS = [
         'name',
         'category',
+        'season',
+        'color',
+        'size',
         'supplier_id',
         'cost_price',
         'unit_price',
@@ -48,6 +51,9 @@ class Item extends Model
     protected $allowedFields = [
         'name',
         'category',
+        'season',
+        'color',
+        'size',
         'supplier_id',
         'item_number',
         'description',
@@ -415,6 +421,9 @@ class Item extends Model
                 $idBuilder->orLike('items.item_id', $search);
                 $idBuilder->orLike('company_name', $search);
                 $idBuilder->orLike('items.category', $search);
+                $idBuilder->orLike('items.season', $search);
+                $idBuilder->orLike('items.color', $search);
+                $idBuilder->orLike('items.size', $search);
                 $idBuilder->groupEnd();
             }
         }
@@ -479,6 +488,9 @@ class Item extends Model
         $builder->select('MAX(items.item_id) AS item_id');
         $builder->select('MAX(items.name) AS name');
         $builder->select('MAX(items.category) AS category');
+        $builder->select('MAX(items.season) AS season');
+        $builder->select('MAX(items.color) AS color');
+        $builder->select('MAX(items.size) AS size');
         $builder->select('MAX(items.supplier_id) AS supplier_id');
         $builder->select('MAX(items.item_number) AS item_number');
         $builder->select('MAX(items.description) AS description');
@@ -1046,6 +1058,42 @@ class Item extends Model
                 $suggestions[] = ['label' => $row->category];
             }
 
+            // Search by season
+            $builder = $this->db->table('items');
+            $builder->select('season');
+            $builder->where('deleted', $filters['is_deleted']);
+            $builder->distinct();
+            $builder->like('season', $search);
+            $builder->orderBy('season', 'asc');
+
+            foreach ($builder->get()->getResult() as $row) {
+                $suggestions[] = ['label' => $row->season];
+            }
+
+            // Search by color
+            $builder = $this->db->table('items');
+            $builder->select('color');
+            $builder->where('deleted', $filters['is_deleted']);
+            $builder->distinct();
+            $builder->like('color', $search);
+            $builder->orderBy('color', 'asc');
+
+            foreach ($builder->get()->getResult() as $row) {
+                $suggestions[] = ['label' => $row->color];
+            }
+
+            // Search by size
+            $builder = $this->db->table('items');
+            $builder->select('size');
+            $builder->where('deleted', $filters['is_deleted']);
+            $builder->distinct();
+            $builder->like('size', $search);
+            $builder->orderBy('size', 'asc');
+
+            foreach ($builder->get()->getResult() as $row) {
+                $suggestions[] = ['label' => $row->size];
+            }
+
             $builder = $this->db->table('suppliers');
 
             // Search by supplier
@@ -1154,6 +1202,48 @@ class Item extends Model
                 $suggestions[] = ['label' => $row->category];
             }
 
+            // Search by season
+            $builder = $this->db->table('items');
+            $builder->select('season');
+            $builder->where('deleted', $filters['is_deleted']);
+            $builder->whereIn('item_type', $nonKit);
+            $builder->where('stock_type', '0');
+            $builder->distinct();
+            $builder->like('season', $search);
+            $builder->orderBy('season', 'asc');
+
+            foreach ($builder->get()->getResult() as $row) {
+                $suggestions[] = ['label' => $row->season];
+            }
+
+            // Search by color
+            $builder = $this->db->table('items');
+            $builder->select('color');
+            $builder->where('deleted', $filters['is_deleted']);
+            $builder->whereIn('item_type', $nonKit);
+            $builder->where('stock_type', '0');
+            $builder->distinct();
+            $builder->like('color', $search);
+            $builder->orderBy('color', 'asc');
+
+            foreach ($builder->get()->getResult() as $row) {
+                $suggestions[] = ['label' => $row->color];
+            }
+
+            // Search by size
+            $builder = $this->db->table('items');
+            $builder->select('size');
+            $builder->where('deleted', $filters['is_deleted']);
+            $builder->whereIn('item_type', $nonKit);
+            $builder->where('stock_type', '0');
+            $builder->distinct();
+            $builder->like('size', $search);
+            $builder->orderBy('size', 'asc');
+
+            foreach ($builder->get()->getResult() as $row) {
+                $suggestions[] = ['label' => $row->size];
+            }
+
             // Search by supplier
             $builder = $this->db->table('suppliers');
             $builder->select('company_name');
@@ -1258,6 +1348,45 @@ class Item extends Model
                 $suggestions[] = ['label' => $row->category];
             }
 
+            // Search by season
+            $builder = $this->db->table('items');
+            $builder->select('season');
+            $builder->where('deleted', $filters['is_deleted']);
+            $builder->where('item_type', ITEM_KIT);
+            $builder->distinct();
+            $builder->like('season', $search);
+            $builder->orderBy('season', 'asc');
+
+            foreach ($builder->get()->getResult() as $row) {
+                $suggestions[] = ['label' => $row->season];
+            }
+
+            // Search by color
+            $builder = $this->db->table('items');
+            $builder->select('color');
+            $builder->where('deleted', $filters['is_deleted']);
+            $builder->where('item_type', ITEM_KIT);
+            $builder->distinct();
+            $builder->like('color', $search);
+            $builder->orderBy('color', 'asc');
+
+            foreach ($builder->get()->getResult() as $row) {
+                $suggestions[] = ['label' => $row->color];
+            }
+
+            // Search by size
+            $builder = $this->db->table('items');
+            $builder->select('size');
+            $builder->where('deleted', $filters['is_deleted']);
+            $builder->where('item_type', ITEM_KIT);
+            $builder->distinct();
+            $builder->like('size', $search);
+            $builder->orderBy('size', 'asc');
+
+            foreach ($builder->get()->getResult() as $row) {
+                $suggestions[] = ['label' => $row->size];
+            }
+
             // Search by supplier
             $builder = $this->db->table('suppliers');
             $builder->select('company_name');
@@ -1355,6 +1484,76 @@ class Item extends Model
         }
 
         return $suggestions;
+    }
+
+    public function get_season_suggestions(string $search): array
+    {
+        $suggestions = [];
+
+        $builder = $this->db->table('items');
+        $builder->distinct();
+        $builder->select('season');
+        $builder->like('season', $search);
+        $builder->where('deleted', 0);
+        $builder->orderBy('season', 'asc');
+
+        foreach ($builder->get()->getResult() as $row) {
+            $suggestions[] = ['label' => $row->season];
+        }
+
+        return $suggestions;
+    }
+
+    public function get_color_suggestions(string $search): array
+    {
+        $suggestions = [];
+
+        $builder = $this->db->table('items');
+        $builder->distinct();
+        $builder->select('color');
+        $builder->like('color', $search);
+        $builder->where('deleted', 0);
+        $builder->orderBy('color', 'asc');
+
+        foreach ($builder->get()->getResult() as $row) {
+            $suggestions[] = ['label' => $row->color];
+        }
+
+        return $suggestions;
+    }
+
+    public function get_size_suggestions(string $search): array
+    {
+        $suggestions = [];
+
+        $builder = $this->db->table('items');
+        $builder->distinct();
+        $builder->select('size');
+        $builder->like('size', $search);
+        $builder->where('deleted', 0);
+        $builder->orderBy('size', 'asc');
+
+        foreach ($builder->get()->getResult() as $row) {
+            $suggestions[] = ['label' => $row->size];
+        }
+
+        return $suggestions;
+    }
+
+    public function get_seasons(): array
+    {
+        $builder = $this->db->table('items');
+        $builder->select('season');
+        $builder->where('deleted', 0);
+        $builder->distinct();
+        $builder->orderBy('season', 'asc');
+
+        $seasons = [];
+        foreach ($builder->get()->getResultArray() as $row) {
+            $seasons[$row['season']] = $row['season'];
+        }
+
+        return $seasons;
     }
 
     /**

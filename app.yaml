@@ -1,0 +1,33 @@
+runtime: php82
+instance_class: F1
+
+automatic_scaling:
+  min_instances: 0
+  max_instances: 2
+
+entrypoint: serve public/index.php
+
+handlers:
+  - url: /resources
+    static_dir: public/resources
+    secure: always
+
+  - url: /images
+    static_dir: public/images
+    secure: always
+
+  - url: /uploads
+    static_dir: public/uploads
+    secure: always
+
+  - url: /favicon.ico
+    static_files: public/favicon.ico
+    upload: public/favicon.ico
+    secure: always
+
+  - url: /.*
+    script: auto
+    secure: always
+
+env_variables:
+  CI_ENVIRONMENT: production

@@ -29,14 +29,14 @@ if (isset($error)) {
         </div>
     </div>
 
-    <?php if (!empty($mode)) { ?>
+    <?php if (! empty($mode)) { ?>
         <div class="form-group form-group-sm">
-            <?php if ($mode == 'sale') { ?>
+            <?php if ($mode === 'sale') { ?>
                 <?= form_label(lang('Reports.sale_type'), 'reports_sale_type_label', ['class' => 'control-label col-xs-2 text-danger required']) ?>
                 <div id="report_sale_type" class="col-xs-3">
                     <?= form_dropdown('sale_type', $sale_type_options, $selected_sale_type ?? 'complete', ['id' => 'input_type', 'class' => 'form-control']) ?>
                 </div>
-            <?php } elseif ($mode == 'receiving') { ?>
+            <?php } elseif ($mode === 'receiving') { ?>
                 <?= form_label(lang('Reports.receiving_type'), 'reports_receiving_type_label', ['class' => 'control-label col-xs-2 text-danger required']) ?>
                 <div id="report_receiving_type" class="col-xs-3">
                     <?= form_dropdown(
@@ -45,10 +45,10 @@ if (isset($error)) {
                             'all'          => lang('Reports.all'),
                             'receiving'    => lang('Reports.receivings'),
                             'returns'      => lang('Reports.returns'),
-                            'requisitions' => lang('Reports.requisitions')
+                            'requisitions' => lang('Reports.requisitions'),
                         ],
                         'all',
-                        ['id' => 'input_type', 'class' => 'form-control']
+                        ['id' => 'input_type', 'class' => 'form-control'],
                     ) ?>
                 </div>
             <?php } ?>
@@ -64,7 +64,16 @@ if (isset($error)) {
         </div>
     <?php } ?>
 
-    <?php if (!empty($stock_locations) && count($stock_locations) > 2) { ?>
+    <?php if (isset($season_type_options)) { ?>
+        <div class="form-group form-group-sm">
+            <?= form_label(lang('Reports.season'), 'reports_season_type_label', ['class' => 'control-label col-xs-2 text-danger required']) ?>
+            <div id="report_season_type" class="col-xs-3">
+                <?= form_dropdown('season_type', $season_type_options, $config['default_sales_season_type'] ?? '', ['id' => 'season_type_id', 'class' => 'form-control']) ?>
+            </div>
+        </div>
+    <?php } ?>
+
+    <?php if (! empty($stock_locations) && count($stock_locations) > 2) { ?>
         <div class="form-group form-group-sm">
             <?= form_label(lang('Reports.stock_location'), 'reports_stock_location_label', ['class' => 'control-label col-xs-2 text-danger required']) ?>
             <div id="report_stock_location" class="col-xs-3">
@@ -73,16 +82,15 @@ if (isset($error)) {
         </div>
     <?php } ?>
 
-    <?php
-    echo form_button(
+    <?= form_button(
         [
             'name'    => 'generate_report',
             'id'      => 'generate_report',
             'content' => lang('Common.submit'),
-            'class'   => 'btn btn-primary btn-sm'
-        ]
+            'class'   => 'btn btn-primary btn-sm',
+        ],
     );
-    ?>
+?>
 
 <?= form_close() ?>
 
@@ -93,7 +101,7 @@ if (isset($error)) {
         <?= view('partial/daterangepicker') ?>
 
         $("#generate_report").click(function() {
-            window.location = [window.location, start_date, end_date, $("#input_type").val() || 0, $("#location_id").val() || 'all', $("#discount_type_id").val() || 0].join("/");
+            window.location = [window.location, start_date, end_date, $("#input_type").val() || 0, $("#location_id").val() || 'all', $("#discount_type_id").val() || $("#season_type_id").val() || 0].join("/");
         });
     });
 </script>

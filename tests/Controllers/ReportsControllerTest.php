@@ -7,6 +7,7 @@ use App\Models\Employee;
 use App\Models\Reports\Detailed_receivings;
 use App\Models\Reports\Detailed_sales;
 use App\Models\Reports\Summary_categories;
+use App\Models\Reports\Summary_cost_sales;
 use CodeIgniter\Config\Factories;
 use CodeIgniter\Test\CIUnitTestCase;
 use CodeIgniter\Test\DatabaseTestTrait;
@@ -302,5 +303,52 @@ class ReportsControllerTest extends CIUnitTestCase
         ]);
 
         $this->assertSame([], $detailedReceivings->getDataByReceivingId('999999'));
+    }
+
+    public function testSummaryCostSales_RendersReportForAuthorizedEmployee(): void
+    {
+        $this->loginAs(1);
+
+        $response = $this->get('/reports/summary_cost_sales/2020-01-01/2020-01-02');
+
+        $response->assertStatus(200);
+        $this->assertStringContainsString('Cost and Sales Summary Report', $response->getBody());
+    }
+
+    public function testSummaryCostSalesBySupplier_RendersReportForAuthorizedEmployee(): void
+    {
+        $this->loginAs(1);
+
+        $response = $this->get('/reports/summary_cost_sales_by_supplier/2020-01-01/2020-01-02/complete/all/all');
+
+        $response->assertStatus(200);
+        $this->assertStringContainsString('Cost and Sales by Season Summary Report', $response->getBody());
+    }
+
+    public function testGraphicalSummaryCostSales_RendersBarChartForAuthorizedEmployee(): void
+    {
+        $this->loginAs(1);
+
+        $mockSummaryCostSales = $this->createMock(Summary_cost_sales::class);
+        $mockSummaryCostSales->method('getData')->willReturn([
+            [
+                'season'       => 'FW26',
+                'stock_cost'   => 100.0,
+                'cost_of_sale' => 50.0,
+                'total_cost'   => 150.0,
+                'revenue'      => 250.0,
+                'mark_up'      => 100.0,
+            ],
+        ]);
+        $mockSummaryCostSales->method('getSummaryData')->willReturn([
+            'total_cost' => 150.0,
+            'total'      => 250.0,
+        ]);
+        Factories::injectMock('models', Summary_cost_sales::class, $mockSummaryCostSales);
+
+        $response = $this->get('/reports/graphical_summary_cost_sales/2020-01-01/2020-01-02');
+
+        $response->assertStatus(200);
+        $this->assertStringContainsString('FW26', $response->getBody());
     }
 }

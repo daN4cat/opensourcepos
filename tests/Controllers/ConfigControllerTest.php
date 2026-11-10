@@ -727,4 +727,34 @@ class ConfigControllerTest extends CIUnitTestCase
         $this->db->table('app_config')->where('key', 'number_locale')->update(['value' => 'en_US']);
         config(OSPOS::class)->update_settings();
     }
+
+    public function testPostSaveShopify_AcceptsValidMyshopifyDomain(): void
+    {
+        $this->loginAsAdminWithGrants(['config']);
+
+        $response = $this->post('/config/saveShopify', [
+            'shopify_shop_url'       => 'https://test-boutique.myshopify.com/',
+            'shopify_api_key'        => 'api_key_123',
+            'shopify_api_secret_key' => 'shpat_secret_123',
+        ]);
+
+        $response->assertStatus(200);
+        $result = json_decode($response->getJSON(), true);
+        $this->assertTrue($result['success']);
+    }
+
+    public function testPostSaveShopify_RejectsInvalidDomain(): void
+    {
+        $this->loginAsAdminWithGrants(['config']);
+
+        $response = $this->post('/config/saveShopify', [
+            'shopify_shop_url'       => 'https://evil.example.com/',
+            'shopify_api_key'        => 'api_key_123',
+            'shopify_api_secret_key' => 'shpat_secret_123',
+        ]);
+
+        $response->assertStatus(200);
+        $result = json_decode($response->getJSON(), true);
+        $this->assertFalse($result['success']);
+    }
 }

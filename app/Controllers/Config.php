@@ -6,6 +6,7 @@ use App\Libraries\Barcode_lib;
 use App\Libraries\Mailchimp_lib;
 use App\Libraries\Receiving_lib;
 use App\Libraries\Sale_lib;
+use App\Libraries\Shopify_lib;
 use App\Libraries\Tax_lib;
 use App\Models\Appconfig;
 use App\Models\Attribute;
@@ -267,6 +268,7 @@ class Config extends Secure_Controller
 
         // Integrations Related fields
         $data['mailchimp']     = [];
+        $data['shopify']       = [];
         $data['smtp_pass_set'] = !empty($this->config['smtp_pass']);
         $data['msg_pwd_set']   = !empty($this->config['msg_pwd']);
 
@@ -283,12 +285,25 @@ class Config extends Secure_Controller
                 ? $this->encrypter->decrypt($this->config['mailchimp_list_id'])
                 : '';
 
+            $data['shopify']['shop_url'] = (isset($this->config['shopify_shop_url']) && !empty($this->config['shopify_shop_url']))
+                ? $this->encrypter->decrypt($this->config['shopify_shop_url'])
+                : '';
+            $data['shopify']['api_key'] = (isset($this->config['shopify_api_key']) && !empty($this->config['shopify_api_key']))
+                ? $this->encrypter->decrypt($this->config['shopify_api_key'])
+                : '';
+            $data['shopify']['api_secret_key'] = (isset($this->config['shopify_api_secret_key']) && !empty($this->config['shopify_api_secret_key']))
+                ? $this->encrypter->decrypt($this->config['shopify_api_secret_key'])
+                : '';
+
             // Remove any backup of .env created by check_encryption()
             removeBackup();
         } else {
             $data['mailchimp']['api_key']     = '';
             $data['mailchimp']['api_key_set'] = false;
             $data['mailchimp']['list_id']     = '';
+            $data['shopify']['shop_url']       = '';
+            $data['shopify']['api_key']        = '';
+            $data['shopify']['api_secret_key'] = '';
         }
 
         $data['mailchimp']['lists'] = $this->_mailchimp();
@@ -701,6 +716,87 @@ class Config extends Secure_Controller
         $success = $this->appconfig->batch_save($batch_save_data);
 
         return $this->response->setJSON(['success' => $success, 'message' => lang('Config.saved_' . ($success ? '' : 'un') . 'successfully')]);
+    }
+
+    public function postCheckShopifyCredentials(): ResponseInterface
+    {
+        $shopUrl      = trim((string) $this->request->getPost('shopify_shop_url'));
+        $apiKey       = trim((string) $this->request->getPost('shopify_api_key'));
+        $apiSecretKey = trim((string) $this->request->getPost('shopify_api_secret_key'));
+
+        $shopifyLib = new Shopify_lib([
+            'shop_url'       => $shopUrl,
+            'api_key'        => $apiKey,
+            'api_secret_key' => $apiSecretKey,
+        ]);
+
+        $success = $shopifyLib->authenticate();
+
+        return $this->response->setJSON([
+            'success' => $success,
+            'message' => lang('Config.shopify_key_' . ($success ? '' : 'un') . 'successfully'),
+        ]);
+    }
+
+    public function postSaveShopify(): ResponseInterface
+    {
+        $postedShopUrl = trim((string) $this->request->getPost('shopify_shop_url'));
+        $postedKey     = trim((string) $this->request->getPost('shopify_api_key'));
+        $postedSecret  = trim((string) $this->request->getPost('shopify_api_secret_key'));
+
+        if ($postedShopUrl !== '') {
+            $shopifyLib = new Shopify_lib();
+            $shopifyLib->resetConfig($postedShopUrl, $postedKey, $postedSecret);
+            $normalizedShop = $shopifyLib->getShopUrl();
+
+            if ($normalizedShop === '') {
+                return $this->response->setJSON([
+                    'success' => false,
+                    'message' => lang('Config.shopify_key_unsuccessfully'),
+                ]);
+            }
+
+            $postedShopUrl = $normalizedShop;
+        }
+
+        if (checkEncryption()) {
+            $shopUrl = $postedShopUrl !== ''
+                ? $this->encrypter->encrypt($postedShopUrl)
+                : (string) ($this->config['shopify_shop_url'] ?? '');
+
+            $apiKey = $postedKey !== ''
+                ? $this->encrypter->encrypt($postedKey)
+                : (string) ($this->config['shopify_api_key'] ?? '');
+
+            $apiSecretKey = $postedSecret !== ''
+                ? $this->encrypter->encrypt($postedSecret)
+                : (string) ($this->config['shopify_api_secret_key'] ?? '');
+        } else {
+            $shopUrl = $postedShopUrl !== ''
+                ? $postedShopUrl
+                : (string) ($this->config['shopify_shop_url'] ?? '');
+
+            $apiKey = $postedKey !== ''
+                ? $postedKey
+                : (string) ($this->config['shopify_api_key'] ?? '');
+
+            $apiSecretKey = $postedSecret !== ''
+                ? $postedSecret
+                : (string) ($this->config['shopify_api_secret_key'] ?? '');
+        }
+
+        $batchSaveData = [
+            'shopify_shop_url'       => $shopUrl,
+            'shopify_api_key'        => $apiKey,
+            'shopify_api_secret_key' => $apiSecretKey,
+        ];
+
+        $success = $this->appconfig->batch_save($batchSaveData);
+
+        return $this->response->setJSON([
+            'success' => $success,
+            'message' => lang('Config.saved_' . ($success ? '' : 'un') . 'successfully'),
+        ]);
     }
 
     /**

@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 use App\Models\Attribute;
 use App\Models\Customer;
+use App\Models\Item;
 use App\Models\Reports\Detailed_item_sales;
 use App\Models\Reports\Detailed_receivings;
 use App\Models\Reports\Detailed_sales;
@@ -14,6 +15,8 @@ use App\Models\Reports\Specific_discount;
 use App\Models\Reports\Specific_employee;
 use App\Models\Reports\Specific_supplier;
 use App\Models\Reports\Summary_categories;
+use App\Models\Reports\Summary_cost_sales;
+use App\Models\Reports\Summary_cost_sales_by_supplier;
 use App\Models\Reports\Summary_customers;
 use App\Models\Reports\Summary_discounts;
 use App\Models\Reports\Summary_employees;
@@ -36,10 +39,13 @@ class Reports extends Secure_Controller
     private Attribute $attribute;
     private array $config;
     private Customer $customer;
+    private Item $item;
     private Stock_location $stock_location;
     private Summary_sales $summary_sales;
     private Summary_sales_taxes $summary_sales_taxes;
     private Summary_categories $summary_categories;
+    private Summary_cost_sales $summary_cost_sales;
+    private Summary_cost_sales_by_supplier $summary_cost_sales_by_supplier;
     private Summary_expenses_categories $summary_expenses_categories;
     private Summary_customers $summary_customers;
     private Summary_items $summary_items;
@@ -60,49 +66,54 @@ class Reports extends Secure_Controller
         $request    = Services::request();
         $methodName = urldecode($request->getUri()->getSegment(2));
 
-        $this->attribute                   = model(Attribute::class);
-        $this->config                      = config(OSPOS::class)->settings;
-        $this->customer                    = model(Customer::class);
-        $this->stock_location              = model(Stock_location::class);
-        $this->summary_sales               = model(Summary_sales::class);
-        $this->summary_sales_taxes         = model(Summary_sales_taxes::class);
-        $this->summary_categories          = model(Summary_categories::class);
-        $this->summary_expenses_categories = model(Summary_expenses_categories::class);
-        $this->summary_customers           = model(Summary_customers::class);
-        $this->summary_items               = model(Summary_items::class);
-        $this->summary_suppliers           = model(Summary_suppliers::class);
-        $this->summary_employees           = model(Summary_employees::class);
-        $this->summary_taxes               = model(Summary_taxes::class);
-        $this->summary_discounts           = model(Summary_discounts::class);
-        $this->summary_payments            = model(Summary_payments::class);
-        $this->detailed_item_sales         = model(Detailed_item_sales::class);
-        $this->detailed_sales              = model(Detailed_sales::class);
-        $this->supplier                    = model(Supplier::class);
-        $this->detailed_receivings         = model(Detailed_receivings::class);
-        $this->inventory_summary           = model(Inventory_summary::class);
+        $this->attribute                      = model(Attribute::class);
+        $this->config                         = config(OSPOS::class)->settings;
+        $this->customer                       = model(Customer::class);
+        $this->item                           = model(Item::class);
+        $this->stock_location                 = model(Stock_location::class);
+        $this->summary_sales                  = model(Summary_sales::class);
+        $this->summary_sales_taxes            = model(Summary_sales_taxes::class);
+        $this->summary_categories             = model(Summary_categories::class);
+        $this->summary_cost_sales             = model(Summary_cost_sales::class);
+        $this->summary_cost_sales_by_supplier = model(Summary_cost_sales_by_supplier::class);
+        $this->summary_expenses_categories    = model(Summary_expenses_categories::class);
+        $this->summary_customers              = model(Summary_customers::class);
+        $this->summary_items                  = model(Summary_items::class);
+        $this->summary_suppliers              = model(Summary_suppliers::class);
+        $this->summary_employees              = model(Summary_employees::class);
+        $this->summary_taxes                  = model(Summary_taxes::class);
+        $this->summary_discounts              = model(Summary_discounts::class);
+        $this->summary_payments               = model(Summary_payments::class);
+        $this->detailed_item_sales            = model(Detailed_item_sales::class);
+        $this->detailed_sales                 = model(Detailed_sales::class);
+        $this->supplier                       = model(Supplier::class);
+        $this->detailed_receivings            = model(Detailed_receivings::class);
+        $this->inventory_summary              = model(Inventory_summary::class);
 
         // Map report URL names to their required permission
         $reportPermissions = [
-            'summary_sales'               => 'reports_sales',
-            'summary_expenses_categories' => 'reports_expenses_categories',
-            'summary_payments'            => 'reports_payments',
-            'summary_discounts'           => 'reports_discounts',
-            'summary_categories'          => 'reports_categories',
-            'summary_customers'           => 'reports_customers',
-            'summary_items'               => 'reports_items',
-            'summary_suppliers'           => 'reports_suppliers',
-            'summary_employees'           => 'reports_employees',
-            'summary_taxes'               => 'reports_taxes',
-            'summary_sales_taxes'         => 'reports_sales_taxes',
-            'detailed_item_sales'         => 'reports_sales',
-            'detailed_sales'              => 'reports_sales',
-            'detailed_receivings'         => 'reports_receivings',
-            'inventory_summary'           => 'reports_inventory',
-            'inventory_low'               => 'reports_inventory',
-            'specific_customers'          => 'reports_customers',
-            'specific_employees'          => 'reports_employees',
-            'specific_discounts'          => 'reports_discounts',
-            'specific_suppliers'          => 'reports_suppliers',
+            'summary_sales'                  => 'reports_sales',
+            'summary_expenses_categories'    => 'reports_expenses_categories',
+            'summary_payments'               => 'reports_payments',
+            'summary_discounts'              => 'reports_discounts',
+            'summary_categories'             => 'reports_categories',
+            'summary_customers'              => 'reports_customers',
+            'summary_items'                  => 'reports_items',
+            'summary_suppliers'              => 'reports_suppliers',
+            'summary_employees'              => 'reports_employees',
+            'summary_taxes'                  => 'reports_taxes',
+            'summary_sales_taxes'            => 'reports_sales_taxes',
+            'summary_cost_sales'             => 'reports_cost_sales',
+            'summary_cost_sales_by_supplier' => 'reports_cost_sales_by_supplier',
+            'detailed_item_sales'            => 'reports_sales',
+            'detailed_sales'                 => 'reports_sales',
+            'detailed_receivings'            => 'reports_receivings',
+            'inventory_summary'              => 'reports_inventory',
+            'inventory_low'                  => 'reports_inventory',
+            'specific_customers'             => 'reports_customers',
+            'specific_employees'             => 'reports_employees',
+            'specific_discounts'             => 'reports_discounts',
+            'specific_suppliers'             => 'reports_suppliers',
         ];
 
         // Normalize the report name: strip graphical_ prefix and _graph/_row suffixes
@@ -628,6 +639,98 @@ class Reports extends Secure_Controller
             'subtitle'     => $this->_get_subtitle_report(['start_date' => $start_date, 'end_date' => $end_date]),
             'headers'      => $this->summary_payments->getDataColumns(),
             'data'         => $tabular_data,
+            'summary_data' => $summary,
+        ];
+
+        return view('reports/tabular', $data);
+    }
+
+    public function summary_cost_sales(string $startDate, string $endDate, string $saleType = 'complete', string $locationId = 'all'): string
+    {
+        $this->clearCache();
+
+        $inputs = [
+            'start_date'  => $startDate,
+            'end_date'    => $endDate,
+            'sale_type'   => $saleType,
+            'location_id' => $locationId,
+        ];
+
+        $reportData = $this->summary_cost_sales->getData($inputs);
+        $summary    = $this->summary_cost_sales->getSummaryData($inputs);
+
+        $tabularData = [];
+
+        foreach ($reportData as $row) {
+            $tabularData[] = [
+                'season'       => $row['season'],
+                'stock_cost'   => to_currency($row['stock_cost']),
+                'cost_of_sale' => to_currency($row['cost_of_sale']),
+                'total_cost'   => to_currency($row['total_cost']),
+                'revenue'      => to_currency($row['revenue']),
+                'mark_up'      => to_decimals($row['mark_up']),
+            ];
+        }
+
+        $data = [
+            'title'        => lang('Reports.cost_sales_summary_report'),
+            'subtitle'     => $this->_get_subtitle_report(['start_date' => $startDate, 'end_date' => $endDate]),
+            'headers'      => $this->summary_cost_sales->getDataColumns(),
+            'data'         => $tabularData,
+            'summary_data' => $summary,
+        ];
+
+        return view('reports/tabular', $data);
+    }
+
+    public function summary_cost_sales_by_supplier_input(): string
+    {
+        $this->clearCache();
+
+        $stockLocations              = $data = $this->stock_location->get_allowed_locations('sales');
+        $stockLocations['all']       = lang('Reports.all');
+        $data['stock_locations']     = array_reverse($stockLocations, true);
+        $data['mode']                = 'sale';
+        $data['season_type_options'] = $this->item->get_seasons();
+        $data['sale_type_options']   = $this->get_sale_type_options();
+
+        return view('reports/date_input', $data);
+    }
+
+    public function summary_cost_sales_by_supplier(string $startDate, string $endDate, string $saleType = 'complete', string $locationId = 'all', string $season = ''): string
+    {
+        $this->clearCache();
+
+        $inputs = [
+            'start_date'  => $startDate,
+            'end_date'    => $endDate,
+            'sale_type'   => $saleType,
+            'location_id' => $locationId,
+            'season'      => $season,
+        ];
+
+        $reportData = $this->summary_cost_sales_by_supplier->getData($inputs);
+        $summary    = $this->summary_cost_sales_by_supplier->getSummaryData($inputs);
+
+        $tabularData = [];
+
+        foreach ($reportData as $row) {
+            $tabularData[] = [
+                'season'       => $row['season'],
+                'supplier'     => $row['supplier'],
+                'stock_cost'   => to_currency($row['stock_cost']),
+                'cost_of_sale' => to_currency($row['cost_of_sale']),
+                'total_cost'   => to_currency($row['total_cost']),
+                'revenue'      => to_currency($row['revenue']),
+                'mark_up'      => to_decimals($row['mark_up']),
+            ];
+        }
+
+        $data = [
+            'title'        => lang('Reports.cost_sales_by_supplier_summary_report'),
+            'subtitle'     => $this->_get_subtitle_report(['start_date' => $startDate, 'end_date' => $endDate]),
+            'headers'      => $this->summary_cost_sales_by_supplier->getDataColumns(),
+            'data'         => $tabularData,
             'summary_data' => $summary,
         ];
 
@@ -1184,6 +1287,81 @@ class Reports extends Secure_Controller
         return view('reports/graphical', $data);
     }
 
+    public function graphical_summary_cost_sales(string $startDate, string $endDate, string $saleType = 'complete', string $locationId = 'all'): string
+    {
+        $this->clearCache();
+
+        $inputs = [
+            'start_date'  => $startDate,
+            'end_date'    => $endDate,
+            'sale_type'   => $saleType,
+            'location_id' => $locationId,
+        ];
+
+        $reportData = $this->summary_cost_sales->getData($inputs);
+        $summary    = $this->summary_cost_sales->getSummaryData($inputs);
+
+        $labels = [];
+        $series = [];
+
+        foreach ($reportData as $row) {
+            $labels[] = $row['season'];
+            $series[] = $row['revenue'];
+        }
+
+        $data = [
+            'title'          => lang('Reports.cost_sales_summary_report'),
+            'subtitle'       => $this->_get_subtitle_report(['start_date' => $startDate, 'end_date' => $endDate]),
+            'chart_type'     => 'reports/graphs/bar',
+            'labels_1'       => $labels,
+            'series_data_1'  => $series,
+            'summary_data_1' => $summary,
+            'yaxis_title'    => lang('Reports.revenue'),
+            'xaxis_title'    => lang('Reports.season'),
+            'show_currency'  => true,
+        ];
+
+        return view('reports/graphical', $data);
+    }
+
+    public function graphical_summary_cost_sales_by_supplier(string $startDate, string $endDate, string $saleType = 'complete', string $locationId = 'all', string $season = ''): string
+    {
+        $this->clearCache();
+
+        $inputs = [
+            'start_date'  => $startDate,
+            'end_date'    => $endDate,
+            'sale_type'   => $saleType,
+            'location_id' => $locationId,
+            'season'      => $season,
+        ];
+
+        $reportData = $this->summary_cost_sales_by_supplier->getData($inputs);
+        $summary    = $this->summary_cost_sales_by_supplier->getSummaryData($inputs);
+
+        $labels = [];
+        $series = [];
+
+        foreach ($reportData as $row) {
+            $labels[] = $row['supplier'];
+            $series[] = $row['revenue'];
+        }
+
+        $data = [
+            'title'          => lang('Reports.cost_sales_by_supplier_summary_report'),
+            'subtitle'       => $this->_get_subtitle_report(['start_date' => $startDate, 'end_date' => $endDate]),
+            'chart_type'     => 'reports/graphs/bar',
+            'labels_1'       => $labels,
+            'series_data_1'  => $series,
+            'summary_data_1' => $summary,
+            'yaxis_title'    => lang('Reports.revenue'),
+            'xaxis_title'    => lang('Reports.supplier'),
+            'show_currency'  => true,
+        ];
+
+        return view('reports/graphical', $data);
+    }
+
     /**
      * Gets the specific customer input view. Used in app/Config/Routes.php
      *
@@ -1287,6 +1465,9 @@ class Reports extends Secure_Controller
                 $details_data[$row['sale_id']][] = [
                     $drow['name'],
                     $drow['category'],
+                    $drow['season'],
+                    $drow['color'],
+                    $drow['size'],
                     $drow['item_number'],
                     $drow['description'],
                     to_quantity_decimals($drow['quantity_purchased']),
@@ -1410,6 +1591,9 @@ class Reports extends Secure_Controller
                 $details_data[$row['sale_id']][] = [
                     $drow['name'],
                     $drow['category'],
+                    $drow['season'],
+                    $drow['color'],
+                    $drow['size'],
                     $drow['item_number'],
                     $drow['description'],
                     to_quantity_decimals($drow['quantity_purchased']),
@@ -1537,6 +1721,9 @@ class Reports extends Secure_Controller
                 $details_data[$row['sale_id']][] = [
                     $drow['name'],
                     $drow['category'],
+                    $drow['season'],
+                    $drow['color'],
+                    $drow['size'],
                     $drow['item_number'],
                     $drow['description'],
                     to_quantity_decimals($drow['quantity_purchased']),
@@ -1793,6 +1980,9 @@ class Reports extends Secure_Controller
                 $details_data[$row['sale_id']][] = array_merge([
                     $drow['name'],
                     $drow['category'],
+                    $drow['season'],
+                    $drow['color'],
+                    $drow['size'],
                     $drow['item_number'],
                     $drow['description'],
                     $quantity_purchased,

@@ -314,7 +314,28 @@ class Items extends Secure_Controller
      */
     public function getSuggestCategory(): ResponseInterface
     {
-        $suggestions = $this->item->get_category_suggestions($this->request->getGet('term'));
+        $suggestions = $this->item->get_category_suggestions($this->request->getGet('term') ?? '');
+
+        return $this->response->setJSON($suggestions);
+    }
+
+    public function getSuggestSeason(): ResponseInterface
+    {
+        $suggestions = $this->item->get_season_suggestions($this->request->getGet('term') ?? '');
+
+        return $this->response->setJSON($suggestions);
+    }
+
+    public function getSuggestColor(): ResponseInterface
+    {
+        $suggestions = $this->item->get_color_suggestions($this->request->getGet('term') ?? '');
+
+        return $this->response->setJSON($suggestions);
+    }
+
+    public function getSuggestSize(): ResponseInterface
+    {
+        $suggestions = $this->item->get_size_suggestions($this->request->getGet('term') ?? '');
 
         return $this->response->setJSON($suggestions);
     }
@@ -795,6 +816,9 @@ class Items extends Secure_Controller
             'name'                  => $this->request->getPost('name'),
             'description'           => $this->request->getPost('description', FILTER_SANITIZE_FULL_SPECIAL_CHARS),
             'category'              => $this->request->getPost('category'),
+            'season'                => $this->request->getPost('season') ?? '',
+            'color'                 => $this->request->getPost('color') ?? '',
+            'size'                  => $this->request->getPost('size') ?? '',
             'item_type'             => $itemType,
             'stock_type'            => $this->request->getPost('stock_type') === null ? HAS_STOCK : intval($this->request->getPost('stock_type')),
             'supplier_id'           => empty($this->request->getPost('supplier_id')) ? null : intval($this->request->getPost('supplier_id')),
@@ -1176,6 +1200,9 @@ class Items extends Secure_Controller
                             'name'          => $row['Item Name'],
                             'description'   => filter_var($row['Description'], FILTER_SANITIZE_FULL_SPECIAL_CHARS),
                             'category'      => $row['Category'],
+                            'season'        => $row['Season'] ?? '',
+                            'color'         => $row['Color'] ?? '',
+                            'size'          => $row['Size'] ?? '',
                             'cost_price'    => $row['Cost Price'],
                             'unit_price'    => $row['Unit Price'],
                             'reorder_level' => $row['Reorder Level'],

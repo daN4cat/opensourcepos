@@ -36,6 +36,9 @@ class Specific_employee extends Report
             'details' => [
                 lang('Reports.name'),
                 lang('Reports.category'),
+                lang('Reports.season'),
+                lang('Reports.color'),
+                lang('Reports.size'),
                 lang('Reports.item_number'),
                 lang('Reports.description'),
                 lang('Reports.quantity'),

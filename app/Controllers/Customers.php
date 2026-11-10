@@ -3,7 +3,7 @@
 namespace App\Controllers;
 
 use App\Libraries\Mailchimp_lib;
-
+use App\Libraries\Shopify_lib;
 use App\Models\Customer;
 use App\Models\Customer_rewards;
 use App\Models\Tax_code;
@@ -17,6 +17,7 @@ class Customers extends Persons
 {
     private string $_list_id;
     private Mailchimp_lib $mailchimp_lib;
+    private Shopify_lib $shopify_lib;
     private Customer_rewards $customer_rewards;
     private Customer $customer;
     private Tax_code $tax_code;
@@ -26,6 +27,7 @@ class Customers extends Persons
     {
         parent::__construct('customers');
         $this->mailchimp_lib = new Mailchimp_lib();
+        $this->shopify_lib = new Shopify_lib();
         $this->customer_rewards = model(Customer_rewards::class);
         $this->customer = model(Customer::class);
         $this->tax_code = model(Tax_code::class);
@@ -231,6 +233,13 @@ class Customers extends Persons
             }
         }
 
+        if (!empty($info->email) || !empty($info->phone_number)) {
+            if (($shopifyInfo = $this->shopify_lib->getCustomerInfo((string) $info->email, (string) $info->phone_number, (string) ($info->country ?? ''))) !== false) {
+                $shopifyInfo['shop_url'] = $this->shopify_lib->getShopUrl();
+                $data['shopify_info'] = $shopifyInfo;
+            }
+        }
+
         return view("customers/form", $data);
     }
 
@@ -268,7 +277,7 @@ class Customers extends Persons
         $customer_data = [
             'consent'           => $this->request->getPost('consent') != null,
             'account_number'    => $this->request->getPost('account_number') == '' ? null : $this->request->getPost('account_number'),
-            'tax_id'            => $this->request->getPost('tax_id'),
+            'tax_id'            => $this->request->getPost('tax_id') ?? '',
             'company_name'      => $this->request->getPost('company_name') == '' ? null : $this->request->getPost('company_name'),
             'discount'          => $this->request->getPost('discount') == '' ? 0.00 : parse_decimals($this->request->getPost('discount')),
             'discount_type'     => $this->request->getPost('discount_type') == null ? PERCENT : $this->request->getPost('discount_type', FILTER_SANITIZE_NUMBER_INT),
@@ -291,24 +300,30 @@ class Customers extends Persons
                 ['vip' => $this->request->getPost('mailchimp_vip') != null]
             );
 
+            $shopifyResult  = $this->shopify_lib->addOrUpdateCustomer($person_data, $customer_data);
+            $shopifyWarning = $this->shopify_lib->getLastWarning();
+            $warningSuffix  = $shopifyWarning !== '' ? ' (' . esc($shopifyWarning) . ')' : '';
+
             // New customer
             if ($customer_id == NEW_ENTRY) {
                 return $this->response->setJSON([
-                    'success' => true,
-                    'message' => lang('Customers.successful_adding') . ' ' . $first_name . ' ' . $last_name,
-                    'id'      => $customer_data['person_id']
+                    'success'      => true,
+                    'message'      => lang('Customers.successful_adding') . ' ' . esc($first_name) . ' ' . esc($last_name) . $warningSuffix,
+                    'id'           => $customer_data['person_id'],
+                    'shopify_sync' => $shopifyResult !== false,
                 ]);
             } else { // Existing customer
                 return $this->response->setJSON([
-                    'success' => true,
-                    'message' => lang('Customers.successful_updating') . ' ' . $first_name . ' ' . $last_name,
-                    'id'      => $customer_id
+                    'success'      => true,
+                    'message'      => lang('Customers.successful_updating') . ' ' . esc($first_name) . ' ' . esc($last_name) . $warningSuffix,
+                    'id'           => $customer_id,
+                    'shopify_sync' => $shopifyResult !== false,
                 ]);
             }
         } else { // Failure
             return $this->response->setJSON([
                 'success' => false,
-                'message' => lang('Customers.error_adding_updating') . ' ' . $first_name . ' ' . $last_name,
+                'message' => lang('Customers.error_adding_updating') . ' ' . esc($first_name) . ' ' . esc($last_name),
                 'id'      => NEW_ENTRY
             ]);
         }
@@ -358,6 +373,9 @@ class Customers extends Persons
             if ($this->customer->delete($info->person_id)) {
                 // remove customer from Mailchimp selected list
                 $this->mailchimp_lib->removeMember($this->_list_id, $info->email);
+
+                // remove customer from Shopify
+                $this->shopify_lib->removeCustomer(!empty($info->email) ? $info->email : $info->phone_number);
 
                 $count++;
             }
@@ -471,6 +489,9 @@ class Customers extends Persons
                     } elseif ($this->customer->saveCustomer($personData, $customerData)) {
                         // Save customer to Mailchimp selected list
                         $this->mailchimp_lib->addOrUpdateMember($this->_list_id, $personData['email'], $personData['first_name'], $personData['last_name'], '');
+
+                        // Save customer to Shopify
+                        $this->shopify_lib->addOrUpdateCustomer($personData, $customerData);
                     } else {
                         $failCodes[] = $rowNumber;
                     }

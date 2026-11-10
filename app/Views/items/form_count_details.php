@@ -1,13 +1,14 @@
 <?php
 /**
- * @var object $item_info
- * @var array $stock_locations
+ * @var object   $item_info
+ * @var array    $stock_locations
  * @var int|null $stock_location
- * @var array $item_quantities
+ * @var array    $item_quantities
  */
 
 use App\Models\Employee;
 use App\Models\Inventory;
+
 ?>
 
 <?= form_open('items', ['id' => 'item_form', 'class' => 'form-horizontal']) ?>
@@ -23,7 +24,7 @@ use App\Models\Inventory;
                         'id'       => 'item_number',
                         'class'    => 'form-control input-sm',
                         'disabled' => '',
-                        'value'    => $item_info->item_number
+                        'value'    => $item_info->item_number,
                     ]) ?>
                 </div>
             </div>
@@ -37,7 +38,7 @@ use App\Models\Inventory;
                     'id'       => 'name',
                     'class'    => 'form-control input-sm',
                     'disabled' => '',
-                    'value'    => $item_info->name
+                    'value'    => $item_info->name,
                 ]) ?>
             </div>
         </div>
@@ -52,7 +53,23 @@ use App\Models\Inventory;
                         'id'       => 'category',
                         'class'    => 'form-control input-sm',
                         'disabled' => '',
-                        'value'    => $item_info->category
+                        'value'    => $item_info->category,
+                    ]) ?>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group form-group-sm">
+            <?= form_label(lang('Items.season'), 'season', ['class' => 'control-label col-xs-3']) ?>
+            <div class="col-xs-8">
+                <div class="input-group">
+                    <span class="input-group-addon input-sm"><span class="glyphicon glyphicon-tag"></span></span>
+                    <?= form_input([
+                        'name'     => 'season',
+                        'id'       => 'season',
+                        'class'    => 'form-control input-sm',
+                        'disabled' => '',
+                        'value'    => $item_info->season,
                     ]) ?>
                 </div>
             </div>
@@ -73,7 +90,7 @@ use App\Models\Inventory;
                     'id'       => 'quantity',
                     'class'    => 'form-control input-sm',
                     'disabled' => '',
-                    'value'    => to_quantity_decimals($item_quantities[$stock_location] ?? current($item_quantities))
+                    'value'    => to_quantity_decimals($item_quantities[$stock_location] ?? current($item_quantities)),
                 ]) ?>
             </div>
         </div>
@@ -97,16 +114,16 @@ use App\Models\Inventory;
         <?php
         // The tbody content of the table will be filled in by the javascript (see bottom of page)
         $employee = model(Employee::class);
-        $inventory = model(Inventory::class);
+$inventory        = model(Inventory::class);
 
-        $inventoryArray = $inventory->get_inventory_data_for_item($item_info->item_id)->getResultArray();
-        $employeeName = [];
+$inventoryArray = $inventory->get_inventory_data_for_item($item_info->item_id)->getResultArray();
+$employeeName   = [];
 
-        foreach ($inventoryArray as $row) {
-            $employeeData = $employee->getInfo($row['trans_user']);
-            $employeeName[] = $employeeData->first_name . ' ' . $employeeData->last_name;
-        }
-        ?>
+foreach ($inventoryArray as $row) {
+    $employeeData   = $employee->getInfo($row['trans_user']);
+    $employeeName[] = $employeeData->first_name . ' ' . $employeeData->last_name;
+}
+?>
     </tbody>
 </table>
 

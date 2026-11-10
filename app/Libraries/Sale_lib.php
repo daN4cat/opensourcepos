@@ -1183,7 +1183,10 @@ class Sale_lib
                     'stock_type'            => $stock_type,
                     'item_type'             => $item_type,
                     'hsn_code'              => $item_info->hsn_code,
-                    'tax_category_id'       => $item_info->tax_category_id
+                    'tax_category_id'       => $item_info->tax_category_id,
+                    'season'                => $item_info->season,
+                    'color'                 => $item_info->color,
+                    'size'                  => $item_info->size
                 ]
             ];
 

@@ -43,6 +43,7 @@ class CustomersCsvImportTest extends CIUnitTestCase
 
     protected function tearDown(): void
     {
+        $this->db->resetTransStatus();
         parent::tearDown();
     }
 
@@ -333,5 +334,50 @@ class CustomersCsvImportTest extends CIUnitTestCase
         $this->assertFalse($secondBody['success']);
         $this->assertNull($this->findCustomerByEmail($secondEmail));
         unlink($tempFile2);
+    }
+
+    public function testPostSave_SavesCustomerAndIncludesShopifySyncFlag(): void
+    {
+        $this->loginAsEmployee();
+
+        $email = 'boutique.' . uniqid() . '@example.com';
+
+        $result = $this->post('/customers/save/-1', [
+            'first_name'    => 'Boutique',
+            'last_name'     => 'Client',
+            'gender'        => '0',
+            'email'         => $email,
+            'phone_number'  => '+393401112233',
+            'address_1'     => 'Via Roma 1',
+            'address_2'     => '',
+            'city'          => 'Milano',
+            'state'         => 'MI',
+            'zip'           => '20121',
+            'country'       => 'IT',
+            'comments'      => '',
+            'consent'       => '1',
+            'tax_id'        => '',
+            'date'          => date('m/d/Y H:i:s'),
+            'employee_id'   => '1',
+            'discount'      => '0',
+            'discount_type' => (string) PERCENT,
+        ]);
+
+        $result->assertOK();
+        $body = json_decode($result->getJSON(), true);
+
+        $this->assertTrue($body['success']);
+        $this->assertArrayHasKey('shopify_sync', $body);
+        $this->assertFalse($body['shopify_sync']);
+
+        $saved = $this->findCustomerByEmail($email);
+        $this->assertNotNull($saved);
+
+        $deleteResult = $this->post('/customers/delete', [
+            'ids' => [$saved['person_id']],
+        ]);
+        $deleteResult->assertOK();
+        $deleteBody = json_decode($deleteResult->getJSON(), true);
+        $this->assertTrue($deleteBody['success']);
     }
 }

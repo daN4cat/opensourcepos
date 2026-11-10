@@ -268,6 +268,9 @@ class ItemBulkUpdateTest extends CIUnitTestCase
         $input = [
             'name'                  => 'Renamed',
             'category'              => 'Regrouped',
+            'season'                => 'FW26',
+            'color'                 => 'Black',
+            'size'                  => 'M',
             'supplier_id'           => '7',
             'cost_price'            => '1.50',
             'unit_price'            => '2.50',

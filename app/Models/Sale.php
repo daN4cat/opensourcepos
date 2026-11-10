@@ -644,7 +644,8 @@ class Sale extends Model
                 'item_cost_price'    => $itemData['cost_price'],
                 'item_unit_price'    => $itemData['price'],
                 'item_location'      => $itemData['item_location'],
-                'print_option'       => $itemData['print_option']
+                'print_option'       => $itemData['print_option'],
+                'season'             => $itemData['season'] ?? '',
             ];
 
             $builder = $this->db->table('sales_items');
@@ -1166,6 +1167,9 @@ class Sale extends Model
                     MAX(' . $item->get_item_name() . ') AS name,
                     MAX(items.item_number) AS item_number,
                     MAX(items.category) AS category,
+                    MAX(sales_items.season) AS season,
+                    MAX(items.color) AS color,
+                    MAX(items.size) AS size,
                     MAX(items.supplier_id) AS supplier_id,
                     MAX(sales_items.quantity_purchased) AS quantity_purchased,
                     MAX(sales_items.item_cost_price) AS item_cost_price,
