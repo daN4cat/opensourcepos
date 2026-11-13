@@ -14,7 +14,7 @@ function create_pdf(string $html, string $filename = ''): string
         'isRemoteEnabled' => false,
         'isPhpEnabled' => false
     ]);
-    $dompdf->loadHtml(str_replace(["\n", "\r"], '', $html));
+    $dompdf->loadHtml($html);
     $dompdf->render();
 
     if ($filename != '') {

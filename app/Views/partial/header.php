@@ -62,7 +62,9 @@ $request = Services::request();
                 <div class="navbar-right" style="margin: 0;">
                     <?= anchor("home/changePassword/{$user_info->person_id}", esc("{$user_info->first_name} {$user_info->last_name}"), ['class' => 'modal-dlg', 'data-btn-submit' => lang('Common.submit'), 'title' => lang('Employees.change_password')]) ?>
                     <span>&nbsp;|&nbsp;</span>
-                    <?= anchor('home/logout', lang('Login.logout')) ?>
+                    <?= form_open('home/logout', ['id' => 'logout_form', 'style' => 'display: inline;']) ?>
+                        <button type="submit" id="logout_button" class="btn-link" style="padding: 0; border: none; background: none; color: inherit;"><?= lang('Login.logout') ?></button>
+                    <?= form_close() ?>
                 </div>
 
                 <div class="navbar-center" style="text-align: center;">

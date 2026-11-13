@@ -262,6 +262,33 @@ class Sale_libPaymentTest extends CIUnitTestCase
         $this->assertFalse($this->saleLib->edit_item('999', 'New', 'SN1', '2', '0', '0', '10.00'));
     }
 
+    public function testEditItem_CastsDiscountTypeToInt(): void
+    {
+        $this->saleLib->set_cart([
+            1 => [
+                'line'             => 1,
+                'description'      => 'Item',
+                'serialnumber'     => '',
+                'quantity'         => '1',
+                'discount'         => '5',
+                'discount_type'    => PERCENT,
+                'price'            => '20.00',
+                'total'            => '20.00',
+                'discounted_total' => '19.00',
+            ],
+        ]);
+
+        $this->assertTrue($this->saleLib->edit_item('1', 'Item', '', '1', '5', '1', '20.00'));
+        $this->assertSame(FIXED, $this->saleLib->get_cart()[1]['discount_type']);
+
+        $this->assertTrue($this->saleLib->edit_item('1', 'Item', '', '1', '5', '0', '20.00'));
+        $this->assertSame(PERCENT, $this->saleLib->get_cart()[1]['discount_type']);
+
+        $this->assertTrue($this->saleLib->edit_item('1', 'Item', '', '1', '5', '1', '20.00'));
+        $this->assertTrue($this->saleLib->edit_item('1', 'Item', '', '1', '5', null, '20.00'));
+        $this->assertSame(FIXED, $this->saleLib->get_cart()[1]['discount_type']);
+    }
+
     public function testGetSaleId_ReturnsNewEntryWhenUnset(): void
     {
         $this->assertSame(NEW_ENTRY, $this->saleLib->get_sale_id());

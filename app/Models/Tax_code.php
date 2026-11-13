@@ -128,9 +128,8 @@ class Tax_code extends Model
      */
     public function save_value(array &$taxCodeData, int $taxCodeId = NEW_ENTRY): bool
     {
-        $builder = $this->db->table('tax_codes');
-
-        if ($taxCodeId == NEW_ENTRY || !$this->exists($taxCodeData['tax_code'])) {
+        if ($taxCodeId === NEW_ENTRY || !$this->existsById($taxCodeId)) {
+            $builder = $this->db->table('tax_codes');
             if ($builder->insert($taxCodeData)) {
                 $taxCodeData['tax_code_id'] = $this->db->insertID();
 
@@ -140,9 +139,18 @@ class Tax_code extends Model
             return false;
         }
 
+        $builder = $this->db->table('tax_codes');
         $builder->where('tax_code_id', $taxCodeId);
 
         return $builder->update($taxCodeData);
+    }
+
+    private function existsById(int $taxCodeId): bool
+    {
+        $builder = $this->db->table('tax_codes');
+        $builder->where('tax_code_id', $taxCodeId);
+
+        return $builder->countAllResults() === 1;
     }
 
     /**

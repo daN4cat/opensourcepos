@@ -1047,7 +1047,7 @@ class Sales extends Secure_Controller
             return $this->response->setStatusCode(403)->setJSON(['success' => false, 'message' => lang('Sales.not_authorized')]);
         }
 
-        if (!in_array($type, ['invoice', 'quote', 'work_order', 'tax_invoice'], true)) {
+        if (!in_array($type, ['invoice', 'quote', 'work_order', 'tax_invoice', 'receipt'], true)) {
             throw PageNotFoundException::forPageNotFound();
         }
 

@@ -1421,7 +1421,7 @@ class Item extends Model
         $totalQuantity = $oldTotalQuantity + $itemsReceived;
 
         if ($oldTotalQuantity <= 0 || $totalQuantity <= 0) {
-            $averagePrice = to_decimals($newPrice);
+            $averagePrice = number_format($newPrice, max(2, totals_decimals()), '.', '');
         } else {
             $averagePrice = bcdiv(bcadd(bcmul((string)$itemsReceived, (string)$newPrice), bcmul((string)$oldTotalQuantity, (string)$oldPrice)), (string)$totalQuantity);
         }

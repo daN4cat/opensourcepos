@@ -1262,17 +1262,7 @@ class Sale_lib
         return -1;    // TODO: Replace -1 with constant
     }
 
-    /* @param string $line
-     * @param string $description
-     * @param string $serialnumber
-     * @param string $quantity
-     * @param string $discount
-     * @param string|null $discountType
-     * @param string|null $price
-     * @param string|null $discountedTotal
-     * @return bool
-     */
-    public function edit_item(string $line, string $description, string $serialnumber, string $quantity, string $discount, ?string $discountType, ?string $price, ?string $discountedTotal = null): bool
+    public function edit_item(string $line, string $description, string $serialnumber, string $quantity, string $discount, int|string|null $discountType, ?string $price, ?string $discountedTotal = null): bool
     {
         $items = $this->get_cart();
         if (isset($items[$line])) {
@@ -1286,8 +1276,8 @@ class Sale_lib
             $lineData['quantity'] = $quantity;
             $lineData['discount'] = $discount;
 
-            if ($discountType != null) {
-                $lineData['discount_type'] = $discountType;
+            if ($discountType !== null && $discountType !== '') {
+                $lineData['discount_type'] = (int) $discountType;
             }
 
             $lineData['price'] = $price;

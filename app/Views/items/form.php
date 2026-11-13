@@ -94,7 +94,7 @@
     'type'    => 'radio',
     'id'      => 'stock_type',
     'value'   => 0,
-    'checked' => $item_info->stock_type === HAS_STOCK,
+    'checked' => (int) $item_info->stock_type === HAS_STOCK,
 ]) ?> <?= lang('Items.stock') ?>
                 </label>
                 <label class="radio-inline">
@@ -103,7 +103,7 @@
     'type'    => 'radio',
     'id'      => 'stock_type',
     'value'   => 1,
-    'checked' => $item_info->stock_type === HAS_NO_STOCK,
+    'checked' => (int) $item_info->stock_type === HAS_NO_STOCK,
 ]) ?><?= lang('Items.nonstock') ?>
                 </label>
             </div>
@@ -119,7 +119,7 @@ $radio_button = [
     'type'    => 'radio',
     'id'      => 'item_type',
     'value'   => 0,
-    'checked' => $item_info->item_type === ITEM,
+    'checked' => (int) $item_info->item_type === ITEM,
 ];
 
 if ($standard_item_locked) {
@@ -134,7 +134,7 @@ $radio_button = [
     'type'    => 'radio',
     'id'      => 'item_type',
     'value'   => 1,
-    'checked' => $item_info->item_type === ITEM_KIT,
+    'checked' => (int) $item_info->item_type === ITEM_KIT,
 ];
 
 if ($item_kit_disabled) {
@@ -142,25 +142,25 @@ if ($item_kit_disabled) {
 }
 echo form_radio($radio_button) ?> <?= lang('Items.kit') ?>
                 </label>
-                <?php if ($config['derive_sale_quantity'] === '1') { ?>
+                <?php if ((int) $config['derive_sale_quantity'] === 1) { ?>
                     <label class="radio-inline">
                         <?= form_radio([
         'name'    => 'item_type',
         'type'    => 'radio',
         'id'      => 'item_type',
         'value'   => 2,
-        'checked' => $item_info->item_type === ITEM_AMOUNT_ENTRY,
+        'checked' => (int) $item_info->item_type === ITEM_AMOUNT_ENTRY,
     ]) ?><?= lang('Items.amount_entry') ?>
                     </label>
                 <?php } ?>
-                <?php if ($allow_temp_item === 1) { ?>
+                <?php if ((int) $allow_temp_item === 1) { ?>
                     <label class="radio-inline">
                         <?= form_radio([
         'name'    => 'item_type',
         'type'    => 'radio',
         'id'      => 'item_type',
         'value'   => 3,
-        'checked' => $item_info->item_type === ITEM_TEMP,
+        'checked' => (int) $item_info->item_type === ITEM_TEMP,
     ]) ?> <?= lang('Items.temp') ?>
                     </label>
                 <?php } ?>
@@ -380,7 +380,7 @@ echo form_radio($radio_button) ?> <?= lang('Items.kit') ?>
 'name'    => 'allow_alt_description',
 'id'      => 'allow_alt_description',
 'value'   => 1,
-'checked' => $item_info->allow_alt_description === 1,
+'checked' => (int) $item_info->allow_alt_description === 1,
                 ]) ?>
             </div>
         </div>
@@ -392,12 +392,12 @@ echo form_radio($radio_button) ?> <?= lang('Items.kit') ?>
 'name'    => 'is_serialized',
 'id'      => 'is_serialized',
 'value'   => 1,
-'checked' => $item_info->is_serialized === 1,
+'checked' => (int) $item_info->is_serialized === 1,
                 ]) ?>
             </div>
         </div>
 
-        <?php if ($config['multi_pack_enabled'] === '1') { ?>
+        <?php if ((int) $config['multi_pack_enabled'] === 1) { ?>
             <div class="form-group form-group-sm">
                 <?= form_label(lang('Items.qty_per_pack'), 'qty_per_pack', ['class' => 'control-label col-xs-3']) ?>
                 <div class="col-xs-4">
@@ -443,7 +443,7 @@ echo form_radio($radio_button) ?> <?= lang('Items.kit') ?>
 'name'    => 'is_deleted',
 'id'      => 'is_deleted',
 'value'   => 1,
-'checked' => $item_info->deleted === 1,
+'checked' => (int) $item_info->deleted === 1,
                 ]) ?>
             </div>
         </div>

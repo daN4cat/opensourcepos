@@ -1142,11 +1142,15 @@ class Items extends Secure_Controller
                     set_time_limit(240);
 
                     $failCodes = [];
-                    $csvRows = get_csv_file($_FILES['file_path']['tmp_name']);
+                    $csvHeaders = [];
+                    $csvRows = get_csv_file($_FILES['file_path']['tmp_name'], $failCodes, $csvHeaders);
                     $allowedStockLocations = $this->stock_location->get_allowed_locations();
-                    $attributeDefinitionNames    = $this->attribute->getDefinitionNames();
+                    $attributeDefinitionNames = $this->attribute->getDefinitionNames();
+                    $headerCheckRows = !empty($csvRows)
+                        ? $csvRows
+                        : (!empty($failCodes) && !empty($csvHeaders) ? [array_fill_keys($csvHeaders, '')] : []);
 
-                    if (!csvImportHasRequiredItemHeaders($csvRows, $allowedStockLocations, $attributeDefinitionNames)) {
+                    if (!csvImportHasRequiredItemHeaders($headerCheckRows, $allowedStockLocations, $attributeDefinitionNames)) {
                         return $this->response->setJSON(['success' => false, 'message' => lang('Items.csv_import_nodata_wrongformat')]);
                     }
 
@@ -1248,6 +1252,7 @@ class Items extends Secure_Controller
                     $csvRows = null;
 
                     if (count($failCodes) > 0) {
+                        sort($failCodes, SORT_NUMERIC);
                         $message = lang('Items.csv_import_partially_failed', [count($failCodes), implode(', ', $failCodes)]);
                         $db->transRollback();
                         return $this->response->setJSON(['success' => false, 'message' => $message]);

@@ -366,7 +366,7 @@ if (isset($success)) {
                                             'id'      => 'recv_print_after_sale',
                                             'class'   => 'checkbox',
                                             'value'   => 1,
-                                            'checked' => $print_after_sale === 1,
+                                            'checked' => (bool) $print_after_sale,
                                         ]) ?>
                                     </td>
                                 </tr>

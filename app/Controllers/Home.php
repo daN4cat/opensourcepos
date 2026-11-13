@@ -10,7 +10,7 @@ class Home extends Secure_Controller
 {
     public function __construct()
     {
-        $methodName = urldecode(service('request')->getUri()->getSegment(2));
+        $methodName = strtolower(rawurldecode(service('request')->getUri()->getSegment(2)));
 
         if ($methodName === 'logout') {
             $this->employee = model(Employee::class);
@@ -23,17 +23,10 @@ class Home extends Secure_Controller
 
     public function getIndex(): string
     {
-        $logged_in = $this->employee->is_logged_in();
-
         return view('home/home');
     }
 
-    /**
-     * Logs the currently logged in employee out of the system.  Used in app/Views/partial/header.php
-     *
-     * @noinspection PhpUnused
-     */
-    public function getLogout(): RedirectResponse
+    public function postLogout(): RedirectResponse
     {
         $this->employee->logout();
 

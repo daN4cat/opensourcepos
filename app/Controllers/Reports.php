@@ -1576,50 +1576,54 @@ class Reports extends Secure_Controller
      *
      * @noinspection PhpUnused
      */
-    public function getGet_detailed_sales_row(string $sale_id): ResponseInterface
+    public function getGet_detailed_sales_row(string $saleId): ResponseInterface
     {
         $this->clearCache();
 
-        $inputs = ['sale_id' => $sale_id];
+        $inputs = ['sale_id' => $saleId];
 
         $this->detailed_sales->create($inputs);
 
-        $report_data = $this->detailed_sales->getDataBySaleId($sale_id);
+        $reportData = $this->detailed_sales->getDataBySaleId((int) $saleId);
 
-        if ($report_data['sale_status'] === CANCELED) {
-            $button_key   = 'data-btn-restore';
-            $button_label = lang('Common.restore');
-        } else {
-            $button_key   = 'data-btn-delete';
-            $button_label = lang('Common.delete');
+        if (empty($reportData)) {
+            return $this->response->setStatusCode(404)->setJSON([]);
         }
 
-        $summary_data = [
-            'sale_id'       => $report_data['sale_id'],
-            'sale_time'     => to_datetime(strtotime($report_data['sale_time'])),
-            'quantity'      => to_quantity_decimals($report_data['items_purchased']),
-            'employee_name' => $report_data['employee_name'],
-            'customer_name' => $report_data['customer_name'],
-            'subtotal'      => to_currency($report_data['subtotal']),
-            'tax'           => to_currency_tax($report_data['tax']),
-            'total'         => to_currency($report_data['total']),
-            'cost'          => to_currency($report_data['cost']),
-            'profit'        => to_currency($report_data['profit']),
-            'payment_type'  => $report_data['payment_type'],
-            'comment'       => $report_data['comment'],
+        if ((int) $reportData['sale_status'] === CANCELED) {
+            $buttonKey   = 'data-btn-restore';
+            $buttonLabel = lang('Common.restore');
+        } else {
+            $buttonKey   = 'data-btn-delete';
+            $buttonLabel = lang('Common.delete');
+        }
+
+        $summaryData = [
+            'sale_id'       => $reportData['sale_id'],
+            'sale_time'     => to_datetime(strtotime($reportData['sale_time'])),
+            'quantity'      => to_quantity_decimals($reportData['items_purchased']),
+            'employee_name' => $reportData['employee_name'],
+            'customer_name' => $reportData['customer_name'],
+            'subtotal'      => to_currency($reportData['subtotal']),
+            'tax'           => to_currency_tax($reportData['tax']),
+            'total'         => to_currency($reportData['total']),
+            'cost'          => to_currency($reportData['cost']),
+            'profit'        => to_currency($reportData['profit']),
+            'payment_type'  => $reportData['payment_type'],
+            'comment'       => $reportData['comment'],
             'edit'          => anchor(
-                'sales/edit/' . $report_data['sale_id'],
+                'sales/edit/' . $reportData['sale_id'],
                 '<span class="glyphicon glyphicon-edit"></span>',
                 [
                     'class'           => 'modal-dlg print_hide',
-                    $button_key       => $button_label,
+                    $buttonKey        => $buttonLabel,
                     'data-btn-submit' => lang('Common.submit'),
                     'title'           => lang('Sales.update'),
                 ],
             ),
         ];
 
-        return $this->response->setJSON([$sale_id => $summary_data]);
+        return $this->response->setJSON([$saleId => $summaryData]);
     }
 
     /**
@@ -1887,26 +1891,30 @@ class Reports extends Secure_Controller
      *
      * @noinspection PhpUnused
      */
-    public function getGet_detailed_receivings_row(string $receiving_id): ResponseInterface
+    public function getGet_detailed_receivings_row(string $receivingId): ResponseInterface
     {
-        $inputs = ['receiving_id' => $receiving_id];
+        $inputs = ['receiving_id' => $receivingId];
 
         $this->detailed_receivings->create($inputs);
 
-        $report_data = $this->detailed_receivings->getDataByReceivingId($receiving_id);
+        $reportData = $this->detailed_receivings->getDataByReceivingId($receivingId);
 
-        $summary_data = [
-            'receiving_id'   => $report_data['receiving_id'],
-            'receiving_time' => to_datetime(strtotime($report_data['receiving_time'])),
-            'quantity'       => to_quantity_decimals($report_data['items_purchased']),
-            'employee_name'  => $report_data['employee_name'],
-            'supplier_name'  => $report_data['supplier_name'],
-            'total'          => to_currency($report_data['total']),
-            'payment_type'   => $report_data['payment_type'],
-            'reference'      => $report_data['reference'],
-            'comment'        => $report_data['comment'],
+        if (empty($reportData)) {
+            return $this->response->setStatusCode(404)->setJSON([]);
+        }
+
+        $summaryData = [
+            'receiving_id'   => $reportData['receiving_id'],
+            'receiving_time' => to_datetime(strtotime($reportData['receiving_time'])),
+            'quantity'       => to_quantity_decimals($reportData['items_purchased']),
+            'employee_name'  => $reportData['employee_name'],
+            'supplier_name'  => $reportData['supplier_name'],
+            'total'          => to_currency($reportData['total']),
+            'payment_type'   => $reportData['payment_type'],
+            'reference'      => $reportData['reference'],
+            'comment'        => $reportData['comment'],
             'edit'           => anchor(
-                'receivings/edit/' . $report_data['receiving_id'],
+                'receivings/edit/' . $reportData['receiving_id'],
                 '<span class="glyphicon glyphicon-edit"></span>',
                 [
                     'class'           => 'modal-dlg print_hide',
@@ -1917,7 +1925,7 @@ class Reports extends Secure_Controller
             ),
         ];
 
-        return $this->response->setJSON([$receiving_id => $summary_data]);
+        return $this->response->setJSON([$receivingId => $summaryData]);
     }
 
     public function detailed_receivings(string $start_date, string $end_date, string $receiving_type, string $location_id = 'all'): string

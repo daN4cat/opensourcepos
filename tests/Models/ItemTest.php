@@ -141,6 +141,31 @@ class ItemTest extends CIUnitTestCase
         $this->assertEqualsWithDelta(12.50, (float) $updatedItem->cost_price, 0.01);
     }
 
+    public function testChangeCostPrice_StoresLocaleIndependentDecimalWhenQuantityNonPositive(): void
+    {
+        $itemId = $this->createTestItem();
+        Database::connect()->table('item_quantities')->insert([
+            'item_id'     => $itemId,
+            'location_id' => self::LOCATION_ID,
+            'quantity'    => 0,
+        ]);
+
+        $osposConfig   = config(OSPOS::class);
+        $previousLocal = $osposConfig->settings['number_locale'] ?? 'en_US';
+        $osposConfig->settings['number_locale'] = 'de_DE';
+
+        try {
+            $itemModel = model(Item::class);
+            $result    = $itemModel->change_cost_price($itemId, 5.0, 1234.56, 10.00);
+
+            $this->assertTrue($result);
+            $updatedItem = $itemModel->getInfo($itemId);
+            $this->assertEqualsWithDelta(1234.56, (float) $updatedItem->cost_price, 0.001);
+        } finally {
+            $osposConfig->settings['number_locale'] = $previousLocal;
+        }
+    }
+
     public function testItemNumberExists_ExcludesOnlyValidNumericItemId(): void
     {
         $itemId = $this->createTestItem();

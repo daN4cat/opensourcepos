@@ -75,7 +75,7 @@ echo view('partial/print_receipt', ['print_after_sale' => $print_after_sale, 'se
             <tr>
                 <td><?= esc($item['name'] . ' ' . $item['attribute_values']) ?></td>
                 <td><?= to_currency($item['price']) ?></td>
-                <td><?= to_quantity_decimals($item['quantity']) . ' ' . ($show_stock_locations ? ' [' . esc($item['stock_name']) . ']' : '') ?>&nbsp;&nbsp;&nbsp;x <?= $item['receiving_quantity'] !== 0 ? to_quantity_decimals($item['receiving_quantity']) : 1 ?></td>
+                <td><?= to_quantity_decimals($item['quantity']) . ' ' . ($show_stock_locations ? ' [' . esc($item['stock_name']) . ']' : '') ?>&nbsp;&nbsp;&nbsp;x <?= (float) $item['receiving_quantity'] !== 0.0 ? to_quantity_decimals($item['receiving_quantity']) : 1 ?></td>
                 <td><div class="total-value"><?= to_currency($item['total']) ?></div></td>
             </tr>
             <tr>

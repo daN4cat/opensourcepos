@@ -22,12 +22,12 @@ class Office extends Secure_Controller
         return view('home/office');
     }
 
-    public function getLogout(): RedirectResponse
+    public function postLogout(): RedirectResponse
     {
         return $this->logout();
     }
 
-    public function logout(): RedirectResponse
+    private function logout(): RedirectResponse
     {
         $this->employee = model(Employee::class);
 

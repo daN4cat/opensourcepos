@@ -782,6 +782,20 @@ class SalesControllerTest extends CIUnitTestCase
         $this->get('/sales/sendPdf/' . $saleId . '/invalid_type');
     }
 
+    public function testGetSendPdf_AcceptsReceiptType(): void
+    {
+        $supervisorId = $this->createReportsSalesEmployee();
+        $saleId       = $this->createSale($supervisorId);
+        $this->loginAs($supervisorId);
+
+        $response = $this->get('/sales/sendPdf/' . $saleId . '/receipt');
+
+        $response->assertStatus(200);
+        $result = json_decode($response->getJSON(), true);
+        $this->assertIsArray($result);
+        $this->assertArrayHasKey('success', $result);
+    }
+
     public function testPostRestore_RejectsCashierWithoutSalesDeleteGrant(): void
     {
         $cashierId = $this->createCashierEmployee();

@@ -3,6 +3,7 @@
 namespace Tests\Controllers;
 
 use App\Models\Employee;
+use CodeIgniter\Exceptions\PageNotFoundException;
 use CodeIgniter\Test\CIUnitTestCase;
 use CodeIgniter\Test\DatabaseTestTrait;
 use CodeIgniter\Test\FeatureTestTrait;
@@ -538,9 +539,22 @@ final class HomeTest extends CIUnitTestCase
         ]);
         $this->loginAs($nonAdminId);
 
-        $response = $this->get('/home/logout');
+        $response = $this->post('/home/logout');
 
         $response->assertRedirectTo('login');
+    }
+
+    public function testPostLogout_RejectsGetRequest(): void
+    {
+        $nonAdminId = $this->createNonAdminEmployee([
+            'username' => 'logoutgetuser',
+            'email'    => 'logoutgetuser@test.com',
+            'grants'   => [],
+        ]);
+        $this->loginAs($nonAdminId);
+
+        $this->expectException(PageNotFoundException::class);
+        $this->get('/home/logout');
     }
 
     /**

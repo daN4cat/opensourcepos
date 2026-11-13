@@ -303,4 +303,24 @@ class ReportsControllerTest extends CIUnitTestCase
 
         $this->assertSame([], $detailedReceivings->getDataByReceivingId('999999'));
     }
+
+    public function testGetGetDetailedSalesRow_RejectsMissingSaleWith404(): void
+    {
+        $this->loginAs(1);
+
+        $response = $this->get('/reports/get_detailed_sales_row/999999');
+
+        $response->assertStatus(404);
+        $this->assertSame([], json_decode($response->getJSON(), true));
+    }
+
+    public function testGetGetDetailedReceivingsRow_RejectsMissingReceivingWith404(): void
+    {
+        $this->loginAs(1);
+
+        $response = $this->get('/reports/get_detailed_receivings_row/999999');
+
+        $response->assertStatus(404);
+        $this->assertSame([], json_decode($response->getJSON(), true));
+    }
 }

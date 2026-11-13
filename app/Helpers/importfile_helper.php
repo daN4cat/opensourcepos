@@ -51,7 +51,7 @@ function generate_attribute_headers(array $attributeNames): string
  * @param string $fileName
  * @return array A multidimensional array of rows found within the file and their associative key/value pairs.
  */
-function get_csv_file(string $fileName): array
+function get_csv_file(string $fileName, array &$failedLines = [], array &$headers = []): array
 {
     $csvRows = [];
 
@@ -63,18 +63,27 @@ function get_csv_file(string $fileName): array
             fseek($csvFile, 3);
         }
 
-        $headers = fgetcsv($csvFile);
+        $parsedHeaders = fgetcsv($csvFile);
 
-        if (!is_array($headers)) {
+        if (!is_array($parsedHeaders) || $parsedHeaders === [null]) {
             fclose($csvFile);
 
             return $csvRows;
         }
 
+        $headers = $parsedHeaders;
+        $rowIndex = 0;
+
         while (($row = fgetcsv($csvFile)) !== false) {
-            if ($row !== [null] && is_array($row) && count($headers) === count($row)) {
-                $csvRows[] = array_combine($headers, $row);
+            if ($row !== [null]) {
+                if (is_array($row) && count($headers) === count($row)) {
+                    $csvRows[$rowIndex] = array_combine($headers, $row);
+                } else {
+                    $failedLines[] = $rowIndex + 2;
+                }
             }
+
+            ++$rowIndex;
         }
 
         fclose($csvFile);
