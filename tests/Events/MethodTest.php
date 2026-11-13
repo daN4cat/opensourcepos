@@ -5,9 +5,6 @@ namespace Tests\Events;
 use App\Events\Method;
 use CodeIgniter\Test\CIUnitTestCase;
 
-/**
- * @internal
- */
 final class MethodTest extends CIUnitTestCase
 {
     private array $originalServer;
@@ -55,34 +52,34 @@ final class MethodTest extends CIUnitTestCase
         return (string) $output;
     }
 
-    public function testValidateMethodRejectsMixedCaseDeleteGetRequest(): void
+    public function testValidateMethod_RejectsMixedCaseDeleteGetRequest(): void
     {
         $output = $this->runValidateMethodInSubprocess('/items/Delete/1', 'GET');
 
         $this->assertSame('Method not allowed', $output);
     }
 
-    public function testValidateMethodRejectsMixedCaseLogoutGetRequest(): void
+    public function testValidateMethod_RejectsMixedCaseLogoutGetRequest(): void
     {
         $output = $this->runValidateMethodInSubprocess('/home/Logout', 'GET');
 
         $this->assertSame('Method not allowed', $output);
     }
 
-    public function testValidateMethodRejectsUrlEncodedActionGetRequest(): void
+    public function testValidateMethod_RejectsUrlEncodedActionGetRequest(): void
     {
         $output = $this->runValidateMethodInSubprocess('/items/%64elete/1', 'GET');
 
         $this->assertSame('Method not allowed', $output);
     }
 
-    public function testValidateMethodRejectsSaveAndRemoveGetRequests(): void
+    public function testValidateMethod_RejectsSaveAndRemoveGetRequests(): void
     {
         $this->assertSame('Method not allowed', $this->runValidateMethodInSubprocess('/items/Save/1', 'GET'));
         $this->assertSame('Method not allowed', $this->runValidateMethodInSubprocess('/items/Remove?id=1', 'GET'));
     }
 
-    public function testValidateMethodAcceptsPostRequestsToProtectedEndpoints(): void
+    public function testValidateMethod_AcceptsPostRequestsToProtectedEndpoints(): void
     {
         foreach (['/items/Delete/1', '/home/Logout', '/items/save/1', '/items/remove'] as $uri) {
             $_SERVER['REQUEST_URI']    = $uri;
@@ -97,9 +94,16 @@ final class MethodTest extends CIUnitTestCase
         }
     }
 
-    public function testValidateMethodAcceptsGetRequestsToNonMatchingPaths(): void
+    public function testValidateMethod_AcceptsGetRequestsToNonMatchingPaths(): void
     {
-        foreach (['/items/deletion/1', '/items/removed_items', '/items/view/1'] as $uri) {
+        foreach ([
+            '/items/deletion/1',
+            '/items/removed_items',
+            '/items/view/1',
+            '/items/search?search=/delete',
+            '/items/search?search=%2Fsave%2F1',
+            '/home?redirect=/home/logout',
+        ] as $uri) {
             $_SERVER['REQUEST_URI']    = $uri;
             $_SERVER['REQUEST_METHOD'] = 'GET';
             $_POST                     = [];
