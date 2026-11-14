@@ -15,13 +15,13 @@ final class MethodTest extends CIUnitTestCase
         parent::setUp();
 
         $this->originalServer = $_SERVER;
-        $this->originalPost   = $_POST;
+        $this->originalPost = $_POST;
     }
 
     protected function tearDown(): void
     {
         $_SERVER = $this->originalServer;
-        $_POST   = $this->originalPost;
+        $_POST = $this->originalPost;
 
         parent::tearDown();
     }
@@ -29,7 +29,7 @@ final class MethodTest extends CIUnitTestCase
     private function runValidateMethodInSubprocess(string $requestUri, string $requestMethod = 'GET'): string
     {
         $methodFile = APPPATH . 'Events/Method.php';
-        $code       = sprintf(
+        $code = sprintf(
             'require %s; $_SERVER["REQUEST_URI"] = %s; $_SERVER["REQUEST_METHOD"] = %s; $_POST = []; App\Events\Method::validate_method(); echo "ALLOWED";',
             var_export($methodFile, true),
             var_export($requestUri, true),
@@ -82,9 +82,9 @@ final class MethodTest extends CIUnitTestCase
     public function testValidateMethod_AcceptsPostRequestsToProtectedEndpoints(): void
     {
         foreach (['/items/Delete/1', '/home/Logout', '/items/save/1', '/items/remove'] as $uri) {
-            $_SERVER['REQUEST_URI']    = $uri;
+            $_SERVER['REQUEST_URI'] = $uri;
             $_SERVER['REQUEST_METHOD'] = 'POST';
-            $_POST                     = [];
+            $_POST = [];
 
             ob_start();
             Method::validate_method();
@@ -104,9 +104,9 @@ final class MethodTest extends CIUnitTestCase
             '/items/search?search=%2Fsave%2F1',
             '/home?redirect=/home/logout',
         ] as $uri) {
-            $_SERVER['REQUEST_URI']    = $uri;
+            $_SERVER['REQUEST_URI'] = $uri;
             $_SERVER['REQUEST_METHOD'] = 'GET';
-            $_POST                     = [];
+            $_POST = [];
 
             ob_start();
             Method::validate_method();

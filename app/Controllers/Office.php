@@ -17,17 +17,15 @@ class Office extends Secure_Controller
         parent::__construct('office', null, 'office');
     }
 
+    /**
+     * @return string
+     */
     public function getIndex(): string
     {
         return view('home/office');
     }
 
     public function postLogout(): RedirectResponse
-    {
-        return $this->logout();
-    }
-
-    private function logout(): RedirectResponse
     {
         $this->employee = model(Employee::class);
 

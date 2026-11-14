@@ -7,7 +7,7 @@ class Method
     public static function validate_method(): void
     {
         [$requestPath] = explode('?', $_SERVER['REQUEST_URI'] ?? '', 2);
-        $path          = rawurldecode($requestPath);
+        $path = rawurldecode($requestPath);
 
         $postRequired = preg_match('/\/(save|delete|remove|logout)(\/|$)/i', $path);
 

@@ -7,14 +7,16 @@ This document provides guidance for AI agents working on the Open Source Point o
 - **PSR-12** enforced via PHP-CS-Fixer (config: `.php-cs-fixer.no-header.php`)
 - Follow PHP CodeIgniter 4 coding standards
 - `camelCase` for variables and methods; `PascalCase` for classes; `UPPER_CASE` for constants
-- When editing existing code containing non-PSR-compliant local variable names, refactor those variable names to `camelCase` as part of the edit
+- Do not put a space between the unary negation operator `!` and its operand (`!$value`, `!empty($items)`, `!$this->employee->isAdmin($id)`, never `! $value`). `.php-cs-fixer.no-header.php` sets `'not_operator_with_successor_space' => false` to enforce this consistently
+- Avoid unrelated formatting churn: keep diffs minimal and scoped strictly to lines touched by the functional or security change. Do not reformat untouched lines, re-indent surrounding blocks, or introduce multi-space `=` / `=>` alignment across existing files
+- When editing existing code containing non-PSR-compliant local variable names, refactor those variable names to `camelCase` on the modified lines without reformatting untouched methods or blocks
 - All newly written code (variables, classes, functions) must use PSR-compliant naming, regardless of surrounding code style
 - PHP 8.2+ features acceptable (named arguments, enums, readonly properties)
 - Write PHP 8.2+ compatible code with proper type declarations
 - Always import classes, functions, and constants with a `use` statement at the top of the file instead of referencing them inline via fully-qualified name (e.g. `use Config\Database;` then `Database::connect()`, not `\Config\Database::connect()`)
 - No useless comments or docblocks: if the code speaks for itself, explanatory comments are unnecessary. Do not add comments or docblocks that merely restate what the code already makes clear (e.g. `@param array $items` next to `array $items`, or a comment repeating a method's name) — only comment on non-obvious rationale, constraints, or behavior
 - Views in `app/Views/errors/html/` are excluded from the fixer
-- Run fixer before committing: `vendor/bin/php-cs-fixer fix --config=.php-cs-fixer.no-header.php`. Because `.php-cs-fixer.no-header.php` enables risky `strict_comparison` (`==`/`!=` → `===`/`!==`), always inspect `git diff` afterward and cast database, `app_config`, and POST values explicitly (`(int)`, `(float)`, `(bool)`) wherever strict comparison would mismatch runtime string/bool types
+- Run fixer in dry-run mode first before committing (`vendor/bin/php-cs-fixer fix --dry-run --diff --config=.php-cs-fixer.no-header.php <file>`) to inspect proposed changes. Because `.php-cs-fixer.no-header.php` enables file-wide rules (including risky `strict_comparison` and `binary_operator_spaces` alignment) that reformat untouched legacy code, never apply whole-file reformatting blindly — preserve untouched lines and cast database, `app_config`, and POST values explicitly (`(int)`, `(float)`, `(bool)`) wherever `===` / `!==` is used on modified lines
 - **JavaScript**: use `const` for variables that are never reassigned, `let` for variables that are. Never use `var`.
 
 ## Development
@@ -186,7 +188,7 @@ This document provides guidance for AI agents working on the Open Source Point o
 
 - **Always escape dynamic output with the right context**:
   - Use `esc($value)` (`'html'` context) for element body text and `esc($value, 'attr')` inside HTML attributes.
-  - CI4 helpers `anchor($uri, $title)` and `form_label($text)` do **not** automatically escape `$title` or `$text` — always pass `esc($title)` / `esc($text)`.
+  - CI4 helpers `anchor($uri, $title)` and `form_label($text)` do **not** automatically escape `$title` or `$text` — always pass `esc($title)` / `esc($text)`. When rendering legacy fields stored via `FILTER_SANITIZE_FULL_SPECIAL_CHARS` (such as `ospos_people` `first_name` / `last_name` saved through `Employees::postSave()` or `Suppliers::postSave()`, whereas seeds and imports store raw text), normalize once inside `esc(html_entity_decode($value, ENT_QUOTES | ENT_HTML5, 'UTF-8'))` so `&` and apostrophes are not double-encoded while raw or decoded markup remains HTML-escaped.
   - `bootstrap-toggle` decodes `data-on` and `data-off` attribute values and renders them via `.html()` in the browser: always HTML-escape/sanitize dynamic values for the HTML sink first (so the decoded attribute string cannot introduce executable markup when passed to `.html()`) **in addition to** escaping the final value for the HTML attribute context (`esc($htmlLabel, 'attr')` or `form_checkbox()` attribute encoding).
 - **Escape entity names in JSON `message` responses**: The frontend renders controller JSON `response.message` strings via `$.notify()`, which injects the message as raw HTML. Always wrap user-controlled names, codes, or addresses interpolated into `message` with `esc()`.
 - **Safe PHP-to-JavaScript serialization in `<script>` blocks**:
