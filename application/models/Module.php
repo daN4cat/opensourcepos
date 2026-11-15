@@ -118,7 +118,6 @@ class Module extends CI_Model
 	public function get_show_office_group()
 	{
 		$this->db->select('sort');
-		$this->db->from('grants');
 		$this->db->where('module_id', 'office');
 		$this->db->from('modules');
 		return $this->db->get()->row()->sort;

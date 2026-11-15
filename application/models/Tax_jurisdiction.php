@@ -201,7 +201,10 @@ class Tax_jurisdiction extends CI_Model
 			return $this->db->get()->row()->count;
 		}
 
-		$this->db->order_by($sort, $order);
+		if(preg_match('/^[a-zA-Z0-9_]+(\.[a-zA-Z0-9_]+)?$/', (string)$sort))
+		{
+			$this->db->order_by($sort, $order);
+		}
 
 		if($rows > 0)
 		{

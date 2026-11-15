@@ -96,17 +96,17 @@ a.none
 	text-align: center;
 }
 
-#config_info
+#config_info, .config_info
 {
 	text-align: left;
 }
 
-#config_info .wide
+#config_info .wide, .config_info .wide
 {
 	width: 30%;
 }
 
-#integrations_header
+#integrations_header, .integrations_header
 {
 	margin:10px 0;
 	text-align:center;

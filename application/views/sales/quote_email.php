@@ -97,7 +97,7 @@
 					<td><?php echo to_currency($item['price']); ?></td>
 					<td><?php echo ($item['discount_type']==FIXED)?to_currency($item['discount']):to_decimals($item['discount']) . '%';?></td>
 					<?php if($discount > 0): ?>
-						<td><?php echo to_currency($item['discounted_total'] / $item['quantity']); ?></td>
+						<td><?php echo to_currency($item['quantity'] != 0 ? $item['discounted_total'] / $item['quantity'] : 0); ?></td>
 					<?php endif; ?>
 					<td class="total-line"><?php echo to_currency($item['discounted_total']); ?></td>
 				</tr>

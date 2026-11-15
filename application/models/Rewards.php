@@ -6,6 +6,14 @@
 
 class Rewards extends CI_Model
 {
+	public function exists($rewards_id)
+	{
+		$this->db->from('sales_reward_points');
+		$this->db->where('id', $rewards_id);
+
+		return ($this->db->get()->num_rows() == 1);
+	}
+
 	/*
 	Inserts or updates a rewards
 	*/

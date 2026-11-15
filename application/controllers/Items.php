@@ -61,7 +61,7 @@ class Items extends Secure_Controller
 			'definition_ids' => array_keys($definition_names));
 
 		//Check if any filter is set in the multiselect dropdown
-		$filledup = array_fill_keys($this->input->get('filters'), TRUE);
+		$filledup = array_fill_keys($this->input->get('filters') ?: array(), TRUE);
 		$filters = array_merge($filters, $filledup);
 		$items = $this->Item->search($search, $filters, $limit, $offset, $sort, $order);
 		$total_rows = $this->Item->get_found_rows($search, $filters);
@@ -85,6 +85,7 @@ class Items extends Secure_Controller
 		$this->load->helper('file');
 		$this->load->library('image_lib');
 
+		$pic_filename = basename($pic_filename);
 		$file_extension = pathinfo($pic_filename, PATHINFO_EXTENSION);
 		$images = glob('./uploads/item_pics/' . $pic_filename);
 
@@ -586,9 +587,13 @@ class Items extends Secure_Controller
 
 		if(!empty($upload_data['orig_name']))
 		{
-			if($this->xss_clean($upload_data['orig_name'], TRUE) === TRUE)
+			if(!empty($upload_data['full_path']) && file_exists($upload_data['full_path']) && $this->xss_clean(file_get_contents($upload_data['full_path']), TRUE) === TRUE)
 			{
 				$item_data['pic_filename'] = $upload_data['orig_name'];
+			}
+			elseif(!empty($upload_data['full_path']) && file_exists($upload_data['full_path']))
+			{
+				@unlink($upload_data['full_path']);
 			}
 		}
 
@@ -794,14 +799,25 @@ class Items extends Secure_Controller
 		$items_to_update = $this->input->post('item_ids');
 		$item_data = [];
 
+		$allowed_fields = array(
+			'name', 'category', 'season', 'color', 'size', 'supplier_id',
+			'cost_price', 'unit_price', 'reorder_level', 'description',
+			'allow_alt_description', 'is_serialized', 'tax_category_id'
+		);
+
 		foreach($_POST as $key => $value)
 		{
+			if(!in_array($key, $allowed_fields, TRUE))
+			{
+				continue;
+			}
+
 			//This field is nullable, so treat it differently
 			if($key === 'supplier_id' && $value !== '')
 			{
-				$item_data[$key] = $value;
+				$item_data[$key] = $value == -1 ? NULL : $value;
 			}
-			elseif($value !== '' && !(in_array($key, array('item_ids', 'tax_names', 'tax_percents'))))
+			elseif($value !== '')
 			{
 				$item_data[$key] = $value;
 			}
@@ -815,12 +831,15 @@ class Items extends Secure_Controller
 			$tax_percents = $this->input->post('tax_percents');
 			$tax_updated = FALSE;
 
-			foreach($tax_percents as $tax_percent)
+			if(is_array($tax_percents))
 			{
-				if(!empty($tax_names[$tax_percent]) && is_numeric($tax_percents[$tax_percent]))
+				foreach($tax_percents as $key => $tax_percent)
 				{
-					$tax_updated = TRUE;
-					$items_taxes_data[] = array('name' => $tax_names[$tax_percent], 'percent' => $tax_percents[$tax_percent]);
+					if(!empty($tax_names[$key]) && is_numeric($tax_percent))
+					{
+						$tax_updated = TRUE;
+						$items_taxes_data[] = array('name' => $tax_names[$key], 'percent' => $tax_percent);
+					}
 				}
 			}
 
@@ -1196,7 +1215,7 @@ class Items extends Secure_Controller
 			}
 			elseif($is_update)
 			{
-				return;
+				continue;
 			}
 			else
 			{

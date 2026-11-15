@@ -1,6 +1,6 @@
 <?php if (!defined('BASEPATH')) exit('No direct script access allowed');
 
-class Migration_Boutique extends CI_Migration
+class Migration_Boutique_reports extends CI_Migration
 {
 	public function __construct()
 	{

@@ -104,7 +104,7 @@ function load_language($load_system_language = FALSE, array $lang_array)
 {
 	$lang = get_instance()->lang;
 
-	if($load_system_language = TRUE)
+	if($load_system_language === TRUE)
 	{
 		foreach($lang_array as $language_file)
 		{

@@ -16,7 +16,8 @@ function generate_stock_location_headers($locations)
 
 	foreach($locations as $location_name)
 	{
-		$location_headers .= ',"location_' . $location_name . '"';
+		$safe_name = str_replace('"', '""', preg_replace('/^[=+\-@\t\r]+/', '', $location_name));
+		$location_headers .= ',"location_' . $safe_name . '"';
 	}
 
 	return $location_headers;
@@ -29,7 +30,8 @@ function generate_attribute_headers($attribute_names)
 
 	foreach($attribute_names as $attribute_name)
 	{
-		$attribute_headers .= ',"attribute_' . $attribute_name . '"';
+		$safe_name = str_replace('"', '""', preg_replace('/^[=+\-@\t\r]+/', '', $attribute_name));
+		$attribute_headers .= ',"attribute_' . $safe_name . '"';
 	}
 
 	return $attribute_headers;
@@ -59,12 +61,15 @@ function get_csv_file($file_name)
 
 		$headers = fgetcsv($csv_file);
 
-		while(($row = fgetcsv($csv_file)) !== FALSE)
+		if(is_array($headers))
 		{
-			//Skip empty lines
-			if($row !== array(null))
+			while(($row = fgetcsv($csv_file)) !== FALSE)
 			{
-				$csv_rows[] = array_combine($headers, $CI->security->xss_clean($row));
+				//Skip empty lines
+				if($row !== array(null) && count($headers) === count($row))
+				{
+					$csv_rows[] = array_combine($headers, $CI->security->xss_clean($row));
+				}
 			}
 		}
 

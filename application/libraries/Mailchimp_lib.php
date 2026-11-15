@@ -1,7 +1,7 @@
 <?php if (!defined('BASEPATH')) exit('No direct script access allowed');
 
 /**
- * MailChimp API v3 REST client Connector
+ * Mailchimp API v3 REST client Connector
  *
  * Interface for communicating with the Mailchimp v3 API
  *
@@ -46,7 +46,7 @@ class MailchimpConnector
 		{
 			// Replace <dc> with correct datacenter obtained from the last part of the api key
 			$strings = explode('-', $this->_api_key);
-			if(is_array($strings) && !empty($strings[1]))
+			if(is_array($strings) && !empty($strings[1]) && preg_match('/^[a-z0-9]+$/i', $strings[1]))
 			{
 				$this->_api_endpoint = str_replace('<dc>', $strings[1], $this->_api_endpoint);
 			}
@@ -157,7 +157,7 @@ class Mailchimp_lib
 	}
 
 	/**
-	* Gets a MailChimp list.
+	* Gets a Mailchimp list.
 	*
 	* @param string $list_id
 	*   The ID of the list.
@@ -174,7 +174,7 @@ class Mailchimp_lib
 	}
 
 	/**
-	* Gets information about all members of a MailChimp list.
+	* Gets information about all members of a Mailchimp list.
 	*
 	* @param string $list_id
 	*   The ID of the list.
@@ -196,7 +196,7 @@ class Mailchimp_lib
 	}
 
 	/**
-	* Gets information about a member of a MailChimp list.
+	* Gets information about a member of a Mailchimp list.
 	*
 	* @param string $list_id
 	*   The ID of the list.
@@ -215,7 +215,7 @@ class Mailchimp_lib
 	}
 
 	/**
-	* Gets information about a member of a MailChimp list.
+	* Gets information about a member of a Mailchimp list.
 	*
 	* @param string $list_id
 	*   The ID of the list.
@@ -234,7 +234,7 @@ class Mailchimp_lib
 	}
 
 	/**
-	* Gets activity related to a member of a MailChimp list.
+	* Gets activity related to a member of a Mailchimp list.
 	*
 	* @param string $list_id
 	*   The ID of the list.
@@ -253,7 +253,7 @@ class Mailchimp_lib
 	}
 
 	/**
-	* Adds a new member to a MailChimp list.
+	* Adds a new member to a Mailchimp list.
 	*
 	* @param string $list_id
 	*   The ID of the list.
@@ -281,7 +281,7 @@ class Mailchimp_lib
 	}
 
 	/**
-	* Removes a member from a MailChimp list.
+	* Removes a member from a Mailchimp list.
 	*
 	* @param string $list_id
 	*   The ID of the list.
@@ -298,7 +298,7 @@ class Mailchimp_lib
 	}
 
 	/**
-	* Updates a member of a MailChimp list.
+	* Updates a member of a Mailchimp list.
 	*
 	* @param string $list_id
 	*   The ID of the list.
@@ -325,7 +325,7 @@ class Mailchimp_lib
 	}
 
 	/**
-	* Adds a new or update an existing member of a MailChimp list.
+	* Adds a new or update an existing member of a Mailchimp list.
 	*
 	* @param string $list_id
 	*   The ID of the list.

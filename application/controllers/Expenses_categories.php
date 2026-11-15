@@ -76,6 +76,7 @@ class Expenses_categories extends Secure_Controller
 		}
 		else//failure
 		{
+			$expense_category_data = $this->xss_clean($expense_category_data);
 			echo json_encode(array('success' => FALSE, 'message' => $this->lang->line('expenses_categories_error_adding_updating') . ' ' . $expense_category_data['category_name'], 'id' => -1));
 		}
 	}

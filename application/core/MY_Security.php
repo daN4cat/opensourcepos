@@ -37,7 +37,7 @@ class MY_Security extends CI_Security
         }
         else
         {
-            $samesite = is_https() ? 'None' : 'Strict';
+            $samesite = 'Lax';
 
             setcookie($this->_csrf_cookie_name,
                 $this->_csrf_hash,

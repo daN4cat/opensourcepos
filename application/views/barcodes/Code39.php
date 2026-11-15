@@ -97,7 +97,7 @@ class Code39 extends BarcodeBase
 	 */
 	private function getMap($char)
 	{
-		return self::$binMap[$char] ?: self::$this->binMap[' '];
+		return isset(self::$binMap[$char]) ? self::$binMap[$char] : self::$binMap[' '];
 	}
 
 	/*

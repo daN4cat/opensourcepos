@@ -12,8 +12,14 @@ function db_log_queries()
 	{
 		// Creating Query Log file with today's date in application/logs folder
 		$filepath = APPPATH . 'logs/Query-log-' . date('Y-m-d') . '.php';
+		$newfile = !file_exists($filepath);
 		// Opening file with pointer at the end of the file
 		$handle = fopen($filepath, "a+");
+
+		if($newfile)
+		{
+			fwrite($handle, "<?php defined('BASEPATH') OR exit('No direct script access allowed'); ?>\n\n");
+		}
 
 		// Get execution time of all the queries executed by controller
 		$times = $CI->db->query_times;

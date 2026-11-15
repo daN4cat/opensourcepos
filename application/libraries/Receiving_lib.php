@@ -261,7 +261,7 @@ class Receiving_lib
 		if($itemalreadyinsale)
 		{
 			$items[$updatekey]['quantity'] += $quantity;
-			$items[$updatekey]['total'] = $this->get_item_total($items[$updatekey]['quantity'], $price, $discount, $discount_type, $items[$updatekey]['receiving_quantity']);
+			$items[$updatekey]['total'] = $this->get_item_total($items[$updatekey]['quantity'], $items[$updatekey]['price'], $items[$updatekey]['discount'], $items[$updatekey]['discount_type'], $items[$updatekey]['receiving_quantity']);
 		}
 		else
 		{

@@ -77,7 +77,7 @@ foreach($definition_values as $definition_id => $definition_value)
 
 <script type="text/javascript">
 (function() {
-		<?php $this->load->view('partial/datepicker_locale', array('config' => '{ minView: 2, format: "'.dateformat_bootstrap($this->config->item('dateformat') . '"}'))); ?>
+		<?php $this->load->view('partial/datepicker_locale', array('config' => '{ minView: 2, format: "'.dateformat_bootstrap($this->config->item('dateformat')) . '"}')); ?>
 
 		var enable_delete = function() {
 			$('.remove_attribute_btn').click(function() {
@@ -106,7 +106,7 @@ foreach($definition_values as $definition_id => $definition_value)
 
 		var definition_values = function() {
 			var result = {};
-			$("[name*='attribute_links'").each(function() {
+			$("[name*='attribute_links']").each(function() {
 				var definition_id = $(this).data('definition-id');
 				result[definition_id] = $(this).val();
 			});

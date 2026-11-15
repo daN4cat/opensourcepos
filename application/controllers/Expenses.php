@@ -43,7 +43,7 @@ class Expenses extends Secure_Controller
 					 'is_deleted' => FALSE);
 
 		// check if any filter is set in the multiselect dropdown
-		$filledup = array_fill_keys($this->input->get('filters'), TRUE);
+		$filledup = array_fill_keys($this->input->get('filters') ?: array(), TRUE);
 		$filters = array_merge($filters, $filledup);
 		$expenses = $this->Expense->search($search, $filters, $limit, $offset, $sort, $order);
 		$total_rows = $this->Expense->get_found_rows($search, $filters);
@@ -79,13 +79,17 @@ class Expenses extends Secure_Controller
 		}
 
 		$data['expenses_info'] = $this->Expense->get_info($expense_id);
+		foreach(get_object_vars($data['expenses_info']) as $property => $value)
+		{
+			$data['expenses_info']->$property = $this->xss_clean($value);
+		}
 
 		$expense_categories = array();
 		foreach($this->Expense_category->get_all(0, 0, TRUE)->result_array() as $row)
 		{
 			$expense_categories[$row['expense_category_id']] = $row['category_name'];
 		}
-		$data['expense_categories'] = $expense_categories;
+		$data['expense_categories'] = $this->xss_clean($expense_categories);
 
 		$expense_id = $data['expenses_info']->expense_id;
 
@@ -127,7 +131,7 @@ class Expenses extends Secure_Controller
 		$date_formatter = date_create_from_format($this->config->item('dateformat') . ' ' . $this->config->item('timeformat'), $newdate);
 
 		$expense_data = array(
-			'date' => $date_formatter->format('Y-m-d H:i:s'),
+			'date' => $date_formatter ? $date_formatter->format('Y-m-d H:i:s') : date('Y-m-d H:i:s'),
 			'supplier_id' => $this->input->post('supplier_id') == '' ? NULL : $this->input->post('supplier_id'),
 			'supplier_tax_code' => $this->input->post('supplier_tax_code'),
 			'amount' => parse_decimals($this->input->post('amount')),

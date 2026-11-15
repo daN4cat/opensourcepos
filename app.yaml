@@ -1,0 +1,37 @@
+runtime: php83
+
+handlers:
+- url: /favicon\.ico
+  static_files: public/favicon.ico
+  upload: public/favicon\.ico
+
+- url: /robots\.txt
+  static_files: public/robots.txt
+  upload: public/robots\.txt
+
+- url: /dist
+  static_dir: public/dist
+
+- url: /css
+  static_dir: public/css
+
+- url: /js
+  static_dir: public/js
+
+- url: /images
+  static_dir: public/images
+
+- url: /fonts
+  static_dir: public/fonts
+
+- url: /bower_components
+  static_dir: public/bower_components
+
+- url: /license
+  static_dir: public/license
+
+- url: /uploads
+  static_dir: public/uploads
+
+- url: /.*
+  script: auto

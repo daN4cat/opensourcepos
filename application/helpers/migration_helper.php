@@ -21,15 +21,24 @@ function execute_script($path)
 	$sqls = explode(';', $sql);
 	array_pop($sqls);
 
+	$ignored_errors = array(1050, 1051, 1054, 1060, 1061, 1062, 1146);
+
 	foreach($sqls as $statement)
 	{
+		$statement = trim($statement);
+		if(empty($statement))
+		{
+			continue;
+		}
+
 		$statement = $statement . ';';
 
 		if(!$CI->db->simple_query($statement))
 		{
-			foreach($CI->db->error() as $error)
+			$error = $CI->db->error();
+			if(!empty($error['code']) && !in_array($error['code'], $ignored_errors))
 			{
-				error_log('error: ' . $error);
+				error_log('error: ' . $error['code'] . ' - ' . $error['message']);
 			}
 		}
 	}

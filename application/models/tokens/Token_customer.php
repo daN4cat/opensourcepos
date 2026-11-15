@@ -34,7 +34,7 @@ class Token_customer extends Token
 			}
 		}
 
-		return $value;
+		return $this->value;
 	}
 }
 ?>

@@ -103,13 +103,13 @@
 		</tr>
 
 		<?php
-		foreach($taxes as $name=>$value)
+		foreach($taxes as $tax_group_index=>$tax)
 		{
 		?>
 			<tr>
 				<td colspan="3" class="blank"> </td>
-				<td colspan="2" class="total-line"><?php echo $name; ?></td>
-				<td id="taxes" class="total-value"><?php echo to_currency_tax($value); ?></td>
+				<td colspan="2" class="total-line"><?php echo (float)$tax['tax_rate'] . '% ' . $tax['tax_group']; ?></td>
+				<td id="taxes" class="total-value"><?php echo to_currency_tax($tax['sale_tax_amount']); ?></td>
 			</tr>
 		<?php
 		}

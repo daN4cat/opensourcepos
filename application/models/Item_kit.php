@@ -53,7 +53,7 @@ class Item_kit extends CI_Model
 		$this->db->where('item_kit_number', (string) $item_kit_number);
 		// check if $item_id is a number and not a string starting with 0
 		// because cases like 00012345 will be seen as a number where it is a barcode
-		if(ctype_digit($item_kit_id) && substr($item_kit_id, 0, 1) !== '0')
+		if(ctype_digit((string)$item_kit_id) && substr((string)$item_kit_id, 0, 1) !== '0')
 		{
 			$this->db->where('item_kit_id !=', (int) $item_kit_id);
 		}
@@ -254,7 +254,10 @@ class Item_kit extends CI_Model
 			return $this->db->get()->row()->count;
 		}
 
-		$this->db->order_by($sort, $order);
+		if(preg_match('/^[a-zA-Z0-9_]+(\.[a-zA-Z0-9_]+)?$/', (string)$sort))
+		{
+			$this->db->order_by($sort, $order);
+		}
 
 		if($rows > 0)
 		{

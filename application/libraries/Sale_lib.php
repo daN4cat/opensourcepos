@@ -108,7 +108,7 @@ class Sale_lib
 				$sort['description'][$k] = $v['description'];
 				$sort['name'][$k] = $v['name'];
 			}
-			array_multisort($sort['stock_type'], SORT_DESC, $sort['description'], SORT_ASC, $sort['name'], SORT_ASC . $filtered_cart);
+			array_multisort($sort['stock_type'], SORT_DESC, $sort['description'], SORT_ASC, $sort['name'], SORT_ASC, $filtered_cart);
 		}
 		// Group by Item Category
 		elseif($this->CI->config->item('line_sequence') == '2')
@@ -116,7 +116,7 @@ class Sale_lib
 			$sort = array();
 			foreach($filtered_cart as $k => $v)
 			{
-				$sort['category'][$k] = $v['stock_type'];
+				$sort['category'][$k] = $v['category'];
 				$sort['description'][$k] = $v['description'];
 				$sort['name'][$k] = $v['name'];
 			}
@@ -1184,6 +1184,7 @@ class Sale_lib
 			if($item['discount'] == 0.0)
 			{
 				$item['discount'] = $discount;
+				$item['discount_type'] = $discount_type;
 				$item['total'] = $this->get_item_total($quantity, $price, $discount, $discount_type);
 				$item['discounted_total'] = $this->get_item_total($quantity, $price, $discount, $discount_type, TRUE);
 			}
@@ -1261,6 +1262,11 @@ class Sale_lib
 	 */
 	public function get_quantity_sold($total, $price)
 	{
+		if($price == 0)
+		{
+			return 0;
+		}
+
 		$quantity = bcdiv($total, $price, quantity_decimals());
 
 		return $quantity;

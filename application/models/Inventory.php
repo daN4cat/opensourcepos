@@ -33,11 +33,12 @@ class Inventory extends CI_Model
 	public function reset_quantity($item_id)
 	{
 		$inventory_sums = $this->Inventory->get_inventory_sum($item_id);
+		$success = TRUE;
 		foreach($inventory_sums as $inventory_sum)
 		{
 			if($inventory_sum['sum'] > 0)
 			{
-				return $this->Inventory->insert(array(
+				$success &= $this->Inventory->insert(array(
 					'trans_inventory' => -1 * $inventory_sum['sum'],
 					'trans_items' => $item_id,
 					'trans_location' => $inventory_sum['location_id'],
@@ -47,7 +48,7 @@ class Inventory extends CI_Model
 			}
 		}
 
-		return TRUE;
+		return (bool)$success;
 	}
 
 	public function get_inventory_sum($item_id)

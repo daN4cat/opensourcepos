@@ -55,7 +55,7 @@ class Summary_payments extends Summary_report
 		$select .= 'SUM(CASE WHEN sumpay_items.trans_amount - IFNULL(sumpay_payments.total_payments,0) > 0 THEN sumpay_items.trans_amount - IFNULL(sumpay_payments.total_payments,0) ELSE 0 END) as trans_due ';
 
 		$this->db->select($select);
-		$this->db->from('ospos_sales AS sales');
+		$this->db->from('sales AS sales');
 		$this->db->join('sumpay_items_temp AS sumpay_items', 'sales.sale_id = sumpay_items.sale_id', 'left outer');
 		$this->db->join('sumpay_payments_temp AS sumpay_payments', 'sales.sale_id = sumpay_payments.sale_id', 'left outer');
 		$this->db->where('sales.sale_status', COMPLETED);

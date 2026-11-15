@@ -724,7 +724,8 @@ class Reports extends Secure_Controller
 			$row = $this->xss_clean($row);
 
 			$labels[] = $row['category'];
-			$series[] = array('meta' => $row['category'] . ' ' . round($row['total'] / $summary['total'] * 100, 2) . '%', 'value' => $row['total']);
+			$pct = !empty($summary['total']) ? round($row['total'] / $summary['total'] * 100, 2) : 0;
+			$series[] = array('meta' => $row['category'] . ' ' . $pct . '%', 'value' => $row['total']);
 		}
 
 		$data = array(
@@ -758,7 +759,8 @@ class Reports extends Secure_Controller
 			$row = $this->xss_clean($row);
 
 			$labels[] = $row['supplier'];
-			$series[] = array('meta' => $row['supplier'] . ' ' . round($row['total'] / $summary['total'] * 100, 2) . '%', 'value' => $row['total']);
+			$pct = !empty($summary['total']) ? round($row['total'] / $summary['total'] * 100, 2) : 0;
+			$series[] = array('meta' => $row['supplier'] . ' ' . $pct . '%', 'value' => $row['total']);
 		}
 
 		$data = array(
@@ -792,7 +794,8 @@ class Reports extends Secure_Controller
 			$row = $this->xss_clean($row);
 
 			$labels[] = $row['employee'];
-			$series[] = array('meta' => $row['employee'] . ' ' . round($row['total'] / $summary['total'] * 100, 2) . '%', 'value' => $row['total']);
+			$pct = !empty($summary['total']) ? round($row['total'] / $summary['total'] * 100, 2) : 0;
+			$series[] = array('meta' => $row['employee'] . ' ' . $pct . '%', 'value' => $row['total']);
 		}
 
 		$data = array(
@@ -826,7 +829,8 @@ class Reports extends Secure_Controller
 			$row = $this->xss_clean($row);
 
 			$labels[] = $row['percent'];
-			$series[] = array('meta' => $row['percent'] . ' ' . round($row['total'] / $summary['total'] * 100, 2) . '%', 'value' => $row['total']);
+			$pct = !empty($summary['total']) ? round($row['total'] / $summary['total'] * 100, 2) : 0;
+			$series[] = array('meta' => $row['percent'] . ' ' . $pct . '%', 'value' => $row['total']);
 		}
 
 		$data = array(
@@ -968,7 +972,8 @@ class Reports extends Secure_Controller
 			if($row['trans_group'] == $this->lang->line('reports_trans_payments') && !empty($row['trans_amount']))
 			{
 				$labels[] = $row['trans_type'];
-				$series[] = array('meta' => $row['trans_type'] . ' ' . round($row['trans_amount'] / $summary['total'] * 100, 2) . '%', 'value' => $row['trans_amount']);
+				$pct = !empty($summary['total']) ? round($row['trans_amount'] / $summary['total'] * 100, 2) : 0;
+				$series[] = array('meta' => $row['trans_type'] . ' ' . $pct . '%', 'value' => $row['trans_amount']);
 			}
 		}
 
@@ -1435,7 +1440,7 @@ class Reports extends Secure_Controller
 
 		$summary_data = $this->xss_clean(array(
 			'sale_id' => $report_data['sale_id'],
-			'sale_time' => to_datetime(strtotime($row['sale_time'])),
+			'sale_time' => to_datetime(strtotime($report_data['sale_time'])),
 			'quantity' => to_quantity_decimals($report_data['items_purchased']),
 			'employee_name' => $report_data['employee_name'],
 			'customer_name' => $report_data['customer_name'],
@@ -1649,7 +1654,7 @@ class Reports extends Secure_Controller
 
 		$summary_data = $this->xss_clean(array(
 			'receiving_id' => $report_data['receiving_id'],
-			'receiving_time' => to_datetime(strtotime($row['receiving_time'])),
+			'receiving_time' => to_datetime(strtotime($report_data['receiving_time'])),
 			'quantity' => to_quantity_decimals($report_data['items_purchased']),
 			'employee_name' => $report_data['employee_name'],
 			'supplier_name' => $report_data['supplier_name'],

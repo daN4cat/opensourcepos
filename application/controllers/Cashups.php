@@ -33,7 +33,7 @@ class Cashups extends Secure_Controller
 					 'is_deleted' => FALSE);
 
 		// check if any filter is set in the multiselect dropdown
-		$filledup = array_fill_keys($this->input->get('filters'), TRUE);
+		$filledup = array_fill_keys($this->input->get('filters') ?: array(), TRUE);
 		$filters = array_merge($filters, $filledup);
 		$cash_ups = $this->Cashup->search($search, $filters, $limit, $offset, $sort, $order);
 		$total_rows = $this->Cashup->get_found_rows($search, $filters);
@@ -143,7 +143,7 @@ class Cashups extends Secure_Controller
 				$cash_ups_info->closed_amount_cash -= $this->xss_clean($row['amount']);
 			}
 
-			$cash_ups_info->closed_amount_total = $this->_calculate_total($cash_ups_info->open_amount_cash, $cash_ups_info->transfer_amount_cash, $cash_ups_info->closed_amount_cash, $cash_ups_info->closed_amount_due, $cash_ups_info->closed_amount_card, $cash_ups_info->closed_amount_check);
+			$cash_ups_info->closed_amount_total = $this->_calculate_total($cash_ups_info->open_amount_cash, $cash_ups_info->transfer_amount_cash, $cash_ups_info->closed_amount_due, $cash_ups_info->closed_amount_cash, $cash_ups_info->closed_amount_card, $cash_ups_info->closed_amount_check);
 		}
 
 		$data['cash_ups_info'] = $cash_ups_info;
@@ -168,8 +168,8 @@ class Cashups extends Secure_Controller
 		$close_date_formatter = date_create_from_format($this->config->item('dateformat') . ' ' . $this->config->item('timeformat'), $close_date);
 
 		$cash_up_data = array(
-			'open_date' => $open_date_formatter->format('Y-m-d H:i:s'),
-			'close_date' => $close_date_formatter->format('Y-m-d H:i:s'),
+			'open_date' => $open_date_formatter ? $open_date_formatter->format('Y-m-d H:i:s') : date('Y-m-d H:i:s'),
+			'close_date' => $close_date_formatter ? $close_date_formatter->format('Y-m-d H:i:s') : date('Y-m-d H:i:s'),
 			'open_amount_cash' => parse_decimals($this->input->post('open_amount_cash')),
 			'transfer_amount_cash' => parse_decimals($this->input->post('transfer_amount_cash')),
 			'closed_amount_cash' => parse_decimals($this->input->post('closed_amount_cash')),

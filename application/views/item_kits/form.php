@@ -212,18 +212,18 @@ $(document).ready(function()
 		delay: 10,
 		appendTo: '.modal-content',
 		select: function(e, ui) {
-			if($('#item_kit_item_' + ui.item.value).length == 1)
+			if($('#item_qty_' + ui.item.value).length == 1)
 			{
-				$('#item_kit_item_' + ui.item.value).val(parseFloat( $('#item_kit_item_' + ui.item.value).val()) + 1);
+				$('#item_qty_' + ui.item.value).val(parseFloat( $('#item_qty_' + ui.item.value).val()) + 1);
 			}
 			else
 			{
-				$('#item_kit_items').append('<tr>' +
-					"<td><a href='#' onclick='return delete_item_kit_row(this);'><span class='glyphicon glyphicon-trash'></span></a></td>" +
-					"<td><input class='quantity form-control input-sm' id='item_seq_" + ui.item.value + "' name=item_kit_seq[" + ui.item.value + "] value='0'/></td>" +
-					'<td>' + ui.item.label + '</td>' +
-					"<td><input class='quantity form-control input-sm' id='item_qty_" + ui.item.value + "' name=item_kit_qty[" + ui.item.value + "] value='1'/></td>" +
-					'</tr>');
+				var $row = $('<tr/>');
+				$row.append("<td><a href='#' onclick='return delete_item_kit_row(this);'><span class='glyphicon glyphicon-trash'></span></a></td>");
+				$row.append("<td><input class='quantity form-control input-sm' id='item_seq_" + ui.item.value + "' name=item_kit_seq[" + ui.item.value + "] value='0'/></td>");
+				$row.append($('<td/>').text(ui.item.label));
+				$row.append("<td><input class='quantity form-control input-sm' id='item_qty_" + ui.item.value + "' name=item_kit_qty[" + ui.item.value + "] value='1'/></td>");
+				$('#item_kit_items').append($row);
 			}
 			$('#item').val('');
 			return false;

@@ -88,7 +88,7 @@ class Item_kits extends Secure_Controller
 		// calculate the total cost and retail price of the Kit so it can be added to the table refresh
 		$item_kit = $this->_add_totals_to_item_kit($this->Item_kit->get_info($row_id));
 
-		echo json_encode(get_item_kit_data_row($item_kit));
+		echo json_encode($this->xss_clean(get_item_kit_data_row($item_kit)));
 	}
 	
 	public function view($item_kit_id = -1)
@@ -151,9 +151,9 @@ class Item_kits extends Secure_Controller
 				$new_item = TRUE;
 			}
 
+			$item_kit_items = array();
 			if($this->input->post('item_kit_qty') != NULL)
 			{
-				$item_kit_items = array();
 				foreach($this->input->post('item_kit_qty') as $item_id => $quantity)
 				{
 					$seq = $this->input->post('item_kit_seq[' . $item_id . ']');
@@ -230,7 +230,7 @@ class Item_kits extends Secure_Controller
 							'cost_price' => $item_kit->total_cost_price, 'unit_price' => $item_kit->total_unit_price);
 		}
 
-		$data['items'] = $result;
+		$data['items'] = $this->xss_clean($result);
 		$barcode_config = $this->barcode_lib->get_barcode_config();
 		// in case the selected barcode type is not Code39 or Code128 we set by default Code128
 		// the rationale for this is that EAN codes cannot have strings as seed, so 'KIT ' is not allowed

@@ -13,7 +13,7 @@ class MY_Lang extends CI_Lang
 
             foreach($loaded as $file)
             {
-                $filename = strtr($file, '', '_lang.php');
+                $filename = str_replace('_lang.php', '', $file);
                 $this->load($filename, 'english');
                 $array = $this->load($filename, $idiom, TRUE);
                 foreach($array as $lang_key => $lang_value) {
@@ -65,7 +65,7 @@ class MY_Lang extends CI_Lang
             			$i = 1;
             			foreach($args as $arg)
             			{
-            				$line = preg_replace('/\%'.$i.'/', $arg, $line);
+            				$line = str_replace('%'.$i, $arg, $line);
             				++$i;
             			}
             		}

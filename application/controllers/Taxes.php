@@ -411,7 +411,7 @@ class Taxes extends Secure_Controller
 		$tax_code_id = $this->input->post('tax_code_id');
 		$tax_code = $this->input->post('tax_code');
 		$tax_code_name = $this->input->post('tax_code_name');
-		$tax_code_id = $this->input->post('tax_code_id');
+		$tax_code_type = $this->input->post('tax_code_type');
 		$city = $this->input->post('city');
 		$state = $this->input->post('state');
 
@@ -419,7 +419,7 @@ class Taxes extends Secure_Controller
 		foreach($tax_code_id as $key=>$val)
 		{
 			$array_save[] = array('tax_code_id'=>$this->xss_clean($val), 'tax_code'=>$this->xss_clean($tax_code[$key]),
-			'tax_code_name'=>$this->xss_clean($tax_code_name[$key]), 'tax_code_id'=>$this->xss_clean($tax_code_id[$key]),
+			'tax_code_name'=>$this->xss_clean($tax_code_name[$key]), 'tax_code_type'=>$this->xss_clean(isset($tax_code_type[$key]) ? $tax_code_type[$key] : 0),
 			'city'=>$this->xss_clean($city[$key]), 'state'=>$this->xss_clean($state[$key]));
 		}
 

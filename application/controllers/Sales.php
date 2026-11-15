@@ -71,7 +71,7 @@ class Sales extends Secure_Controller
 						 'is_valid_receipt' => $this->Sale->is_valid_receipt($search));
 
 		// check if any filter is set in the multiselect dropdown
-		$filledup = array_fill_keys($this->input->get('filters'), TRUE);
+		$filledup = array_fill_keys($this->input->get('filters') ?: array(), TRUE);
 		$filters = array_merge($filters, $filledup);
 
 		$sales = $this->Sale->search($search, $filters, $limit, $offset, $sort, $order);
@@ -785,6 +785,12 @@ class Sales extends Secure_Controller
 
 	public function send_pdf($sale_id, $type = 'invoice')
 	{
+		$allowed_types = array('invoice', 'quote', 'work_order');
+		if(!in_array($type, $allowed_types, TRUE))
+		{
+			$type = 'invoice';
+		}
+
 		$sale_data = $this->_load_sale_data($sale_id);
 
 		$result = FALSE;
@@ -793,7 +799,7 @@ class Sales extends Secure_Controller
 		if(!empty($sale_data['customer_email']))
 		{
 			$to = $sale_data['customer_email'];
-			$number = $sale_data[$type."_number"];
+			$number = isset($sale_data[$type."_number"]) ? $sale_data[$type."_number"] : $sale_id;
 			$subject = $this->lang->line("sales_" . $type) . ' ' . $number;
 
 			$text = $this->config->item('invoice_email_message');
@@ -808,10 +814,12 @@ class Sales extends Secure_Controller
 
 			// load pdf helper
 			$this->load->helper(array('dompdf', 'file'));
-			$filename = sys_get_temp_dir() . '/' . $this->lang->line("sales_" . $type) . '-' . str_replace('/', '-', $number) . '.pdf';
+			$safe_number = preg_replace('/[^a-zA-Z0-9_-]/', '-', (string)$number);
+			$filename = sys_get_temp_dir() . '/' . preg_replace('/[^a-zA-Z0-9_-]/', '_', $this->lang->line("sales_" . $type)) . '-' . $safe_number . '.pdf';
 			if(file_put_contents($filename, create_pdf($html)) !== FALSE)
 			{
 				$result = $this->email_lib->sendEmail($to, $subject, $text, $filename);
+				@unlink($filename);
 			}
 
 			$message = $this->lang->line($result ? "sales_" . $type . "_sent" : "sales_" . $type . "_unsent") . ' ' . $to;
@@ -1279,7 +1287,7 @@ class Sales extends Secure_Controller
 		$employee_id = $this->Employee->get_logged_in_employee_info()->person_id;
 
 		$date_formatter = date_create_from_format($this->config->item('dateformat') . ' ' . $this->config->item('timeformat'), $newdate);
-		$sale_time = $date_formatter->format('Y-m-d H:i:s');
+		$sale_time = $date_formatter ? $date_formatter->format('Y-m-d H:i:s') : date('Y-m-d H:i:s');
 
 		$sale_data = array(
 			'sale_time' => $sale_time,

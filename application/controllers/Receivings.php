@@ -378,7 +378,7 @@ class Receivings extends Secure_Controller
 		$newdate = $this->input->post('date');
 		
 		$date_formatter = date_create_from_format($this->config->item('dateformat') . ' ' . $this->config->item('timeformat'), $newdate);
-		$receiving_time = $date_formatter->format('Y-m-d H:i:s');
+		$receiving_time = $date_formatter ? $date_formatter->format('Y-m-d H:i:s') : date('Y-m-d H:i:s');
 
 		$receiving_data = array(
 			'receiving_time' => $receiving_time,

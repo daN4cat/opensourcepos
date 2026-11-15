@@ -24,7 +24,7 @@ class Home extends Secure_Controller
 	*/
 	public function change_password($employee_id = -1)
 	{
-		$person_info = $this->Employee->get_info($employee_id);
+		$person_info = $this->Employee->get_logged_in_employee_info();
 		foreach(get_object_vars($person_info) as $property => $value)
 		{
 			$person_info->$property = $this->xss_clean($value);
@@ -39,12 +39,15 @@ class Home extends Secure_Controller
 	*/
 	public function save($employee_id = -1)
 	{
+		$logged_in_employee = $this->Employee->get_logged_in_employee_info();
+		$employee_id = $logged_in_employee->person_id;
+
 		if($this->input->post('current_password') != '' && $employee_id != -1)
 		{
-			if($this->Employee->check_password($this->input->post('username'), $this->input->post('current_password')))
+			if($this->Employee->check_password($logged_in_employee->username, $this->input->post('current_password')))
 			{
 				$employee_data = array(
-					'username' => $this->input->post('username'),
+					'username' => $logged_in_employee->username,
 					'password' => password_hash($this->input->post('password'), PASSWORD_DEFAULT),
 					'hash_version' => 2
 				);
