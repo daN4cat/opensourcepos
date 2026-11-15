@@ -269,18 +269,28 @@ class Item extends CI_Model
 	*/
 	public function get_info($item_id)
 	{
+		$escaped_item_id = $this->db->escape($item_id);
+		$attr_subquery = '(SELECT attribute_links.item_id, '
+			. "GROUP_CONCAT(attribute_value SEPARATOR '|') AS attribute_values, "
+			. "GROUP_CONCAT(attribute_decimal SEPARATOR '|') AS attribute_dvalues, "
+			. "GROUP_CONCAT(attribute_date SEPARATOR '|') AS attribute_dtvalues "
+			. 'FROM ' . $this->db->dbprefix('attribute_links') . ' AS attribute_links '
+			. 'LEFT JOIN ' . $this->db->dbprefix('attribute_values') . ' AS attribute_values '
+			. 'ON attribute_links.attribute_id = attribute_values.attribute_id '
+			. 'WHERE attribute_links.item_id = ' . $escaped_item_id . ' '
+			. 'GROUP BY attribute_links.item_id) AS item_attributes';
+
 		$this->db->select('items.*');
-		$this->db->select('GROUP_CONCAT(attribute_value SEPARATOR \'|\') AS attribute_values');
-		$this->db->select('GROUP_CONCAT(attribute_decimal SEPARATOR \'|\') AS attribute_dvalues');
-		$this->db->select('GROUP_CONCAT(attribute_date SEPARATOR \'|\') AS attribute_dtvalues');
-		$this->db->join('attribute_links', 'attribute_links.item_id = items.item_id', 'left');
-		$this->db->join('attribute_values', 'attribute_links.attribute_id = attribute_values.attribute_id', 'left');
+		$this->db->select('item_attributes.attribute_values');
+		$this->db->select('item_attributes.attribute_dvalues');
+		$this->db->select('item_attributes.attribute_dtvalues');
+		$this->db->from('items AS items');
+		$this->db->join($attr_subquery, 'item_attributes.item_id = items.item_id', 'left', FALSE);
 		$this->db->where('items.item_id', $item_id);
-		$this->db->group_by('items.item_id');
 
-		$query = $this->db->get('items');
+		$query = $this->db->get();
 
-		if($query->num_rows() == 1)
+		if($query !== FALSE && $query->num_rows() == 1)
 		{
 			return $query->row();
 		}
@@ -363,21 +373,40 @@ class Item extends CI_Model
 	*/
 	public function get_multiple_info($item_ids, $location_id)
 	{
+		if(empty($item_ids))
+		{
+			$item_ids = array(-1);
+		}
+
 		$format = $this->db->escape(dateformat_mysql());
+		$escaped_ids = array();
+		foreach((array)$item_ids as $id)
+		{
+			$escaped_ids[] = $this->db->escape($id);
+		}
+		$attr_subquery = '(SELECT attribute_links.item_id, '
+			. "GROUP_CONCAT(DISTINCT CONCAT_WS('_', definition_id, attribute_value) ORDER BY definition_id SEPARATOR '|') AS attribute_values, "
+			. "GROUP_CONCAT(DISTINCT CONCAT_WS('_', definition_id, DATE_FORMAT(attribute_date, $format)) ORDER BY definition_id SEPARATOR '|') AS attribute_dtvalues, "
+			. "GROUP_CONCAT(DISTINCT CONCAT_WS('_', definition_id, attribute_decimal) ORDER BY definition_id SEPARATOR '|') AS attribute_dvalues "
+			. 'FROM ' . $this->db->dbprefix('attribute_links') . ' AS attribute_links '
+			. 'LEFT JOIN ' . $this->db->dbprefix('attribute_values') . ' AS attribute_values '
+			. 'ON attribute_links.attribute_id = attribute_values.attribute_id '
+			. 'WHERE attribute_links.sale_id IS NULL AND attribute_links.receiving_id IS NULL '
+			. 'AND attribute_links.item_id IN (' . implode(',', $escaped_ids) . ') '
+			. 'GROUP BY attribute_links.item_id) AS item_attributes';
+
 		$this->db->select('items.*');
-		$this->db->select('MAX(company_name) AS company_name');
-		$this->db->select('GROUP_CONCAT(DISTINCT CONCAT_WS(\'_\', definition_id, attribute_value) ORDER BY definition_id SEPARATOR \'|\') AS attribute_values');
-		$this->db->select("GROUP_CONCAT(DISTINCT CONCAT_WS('_', definition_id, DATE_FORMAT(attribute_date, $format)) ORDER BY definition_id SEPARATOR '|') AS attribute_dtvalues");
-		$this->db->select('GROUP_CONCAT(DISTINCT CONCAT_WS(\'_\', definition_id, attribute_decimal) ORDER BY definition_id SEPARATOR \'|\') AS attribute_dvalues');
-		$this->db->select('MAX(quantity) as quantity');
-		$this->db->from('items');
-		$this->db->join('suppliers', 'suppliers.person_id = items.supplier_id', 'left');
-		$this->db->join('item_quantities', 'item_quantities.item_id = items.item_id', 'left');
-		$this->db->join('attribute_links', 'attribute_links.item_id = items.item_id AND sale_id IS NULL AND receiving_id IS NULL', 'left');
-		$this->db->join('attribute_values', 'attribute_links.attribute_id = attribute_values.attribute_id', 'left');
-		$this->db->where('location_id', $location_id);
+		$this->db->select('suppliers.company_name AS company_name');
+		$this->db->select('item_attributes.attribute_values');
+		$this->db->select('item_attributes.attribute_dtvalues');
+		$this->db->select('item_attributes.attribute_dvalues');
+		$this->db->select('item_quantities.quantity AS quantity');
+		$this->db->from('items AS items');
+		$this->db->join('suppliers AS suppliers', 'suppliers.person_id = items.supplier_id', 'left');
+		$this->db->join('item_quantities AS item_quantities', 'item_quantities.item_id = items.item_id', 'left');
+		$this->db->join($attr_subquery, 'item_attributes.item_id = items.item_id', 'left', FALSE);
+		$this->db->where('item_quantities.location_id', $location_id);
 		$this->db->where_in('items.item_id', $item_ids);
-		$this->db->group_by('items.item_id');
 
 		return $this->db->get();
 	}
