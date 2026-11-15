@@ -80,10 +80,10 @@ class Summary_taxes extends Summary_report
 						ON sales_items.sale_id = sales_items_taxes.sale_id AND sales_items.item_id = sales_items_taxes.item_id AND sales_items.line = sales_items_taxes.line
 					' . $where . '
 				) AS temp_taxes
-			GROUP BY percent'
+			GROUP BY percent, name'
 		);
 
-		return $query->result_array();
+		return $query ? $query->result_array() : array();
 	}
 }
 ?>

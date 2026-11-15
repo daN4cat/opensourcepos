@@ -79,7 +79,11 @@ class Receiving_lib
 	{
 		if(!$this->CI->session->userdata('recv_stock_source'))
 		{
-			$this->set_stock_source($this->CI->Stock_location->get_default_location_id('receivings'));
+			$location_id = $this->CI->Stock_location->get_default_location_id('receivings');
+			if($location_id !== NULL)
+			{
+				$this->set_stock_source($location_id);
+			}
 		}
 
 		return $this->CI->session->userdata('recv_stock_source');
@@ -143,7 +147,11 @@ class Receiving_lib
 	{
 		if(!$this->CI->session->userdata('recv_stock_destination'))
 		{
-			$this->set_stock_destination($this->CI->Stock_location->get_default_location_id('receivings'));
+			$location_id = $this->CI->Stock_location->get_default_location_id('receivings');
+			if($location_id !== NULL)
+			{
+				$this->set_stock_destination($location_id);
+			}
 		}
 
 		return $this->CI->session->userdata('recv_stock_destination');
@@ -161,6 +169,11 @@ class Receiving_lib
 
 	public function add_item($item_id, $quantity = 1, $item_location = NULL, $discount = 0, $discount_type = 0, $price = NULL, $description = NULL, $serialnumber = NULL, $receiving_quantity = NULL, $receiving_id = NULL, $include_deleted = FALSE)
 	{
+		if(empty($item_location))
+		{
+			return FALSE;
+		}
+
 		//make sure item exists in database.
 		if(!$this->CI->Item->exists($item_id, $include_deleted))
 		{

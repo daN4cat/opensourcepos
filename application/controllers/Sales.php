@@ -660,7 +660,8 @@ class Sales extends Secure_Controller
 
 				if($data['sale_id_num'] == -1)
 				{
-					$data['error_message'] = $this->lang->line('sales_transaction_failed');
+					$data['error'] = $this->lang->line('sales_transaction_failed');
+					$this->_reload($data);
 				}
 				else
 				{
@@ -700,17 +701,26 @@ class Sales extends Secure_Controller
 				$sale_type = SALE_TYPE_WORK_ORDER;
 
 				$data['sale_id_num'] = $this->Sale->save($sale_id, $data['sale_status'], $data['cart'], $customer_id, $employee_id, $data['comments'], $invoice_number, $work_order_number, $quote_number, $sale_type, $data['payments'], $data['dinner_table'], $tax_details);
-				$this->sale_lib->set_suspended_id($data['sale_id_num']);
 
-				$data['cart'] = $this->sale_lib->sort_and_filter_cart($data['cart']);
+				if($data['sale_id_num'] == -1)
+				{
+					$data['error'] = $this->lang->line('sales_transaction_failed');
+					$this->_reload($data);
+				}
+				else
+				{
+					$this->sale_lib->set_suspended_id($data['sale_id_num']);
 
-				$data = $this->xss_clean($data);
+					$data['cart'] = $this->sale_lib->sort_and_filter_cart($data['cart']);
 
-				$data['barcode'] = NULL;
+					$data = $this->xss_clean($data);
 
-				$this->load->view('sales/work_order', $data);
-				$this->sale_lib->clear_mode();
-				$this->sale_lib->clear_all();
+					$data['barcode'] = NULL;
+
+					$this->load->view('sales/work_order', $data);
+					$this->sale_lib->clear_mode();
+					$this->sale_lib->clear_all();
+				}
 			}
 		}
 		elseif($this->sale_lib->is_quote_mode())
@@ -737,17 +747,26 @@ class Sales extends Secure_Controller
 				$sale_type = SALE_TYPE_QUOTE;
 
 				$data['sale_id_num'] = $this->Sale->save($sale_id, $data['sale_status'], $data['cart'], $customer_id, $employee_id, $data['comments'], $invoice_number, $work_order_number, $quote_number, $sale_type, $data['payments'], $data['dinner_table'], $tax_details);
-				$this->sale_lib->set_suspended_id($data['sale_id_num']);
 
-				$data['cart'] = $this->sale_lib->sort_and_filter_cart($data['cart']);
+				if($data['sale_id_num'] == -1)
+				{
+					$data['error'] = $this->lang->line('sales_transaction_failed');
+					$this->_reload($data);
+				}
+				else
+				{
+					$this->sale_lib->set_suspended_id($data['sale_id_num']);
 
-				$data = $this->xss_clean($data);
+					$data['cart'] = $this->sale_lib->sort_and_filter_cart($data['cart']);
 
-				$data['barcode'] = NULL;
+					$data = $this->xss_clean($data);
 
-				$this->load->view('sales/quote', $data);
-				$this->sale_lib->clear_mode();
-				$this->sale_lib->clear_all();
+					$data['barcode'] = NULL;
+
+					$this->load->view('sales/quote', $data);
+					$this->sale_lib->clear_mode();
+					$this->sale_lib->clear_all();
+				}
 			}
 		}
 		else
@@ -772,7 +791,8 @@ class Sales extends Secure_Controller
 
 			if($data['sale_id_num'] == -1)
 			{
-				$data['error_message'] = $this->lang->line('sales_transaction_failed');
+				$data['error'] = $this->lang->line('sales_transaction_failed');
+				$this->_reload($data);
 			}
 			else
 			{

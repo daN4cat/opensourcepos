@@ -587,6 +587,14 @@ class Sale extends CI_Model
 			return -1;
 		}
 
+		foreach($items as $item)
+		{
+			if(empty($item['item_location']))
+			{
+				return -1;
+			}
+		}
+
 		$sales_data = array(
 			'sale_time'			=> date('Y-m-d H:i:s'),
 			'customer_id'		=> $this->Customer->exists($customer_id) ? $customer_id : NULL,
@@ -1201,7 +1209,7 @@ class Sale extends CI_Model
 					MAX(sales_items.item_cost_price) AS item_cost_price,
 					MAX(sales_items.item_unit_price) AS item_unit_price,
 					MAX(sales_items.discount) AS discount,
-					sales_items.discount_type AS discount_type,
+					MAX(sales_items.discount_type) AS discount_type,
 					sales_items.line AS line,
 					MAX(sales_items.serialnumber) AS serialnumber,
 					MAX(sales_items.item_location) AS item_location,

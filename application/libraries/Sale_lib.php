@@ -688,7 +688,11 @@ class Sale_lib
 	{
 		if(!$this->CI->session->userdata('sales_location'))
 		{
-			$this->set_sale_location($this->CI->Stock_location->get_default_location_id('sales'));
+			$location_id = $this->CI->Stock_location->get_default_location_id('sales');
+			if($location_id !== NULL)
+			{
+				$this->set_sale_location($location_id);
+			}
 		}
 
 		return $this->CI->session->userdata('sales_location');
@@ -746,6 +750,11 @@ class Sale_lib
 
 	public function add_item(&$item_id, $quantity = 1, $item_location, &$discount = 0.0, $discount_type = 0, $price_mode = PRICE_MODE_STANDARD, $kit_price_option = NULL, $kit_print_option = NULL, $price_override = NULL, $description = NULL, $serialnumber = NULL, $sale_id = NULL, $include_deleted = FALSE, $print_option = NULL, $line = NULL)
 	{
+		if(empty($item_location))
+		{
+			return FALSE;
+		}
+
 		$item_info = $this->CI->Item->get_info_by_id_or_number($item_id, $include_deleted);
 		//make sure item exists
 		if(empty($item_info))

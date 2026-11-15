@@ -66,6 +66,14 @@ class Receiving extends CI_Model
 			return -1;
 		}
 
+		foreach($items as $item)
+		{
+			if(empty($item['item_location']))
+			{
+				return -1;
+			}
+		}
+
 		$receivings_data = array(
 			'receiving_time' => date('Y-m-d H:i:s'),
 			'supplier_id' => $this->Supplier->exists($supplier_id) ? $supplier_id : NULL,

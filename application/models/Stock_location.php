@@ -81,7 +81,9 @@ class Stock_location extends CI_Model
 		$this->db->where('deleted', 0);
 		$this->db->limit(1);
 
-		return $this->db->get()->row()->location_id;
+		$row = $this->db->get()->row();
+
+		return $row !== NULL ? $row->location_id : NULL;
 	}
 
 	public function get_location_name($location_id)
@@ -89,7 +91,9 @@ class Stock_location extends CI_Model
 		$this->db->from('stock_locations');
 		$this->db->where('location_id', $location_id);
 
-		return $this->db->get()->row()->location_name;
+		$row = $this->db->get()->row();
+
+		return $row !== NULL ? $row->location_name : '';
 	}
 
 	public function get_location_id($location_name)
@@ -97,7 +101,9 @@ class Stock_location extends CI_Model
 		$this->db->from('stock_locations');
 		$this->db->where('location_name', $location_name);
 
-		return $this->db->get()->row()->location_id;
+		$row = $this->db->get()->row();
+
+		return $row !== NULL ? $row->location_id : NULL;
 	}
 
 	public function save(&$location_data, $location_id)

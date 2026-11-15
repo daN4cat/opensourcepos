@@ -52,7 +52,7 @@ class Summary_cost_sales extends Summary_report
                 Stock.season = Sales.season
         ');
 
-		return $query->result_array();
+		return $query ? $query->result_array() : array();
 	}
 }
 ?>

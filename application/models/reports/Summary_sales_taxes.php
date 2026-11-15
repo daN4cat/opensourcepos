@@ -49,9 +49,9 @@ class Summary_sales_taxes extends Summary_report
 			JOIN " . $this->db->dbprefix('tax_categories') . " AS tax_categories ON sales_taxes.tax_category_id = tax_categories.tax_category_id
 			JOIN " . $this->db->dbprefix('tax_jurisdictions') . " AS tax_jurisdictions ON sales_taxes.jurisdiction_id = tax_jurisdictions.jurisdiction_id "
 			. $where .
-			"GROUP BY reporting_authority, jurisdiction_name, tax_category; ");
+			"GROUP BY reporting_authority, jurisdiction_name, tax_category, tax_rate; ");
 
-		return $query->result_array();
+		return $query ? $query->result_array() : array();
 	}
 }
 ?>
