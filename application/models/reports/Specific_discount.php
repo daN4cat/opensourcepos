@@ -52,11 +52,11 @@ class Specific_discount extends Report
 	{
 		$this->db->select('sale_id,
 			MAX(CASE
-			WHEN sale_type = ' . SALE_TYPE_POS . ' && sale_status = ' . COMPLETED . ' THEN \'' . $this->lang->line('reports_code_pos') . '\'
-			WHEN sale_type = ' . SALE_TYPE_INVOICE . ' && sale_status = ' . COMPLETED . ' THEN \'' . $this->lang->line('reports_code_invoice') . '\'
-			WHEN sale_type = ' . SALE_TYPE_WORK_ORDER . ' && sale_status = ' . SUSPENDED . ' THEN \'' . $this->lang->line('reports_code_work_order') . '\'
-			WHEN sale_type = ' . SALE_TYPE_QUOTE . ' && sale_status = ' . SUSPENDED . ' THEN \'' . $this->lang->line('reports_code_quote') . '\'
-			WHEN sale_type = ' . SALE_TYPE_RETURN . ' && sale_status = ' . COMPLETED . ' THEN \'' . $this->lang->line('reports_code_return') . '\'
+			WHEN sale_type = ' . SALE_TYPE_POS . ' AND sale_status = ' . COMPLETED . ' THEN \'' . $this->lang->line('reports_code_pos') . '\'
+			WHEN sale_type = ' . SALE_TYPE_INVOICE . ' AND sale_status = ' . COMPLETED . ' THEN \'' . $this->lang->line('reports_code_invoice') . '\'
+			WHEN sale_type = ' . SALE_TYPE_WORK_ORDER . ' AND sale_status = ' . SUSPENDED . ' THEN \'' . $this->lang->line('reports_code_work_order') . '\'
+			WHEN sale_type = ' . SALE_TYPE_QUOTE . ' AND sale_status = ' . SUSPENDED . ' THEN \'' . $this->lang->line('reports_code_quote') . '\'
+			WHEN sale_type = ' . SALE_TYPE_RETURN . ' AND sale_status = ' . COMPLETED . ' THEN \'' . $this->lang->line('reports_code_return') . '\'
 			WHEN sale_status = ' . CANCELED . ' THEN \'' . $this->lang->line('reports_code_canceled') . '\'
 			ELSE \'\'
 			END) AS type_code,

@@ -41,13 +41,13 @@ class Summary_cost_sales extends Summary_report
                 FROM ' . $this->db->dbprefix('items') . ' AS items
                 JOIN ' . $this->db->dbprefix('item_quantities') . ' AS quantities
                 WHERE items.item_id = quantities.item_id
-                GROUP BY season) AS Stock
+                GROUP BY items.season) AS Stock
             LEFT JOIN
                 (SELECT season, SUM(quantity_purchased * item_cost_price) AS cost_of_sale, SUM(quantity_purchased * item_unit_price * (100 - discount) / 100) AS revenue
                 FROM ' . $this->db->dbprefix('sales_items') . ' AS items
                 JOIN ' . $this->db->dbprefix('sales') . ' AS sales
                 WHERE sales.sale_id = items.sale_id AND ' . $where . '
-                GROUP BY season) AS Sales
+                GROUP BY items.season) AS Sales
             ON
                 Stock.season = Sales.season
         ');

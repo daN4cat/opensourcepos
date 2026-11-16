@@ -91,6 +91,19 @@ switch (ENVIRONMENT)
 
 /*
  *---------------------------------------------------------------
+ * MYSQLI ERROR REPORTING
+ *---------------------------------------------------------------
+ *
+ * PHP 8.1+ enables MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT by default.
+ * Turn it off so CodeIgniter 3's DB error handling operates normally.
+ */
+if (function_exists('mysqli_report'))
+{
+	mysqli_report(MYSQLI_REPORT_OFF);
+}
+
+/*
+ *---------------------------------------------------------------
  * SYSTEM DIRECTORY NAME
  *---------------------------------------------------------------
  *

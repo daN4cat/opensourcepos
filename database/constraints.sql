@@ -90,7 +90,7 @@ ALTER TABLE `ospos_sales_items`
 -- Constraints for table `ospos_sales_items_taxes`
 --
 ALTER TABLE `ospos_sales_items_taxes`
-  ADD CONSTRAINT `ospos_sales_items_taxes_ibfk_1` FOREIGN KEY (`sale_id`) REFERENCES `ospos_sales_items` (`sale_id`),
+  ADD CONSTRAINT `ospos_sales_items_taxes_ibfk_1` FOREIGN KEY (`sale_id`, `item_id`, `line`) REFERENCES `ospos_sales_items` (`sale_id`, `item_id`, `line`),
   ADD CONSTRAINT `ospos_sales_items_taxes_ibfk_2` FOREIGN KEY (`item_id`) REFERENCES `ospos_items` (`item_id`);
 
 --

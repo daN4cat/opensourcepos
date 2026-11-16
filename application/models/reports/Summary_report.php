@@ -58,7 +58,7 @@ abstract class Summary_report extends Report
 				INNER JOIN ' . $this->db->dbprefix('sales_items') . ' AS sales_items
 					ON sales_items.sale_id = sales_items_taxes.sale_id AND sales_items.line = sales_items_taxes.line
 				WHERE ' . $where . '
-				GROUP BY sale_id, item_id, line
+				GROUP BY sales_items_taxes.sale_id, sales_items_taxes.item_id, sales_items_taxes.line
 			)'
 		);
 
@@ -74,7 +74,7 @@ abstract class Summary_report extends Report
 				INNER JOIN ' . $this->db->dbprefix('sales') . ' AS sales
 					ON sales.sale_id = payments.sale_id
 				WHERE ' . $where . '
-				GROUP BY sale_id
+				GROUP BY payments.sale_id
 			)'
 		);
 

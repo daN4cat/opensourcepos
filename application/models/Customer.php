@@ -110,7 +110,7 @@ class Customer extends Person
 				INNER JOIN ' . $this->db->dbprefix('sales_items') . ' AS sales_items
 					ON sales_items.sale_id = sales.sale_id
 				WHERE sales.customer_id = ' . $this->db->escape($customer_id) . '
-				GROUP BY sale_id
+				GROUP BY sales.sale_id
 			)'
 		);
 

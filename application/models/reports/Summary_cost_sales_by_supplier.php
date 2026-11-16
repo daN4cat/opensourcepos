@@ -43,7 +43,7 @@ class Summary_cost_sales_by_supplier extends Summary_report
                 FROM ' . $this->db->dbprefix('items') . ' AS items
                 JOIN ' . $this->db->dbprefix('item_quantities') . ' AS quantities, ' . $this->db->dbprefix('suppliers') . ' AS suppliers
                 WHERE items.item_id = quantities.item_id AND items.supplier_id = suppliers.person_id AND items.season = ' . $this->db->escape($inputs['season']) . '
-                GROUP BY season, supplier_id, suppliers.company_name
+                GROUP BY items.season, items.supplier_id, suppliers.company_name
                 ORDER BY suppliers.company_name ASC) AS Stock
             LEFT JOIN
                 (SELECT sales_items.season, suppliers.company_name AS supplier, SUM(quantity_purchased * item_cost_price) AS cost_of_sale, SUM(quantity_purchased * item_unit_price * (100 - discount) / 100) AS revenue 

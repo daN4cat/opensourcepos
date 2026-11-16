@@ -64,7 +64,7 @@ ALTER TABLE `ospos_item_kits` ADD INDEX(`name`,`description`);
 ALTER TABLE `ospos_item_quantities` ADD INDEX(`PRIMARY`,`item_id`,`location_id`);
 
 #ospos_people table
-ALTER TABLE `ospos_people` ADD INDEX(`first_name`, `last_name`, `email`, `phone_number`); 
+ALTER TABLE `ospos_people` ADD INDEX(`first_name`(191), `last_name`(191), `email`(191), `phone_number`(191)); 
 
 #ospos_receivings_items
 ALTER TABLE `ospos_receivings_items` MODIFY `discount_type` tinyint(1) DEFAULT 0 NOT NULL;
