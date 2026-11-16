@@ -480,18 +480,6 @@
 					</div>
 
 					<div class="form-group form-group-sm">
-						<?php echo form_label($this->lang->line('customers_shopify_account_state'), 'shopify_account_state', array('class' => 'control-label col-xs-3')); ?>
-						<div class='col-xs-4'>
-							<?php echo form_input(array(
-									'name'=>'shopify_account_state',
-									'class'=>'form-control input-sm',
-									'value'=>isset($shopify_info['state']) ? ucfirst($shopify_info['state']) : '',
-									'disabled'=>'')
-									); ?>
-						</div>
-					</div>
-
-					<div class="form-group form-group-sm">
 						<?php echo form_label($this->lang->line('customers_shopify_email_marketing_state'), 'shopify_email_marketing_state', array('class' => 'control-label col-xs-3')); ?>
 						<div class='col-xs-4'>
 							<?php echo form_input(array(

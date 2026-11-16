@@ -42,7 +42,6 @@ $lang["customers_new"] = "New Customer";
 $lang["customers_none_selected"] = "You have not selected any customer(s) to delete.";
 $lang["customers_one_or_multiple"] = "Customer(s)";
 $lang["customers_quantity"] = "Quantity";
-$lang["customers_shopify_account_state"] = "Account State";
 $lang["customers_shopify_email_marketing_state"] = "Email Marketing";
 $lang["customers_shopify_sms_marketing_state"] = "SMS Marketing";
 $lang["customers_shopify_id"] = "Shopify Customer ID";
