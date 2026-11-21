@@ -139,7 +139,7 @@ CREATE TABLE `ospos_customers` (
   `points` int(11) DEFAULT NULL,
   `deleted` int(1) NOT NULL DEFAULT '0',
   UNIQUE KEY `account_number` (`account_number`),
-  KEY `person_id` (`person_id`),
+  UNIQUE KEY `person_id` (`person_id`),
   KEY `package_id` (`package_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -163,7 +163,7 @@ CREATE TABLE `ospos_employees` (
   `language` VARCHAR(48) DEFAULT NULL,
   `language_code` VARCHAR(8) DEFAULT NULL,
   UNIQUE KEY `username` (`username`),
-  KEY `person_id` (`person_id`)
+  UNIQUE KEY `person_id` (`person_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
@@ -739,7 +739,7 @@ CREATE TABLE `ospos_suppliers` (
   `account_number` varchar(255) DEFAULT NULL,
   `deleted` int(1) NOT NULL DEFAULT '0',
   UNIQUE KEY `account_number` (`account_number`),
-  KEY `person_id` (`person_id`)
+  UNIQUE KEY `person_id` (`person_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;
 
 

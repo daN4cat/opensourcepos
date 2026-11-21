@@ -14,11 +14,11 @@ ALTER TABLE `ospos_attribute_links` ADD UNIQUE INDEX `attribute_links_uq2` (`ite
 ALTER TABLE `ospos_cash_up` MODIFY `deleted` tinyint(1) DEFAULT 0 NOT NULL;
 
 #ospos_customers table
-DROP INDEX `person_id` ON `ospos_customers`;
 ALTER TABLE `ospos_customers` MODIFY `taxable` tinyint(1) DEFAULT 1 NOT NULL;
 ALTER TABLE `ospos_customers` MODIFY `deleted` tinyint(1) DEFAULT 0 NOT NULL;
 ALTER TABLE `ospos_customers` MODIFY `discount_type` tinyint(1) DEFAULT 0 NOT NULL;
 ALTER TABLE `ospos_customers` ADD PRIMARY KEY(`person_id`);
+DROP INDEX `person_id` ON `ospos_customers`;
 ALTER TABLE `ospos_customers` ADD INDEX(`company_name`);
 
 #ospos_customers_packages table
@@ -29,10 +29,10 @@ ALTER TABLE `ospos_dinner_tables` MODIFY `deleted` tinyint(1) DEFAULT 0 NOT NULL
 ALTER TABLE `ospos_dinner_tables` ADD INDEX(`status`);
 
 #ospos_employees table
-DROP INDEX `person_id` ON `ospos_employees`;
 ALTER TABLE `ospos_employees` MODIFY `deleted` tinyint(1) DEFAULT 0 NOT NULL;
 ALTER TABLE `ospos_employees` MODIFY `hash_version` tinyint(1) DEFAULT 2 NOT NULL;
 ALTER TABLE `ospos_employees` ADD PRIMARY KEY(`person_id`);
+DROP INDEX `person_id` ON `ospos_employees`;
 
 #ospos_expenses table
 ALTER TABLE `ospos_expenses` MODIFY `deleted` tinyint(1) DEFAULT 0 NOT NULL;
@@ -94,10 +94,10 @@ ALTER TABLE `ospos_sessions` ADD INDEX(`ip_address`);
 ALTER TABLE `ospos_stock_locations` MODIFY `deleted` tinyint(1) DEFAULT 0 NOT NULL;
 
 #ospos_suppliers table
-DROP INDEX `person_id` ON `ospos_suppliers`;
 ALTER TABLE `ospos_suppliers` MODIFY `deleted` tinyint(1) DEFAULT 0 NOT NULL;
 ALTER TABLE `ospos_suppliers` MODIFY `category` tinyint(1) NOT NULL;
 ALTER TABLE `ospos_suppliers` ADD PRIMARY KEY(`person_id`);
+DROP INDEX `person_id` ON `ospos_suppliers`;
 ALTER TABLE `ospos_suppliers` ADD INDEX(`category`);
 ALTER TABLE `ospos_suppliers` ADD INDEX(`company_name`, `deleted`);
 

@@ -1,11 +1,9 @@
-version: '2'
-
 volumes:
     uploads:
         driver: local
     logs:
         driver: local
-    mysql:
+    mysql84:
         driver: local
 
 networks:
@@ -13,9 +11,6 @@ networks:
     db_net:
 
 services:
-    sqlscript:
-        image: jekkos/opensourcepos:sqlscript
-        command: /bin/sh -c 'exit 0'
     ospos:
         image: jekkos/opensourcepos:3.3.9
         restart: always
@@ -39,17 +34,17 @@ services:
           - MYSQL_HOST_NAME=mysql
 
     mysql:
-        image: mariadb:10.5
+        image: mysql:8.4
         container_name: mysql
         restart: always
         expose:
           - "3306"
         networks:
           - db_net
-        volumes_from:
-          - sqlscript
         volumes:
-          - mysql:/var/lib/mysql:rw
+          - ./database/tables.sql:/docker-entrypoint-initdb.d/01-tables.sql:ro
+          - ./database/constraints.sql:/docker-entrypoint-initdb.d/02-constraints.sql:ro
+          - mysql84:/var/lib/mysql:rw
         environment:
           - MYSQL_ROOT_PASSWORD=pointofsale
           - MYSQL_DATABASE=ospos
